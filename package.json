@@ -15,7 +15,7 @@
   "devDependencies": {
     "@playwright/test": "1.25.2",
     "@types/chrome": "0.0.196",
-    "@types/firefox-webext-browser": "94.0.1",
+    "@types/firefox-webext-browser": "111.0.1",
     "husky": "8.0.3",
     "lint-staged": "13.2.2",
     "prettier": "2.8.8",
