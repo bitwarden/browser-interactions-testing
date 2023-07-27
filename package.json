@@ -14,8 +14,8 @@
   "homepage": "https://bitwarden.com",
   "devDependencies": {
     "@playwright/test": "1.36.2",
-    "@types/chrome": "0.0.241",
-    "@types/node": "20.4.4",
+    "@types/chrome": "0.0.242",
+    "@types/node": "20.4.5",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
     "dotenv": "16.3.1",
@@ -24,7 +24,7 @@
     "prettier": "3.0.0",
     "rimraf": "5.0.1",
     "ts-node": "10.9.1",
-    "tslib": "2.6.0",
+    "tslib": "2.6.1",
     "typescript": "5.1.6"
   },
   "lint-staged": {
