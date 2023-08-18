@@ -4,7 +4,7 @@ ROOT_DIR=$(git rev-parse --show-toplevel)
 
 # shellcheck source=.env
 set -o allexport
-source $ROOT_DIR/.env
+. $ROOT_DIR/.env
 set +o allexport
 
 export NODE_EXTRA_CA_CERTS=$ROOT_DIR/$BW_SSL_CERT
@@ -22,6 +22,10 @@ if [[ -z "${SERVER_HOST_URL:-}" ]]; then
     echo "SERVER_HOST_URL is not set, using local dev values"
     export SERVER_HOST_URL='--api http://localhost:4000 --identity http://localhost:33656 --web-vault https://localhost:8080 --events http://localhost:46273'
 fi
+
+# Ensure data file is created
+export BITWARDENCLI_APPDATA_DIR=$HOME
+BW_COMMAND status
 
 # Login to the vault
 # shellcheck disable=SC2086 # we want to pass the server host url as a single argument

@@ -4,7 +4,7 @@ ROOT_DIR=$(git rev-parse --show-toplevel)
 
 # Load .env values into the environment
 set -o allexport
-source $ROOT_DIR/.env
+. $ROOT_DIR/.env
 set +o allexport
 
 curl "$SERVER_HOST_URL/identity/accounts/register" \
@@ -26,6 +26,7 @@ curl "$SERVER_HOST_URL/identity/accounts/register" \
   -H 'Sec-Fetch-Site: same-origin' \
   -H 'Pragma: no-cache' \
   -H 'Cache-Control: no-cache' \
+  --insecure \
   --compressed \
   --data-raw """
     {\"email\":\"$VAULT_EMAIL\",

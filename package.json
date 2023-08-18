@@ -35,7 +35,7 @@
     "trailingComma": "es5"
   },
   "scripts": {
-    "prepare": "husky install && npm run setup:extension",
+    "prepare": "husky install",
     "pretest": "rimraf tests-out screenshots test-summary test-results && tsc --incremental -p tests/tsconfig.json",
     "build:extension": "cd clients/apps/browser && rimraf build && npm run build",
     "build:extension:autofill": "cd clients/apps/browser && rimraf build && cross-env AUTOFILL_VERSION=2 npm run build",

@@ -1,0 +1,108 @@
+name: test-autofill
+run-name: Test extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      CLIENTS_BRANCH:
+        required: true
+        default: 'master'
+        description: "clients branch or commit hash to build extensions with"
+        type: string
+      EXTENSION_AUTOFILL_VERSION:
+        required: true
+        default: 1
+        description: "version of autofill to use"
+        type: number
+      EXTENSION_MANIFEST_VERSION:
+        required: true
+        default: 2
+        description: "version of extensions manifest to use"
+        type: number
+jobs:
+  build-and-test:
+    # macos runners don't support docker
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+          node-version: '18'
+
+      # TODO temp for dev- move to individual secrets
+      - name: Create env file
+        run: |
+          touch .env
+          echo ${{ secrets.ENV_FILE }} | base64 --decode > .env
+          cat .env
+
+      # - name: Install node-gyp
+      #   run: |
+      #     npm install -g node-gyp@9.4.0
+      #     node-gyp install $(node -v)
+
+      - name: NPM setup
+        run: npm ci
+        working-directory: ./
+
+      # - name: Generate Certs
+      #   run: npm run setup:ssl
+      #   working-directory: ./
+
+      # - name: Install Certs
+      #   run: |
+      #     sudo cp ssl.crt /usr/local/share/ca-certificates/
+      #     sudo update-ca-certificates
+      #   working-directory: ./
+
+      - name: Install Bitwarden CLI
+        run: npm install -g @bitwarden/cli@2023.7.0
+        working-directory: ./
+
+      - name: Build and start the test vault
+        run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
+        working-directory: ./
+
+      # TODO: Figure out why CLI is generating new certs instead of using the ones provided
+      - name: Install Server Certs
+        run: |
+          openssl s_client -servername localhost -connect localhost:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ssl.crt
+          sudo cp ssl.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+        working-directory: ./
+
+      - name: Build extension
+        run: |
+          git clone https://github.com/bitwarden/clients.git clients
+          cd clients
+          git checkout ${{ inputs.CLIENTS_BRANCH }}
+          npm ci
+          cd apps/browser
+          AUTOFILL_VERSION=${{ inputs.EXTENSION_AUTOFILL_VERSION }} MANIFEST_VERSION=${{ inputs.EXTENSION_MANIFEST_VERSION }} npm run build
+        working-directory: ./
+
+      # - name: Sleep for 25 seconds
+      #   run: sleep 25s
+      #   shell: bash
+
+      - name: Setup the test vault account
+        run: npm run seed:vault:account
+        working-directory: ./
+
+      - name: Sleep for 5 seconds
+        run: sleep 5s
+        shell: bash
+
+      - name: Setup the test account ciphers
+        run: npm run seed:vault:ciphers
+        working-directory: ./
+
+      - name: Install Playwright
+        # for now, we're only using chromium
+        run: npx playwright install chromium
+        working-directory: ./
+
+      - name: Run local tests
+        run: npm run test:local:headless
+        working-directory: ./
