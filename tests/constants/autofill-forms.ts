@@ -1,7 +1,9 @@
 import { CipherType, UriMatchType, TestPage } from "../../abstractions";
-import { localPagesUri } from "./server";
+import { testSiteHost } from "./server";
 
 const testUserName = "bwplaywright";
+const testEmail = "bwplaywright@example.com";
+
 /*
 Some websites "prequalify" an entered email to see if they have an associated account.
 If they don't, they may disallow password entry or force account create workflow, so it is
@@ -15,8 +17,8 @@ export const testPages: TestPage[] = [
    */
   {
     cipherType: CipherType.Login,
-    url: `${localPagesUri}/tests/test-pages/basic-form.html`,
-    uriMatchType: UriMatchType.Exact,
+    url: `${testSiteHost}/forms/login/simple`,
+    uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: { selector: "#username", value: testUserName },
       password: { selector: "#password", value: "fakeBasicFormPassword" },
@@ -24,8 +26,8 @@ export const testPages: TestPage[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${localPagesUri}/tests/test-pages/iframe-form.html`,
-    uriMatchType: UriMatchType.Exact,
+    url: `${testSiteHost}/forms/login/iframe-login`,
+    uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
         preFillActions: async (page) => {
@@ -45,8 +47,8 @@ export const testPages: TestPage[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${localPagesUri}/tests/test-pages/sandboxed-iframe-form.html`,
-    uriMatchType: UriMatchType.Exact,
+    url: `${testSiteHost}/forms/login/iframe-sandboxed-login`,
+    uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
         preFillActions: async (page) => {
@@ -68,13 +70,18 @@ export const testPages: TestPage[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${localPagesUri}/tests/test-pages/multi-step-form.html`,
-    uriMatchType: UriMatchType.Exact,
+    url: `${testSiteHost}/forms/login/multi-step-login`,
+    uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
-        multiStepNextInputKey: "password",
+        multiStepNextInputKey: "email",
         selector: "#username",
         value: testUserName,
+      },
+      email: {
+        multiStepNextInputKey: "password",
+        selector: "#email",
+        value: testEmail,
       },
       password: { selector: "#password", value: "fakeMultiStepPassword" },
     },
@@ -1502,8 +1509,8 @@ export const testPages: TestPage[] = [
 export const knownFailureCases: TestPage[] = [
   {
     cipherType: CipherType.Login,
-    url: `${localPagesUri}/tests/test-pages/many-input-form.html`,
-    uriMatchType: UriMatchType.Exact,
+    url: `${testSiteHost}/forms/login/many-inputs-login`,
+    uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: { selector: "#username", value: "js" },
       password: { selector: "#password", value: "" },

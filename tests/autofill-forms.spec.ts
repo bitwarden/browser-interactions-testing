@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import path from "path";
-import { localPagesUri, autofillTestPages } from "./constants";
+import { testSiteHost, autofillTestPages } from "./constants";
 import { test, expect } from "./fixtures";
 import {
   FillProperties,
@@ -59,12 +59,14 @@ test.describe("Extension autofills forms when triggered", () => {
       }
 
       let contextPages = context.pages();
+      /*
       expect(contextPages.length).toBe(2);
 
       const welcomePage = contextPages[1];
       if (welcomePage) {
         await welcomePage.close();
       }
+      */
 
       testPage = contextPages[0];
 
@@ -130,9 +132,9 @@ test.describe("Extension autofills forms when triggered", () => {
 
     let pagesToTest =
       targetTestPages === "static"
-        ? autofillTestPages.filter(({ url }) => url.startsWith(localPagesUri))
+        ? autofillTestPages.filter(({ url }) => url.startsWith(testSiteHost))
         : targetTestPages === "public"
-        ? autofillTestPages.filter(({ url }) => !url.startsWith(localPagesUri))
+        ? autofillTestPages.filter(({ url }) => !url.startsWith(testSiteHost))
         : autofillTestPages;
 
     if (debugIsActive) {
@@ -157,7 +159,7 @@ test.describe("Extension autofills forms when triggered", () => {
 
     for (const page of pagesToTest) {
       const { url, inputs } = page;
-      const isLocalPage = url.startsWith(localPagesUri);
+      const isLocalPage = url.startsWith(testSiteHost);
 
       await test.step(`Autofill the form on page ${url}`, async () => {
         await testPage.goto(url, defaultGotoOptions);

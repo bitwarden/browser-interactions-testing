@@ -5,9 +5,7 @@ Thumbs.db
 # Secrets
 .env
 dev-server.local.pem
-vault-seeder/*
-!vault-seeder/abstractions/*
-!vault-seeder/vault-seeder.ts
+tmp-vault-seeder
 ssl.crt
 ssl.key
 

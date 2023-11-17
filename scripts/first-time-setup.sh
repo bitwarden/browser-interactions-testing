@@ -22,3 +22,5 @@ npm run build:extension
 
 docker compose up -d --build
 npm run setup:vault
+
+npm run setup:test-site

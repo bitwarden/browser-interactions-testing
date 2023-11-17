@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
+import { testSiteHost } from "./tests/constants/server";
+
 const config: PlaywrightTestConfig = {
   testDir: "./tests-out",
   /* Maximum time one test can run for. */
@@ -38,7 +40,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: `${process.env.PAGES_HOST}:${process.env.PAGES_HOST_PORT}`,
+    baseURL: testSiteHost,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -58,11 +60,11 @@ const config: PlaywrightTestConfig = {
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: "test-results/",
 
-  /* Run your local dev server before starting the tests */
+  /* Run your local static tests server before starting the tests */
   webServer: {
-    command: `npx http-server -p ${process.env.PAGES_HOST_PORT} --no-dotfiles`,
-    url: `${process.env.PAGES_HOST}:${process.env.PAGES_HOST_PORT}`,
-    reuseExistingServer: !process.env.CI,
+    command: `npm run start:test-site`,
+    url: testSiteHost,
+    reuseExistingServer: false,
   },
 };
 

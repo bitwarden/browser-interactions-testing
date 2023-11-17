@@ -1,4 +1,8 @@
 import { configDotenv } from "dotenv";
 
 configDotenv();
-export const localPagesUri = `${process.env.PAGES_HOST}:${process.env.PAGES_HOST_PORT}`;
+
+const testSiteHostPort = process.env.PAGES_HOST_PORT
+  ? `:${process.env.PAGES_HOST_PORT}`
+  : "";
+export const testSiteHost = `${process.env.PAGES_HOST}${testSiteHostPort}`;
