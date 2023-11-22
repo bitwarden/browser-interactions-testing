@@ -3,6 +3,7 @@ import { configDotenv } from "dotenv";
 import {
   CardItemTemplate,
   CipherType,
+  FieldTemplate,
   FillProperties,
   FolderItem,
   IdentityItemTemplate,
@@ -96,7 +97,7 @@ class VaultSeeder {
       name: itemName,
       notes: "",
       favorite: false,
-      fields: [],
+      fields: this.generateCustomFieldsLoginItemData(testPage),
       login: this.generateLoginItemData(testPage),
       secureNote: null,
       card: this.generateCardItemData(testPage),
@@ -131,6 +132,7 @@ class VaultSeeder {
     let itemData: ItemTemplate = existingItem;
     if (testPage.cipherType === CipherType.Login) {
       itemData.login = this.generateLoginItemData(testPage);
+      itemData.fields = this.generateCustomFieldsLoginItemData(testPage);
     }
 
     if (testPage.cipherType === CipherType.Card) {
@@ -234,6 +236,28 @@ class VaultSeeder {
     }
 
     return false;
+  }
+
+  private generateCustomFieldsLoginItemData(
+    testPage: TestPage
+  ): FieldTemplate[] {
+    if (testPage.cipherType !== CipherType.Login) {
+      return [];
+    }
+
+    const inputKeys = Object.keys(testPage.inputs).filter(
+      (keyName) => !["username", "password", "totp"].includes(keyName)
+    );
+
+    return inputKeys.map((keyName: string) => {
+      const input = testPage.inputs[keyName as keyof TestPage["inputs"]];
+
+      return {
+        name: (input?.selector as string).replace(/#/g, "") || "",
+        value: input?.value || "",
+        type: 1,
+      };
+    });
   }
 
   private generateLoginItemData(testPage: TestPage): LoginItemTemplate | null {
