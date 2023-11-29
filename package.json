@@ -14,19 +14,19 @@
   },
   "homepage": "https://bitwarden.com",
   "devDependencies": {
-    "@playwright/test": "1.37.0",
-    "@types/chrome": "0.0.243",
-    "@types/node": "20.5.0",
+    "@playwright/test": "1.40.1",
+    "@types/chrome": "0.0.253",
+    "@types/node": "20.10.1",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
     "dotenv": "16.3.1",
     "husky": "8.0.3",
     "lint-staged": "15.1.0",
-    "prettier": "3.0.2",
-    "rimraf": "5.0.1",
+    "prettier": "3.1.0",
+    "rimraf": "5.0.5",
     "ts-node": "10.9.1",
-    "tslib": "2.6.1",
-    "typescript": "5.1.6"
+    "tslib": "2.6.2",
+    "typescript": "5.3.2"
   },
   "lint-staged": {
     "*": "prettier --cache --write --ignore-unknown"
