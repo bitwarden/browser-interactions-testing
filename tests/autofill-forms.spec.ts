@@ -131,8 +131,8 @@ test.describe("Extension autofills forms when triggered", () => {
       targetTestPages === "static"
         ? autofillTestPages.filter(({ url }) => url.startsWith(testSiteHost))
         : targetTestPages === "public"
-        ? autofillTestPages.filter(({ url }) => !url.startsWith(testSiteHost))
-        : autofillTestPages;
+          ? autofillTestPages.filter(({ url }) => !url.startsWith(testSiteHost))
+          : autofillTestPages;
 
     if (debugIsActive) {
       const onlyTestPages = pagesToTest.filter(({ onlyTest }) => onlyTest);
