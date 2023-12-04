@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import path from "path";
-import { testSiteHost, autofillTestPages } from "./constants";
+import { testSiteHost, notificationPages } from "./constants";
 import { test, expect } from "./fixtures";
 import {
   FillProperties,
@@ -32,33 +32,18 @@ test.describe("Extension autofills forms when triggered", () => {
     context,
     extensionId,
   }) => {
-    context.setDefaultTimeout(20000);
-    context.setDefaultNavigationTimeout(120000);
+    await Promise.all([
+      context.setDefaultTimeout(20000),
+      context.setDefaultNavigationTimeout(120000),
+    ]);
 
     const [backgroundPage] = context.backgroundPages();
 
-    async function doAutofill() {
-      await backgroundPage.evaluate(() =>
-        chrome.tabs.query(
-          { active: true },
-          (tabs) =>
-            tabs[0] &&
-            chrome.tabs.sendMessage(tabs[0]?.id || 0, {
-              command: "collectPageDetails",
-              tab: tabs[0],
-              sender: "autofill_cmd",
-            })
-        )
-      );
-    }
-
     await test.step("Close the extension welcome page when it pops up", async () => {
-      // If not in debug, wait for the extension to open the welcome page before continuing
-      if (!debugIsActive) {
-        await context.waitForEvent("page");
-      }
+      await context.waitForEvent("page");
 
       let contextPages = context.pages();
+      expect(contextPages.length).toBe(2);
 
       const welcomePage = contextPages[1];
       if (welcomePage) {
@@ -86,7 +71,10 @@ test.describe("Extension autofills forms when triggered", () => {
 
         await testPage.screenshot({
           fullPage: true,
-          path: path.join(screenshotsOutput, `environment_configured.png`),
+          path: path.join(
+            screenshotsOutput,
+            `environment_configured-notification_bar_tests.png`
+          ),
         });
 
         const serverConfigContent = await testPage.locator("#baseUrlHelp");
@@ -129,10 +117,10 @@ test.describe("Extension autofills forms when triggered", () => {
 
     let pagesToTest =
       targetTestPages === "static"
-        ? autofillTestPages.filter(({ url }) => url.startsWith(testSiteHost))
+        ? notificationPages.filter(({ url }) => url.startsWith(testSiteHost))
         : targetTestPages === "public"
-        ? autofillTestPages.filter(({ url }) => !url.startsWith(testSiteHost))
-        : autofillTestPages;
+        ? notificationPages.filter(({ url }) => !url.startsWith(testSiteHost))
+        : notificationPages;
 
     if (debugIsActive) {
       const onlyTestPages = pagesToTest.filter(({ onlyTest }) => onlyTest);
@@ -158,44 +146,34 @@ test.describe("Extension autofills forms when triggered", () => {
       const { url, inputs } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
-      await test.step(`Autofill the form at ${url}`, async () => {
+      await test.step(`Fill and submit the form at ${url}`, async () => {
         await testPage.goto(url, defaultGotoOptions);
 
+        // @TODO workaround for flaky background loading
+        await backgroundPage.reload();
+
         const inputKeys = Object.keys(inputs);
-        const firstInput = inputs[inputKeys[0]];
-        const firstInputPreFill = firstInput.preFillActions;
-        if (firstInputPreFill) {
-          try {
-            await firstInputPreFill(testPage);
-          } catch (error) {
-            console.log("There was a prefill error:", error);
-
-            if (debugIsActive) {
-              await testPage.pause();
-            }
-          }
-        }
-
-        const firstInputSelector = firstInput.selector;
-        const firstInputElement =
-          typeof firstInputSelector === "string"
-            ? await testPage.locator(firstInputSelector).first()
-            : await firstInputSelector(testPage);
-        await firstInputElement.waitFor(defaultWaitForOptions);
-
-        await doAutofill();
 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
+
+          if (currentInput?.preFillActions) {
+            try {
+              await currentInput.preFillActions(testPage);
+            } catch (error) {
+              console.log("There was a prefill error:", error);
+            }
+          }
+
           const currentInputSelector = currentInput.selector;
           const currentInputElement =
             typeof currentInputSelector === "string"
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
 
-          const expectedValue = currentInput.shouldNotFill
-            ? ""
-            : currentInput.value;
+          const expectedValue = currentInput.value;
+
+          currentInputElement.fill(expectedValue);
 
           // Do not soft expect on local test pages; we want to stop the tests before hitting live pages
           if (isLocalPage) {
@@ -208,7 +186,7 @@ test.describe("Extension autofills forms when triggered", () => {
             fullPage: true,
             path: path.join(
               screenshotsOutput,
-              `${url}-${inputKey}-autofill.png`
+              `${url}-${inputKey}-notification.png`
             ),
           });
 
@@ -222,13 +200,9 @@ test.describe("Extension autofills forms when triggered", () => {
             const nextInputPreFill = nextStepInput.preFillActions;
             if (nextInputPreFill) {
               try {
-                nextInputPreFill(testPage);
+                await nextInputPreFill(testPage);
               } catch (error) {
                 console.log("There was a prefill error:", error);
-
-                if (debugIsActive) {
-                  await testPage.pause();
-                }
               }
             }
 
@@ -238,12 +212,30 @@ test.describe("Extension autofills forms when triggered", () => {
                 ? await testPage.locator(nextInputSelector).first()
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
-
-            await doAutofill();
           }
 
-          if (debugIsActive) {
-            await testPage.pause();
+          if (inputKey === inputKeys.slice(-1)[0]) {
+            if (debugIsActive) {
+              await testPage.pause();
+            }
+
+            // Submit
+            await testPage.waitForTimeout(600);
+            await currentInputElement.press("Enter");
+
+            const notificationBar = await testPage
+              .frameLocator("#bit-notification-bar-iframe")
+              .getByText("Should Bitwarden remember")
+              .first();
+            await notificationBar.waitFor(defaultWaitForOptions);
+
+            expect(notificationBar).toBeVisible();
+
+            // Close the notification bar for the next triggering case
+            await testPage
+              .frameLocator("#bit-notification-bar-iframe")
+              .getByRole("button", { name: "Close" })
+              .click();
           }
         }
       });

@@ -25,10 +25,10 @@ export const test = base.extend<{
         `--load-extension=${pathToExtension}`,
         "--disable-dev-shm-usage",
         "--disable-blink-features=AutomationControlled", // navigator.webdriver = false
+        "--enable-automation=false", // This flag disables the password manager
       ],
       ignoreDefaultArgs: [
         "--disable-component-extensions-with-background-pages",
-        "--enable-automation",
       ],
       // Help mitigate automation detection with a known-good userAgent
       userAgent:
