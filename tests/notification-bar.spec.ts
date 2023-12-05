@@ -40,6 +40,7 @@ test.describe("Extension autofills forms when triggered", () => {
     const [backgroundPage] = context.backgroundPages();
 
     await test.step("Close the extension welcome page when it pops up", async () => {
+      // Wait for the extension to open the welcome page before continuing
       await context.waitForEvent("page");
 
       let contextPages = context.pages();

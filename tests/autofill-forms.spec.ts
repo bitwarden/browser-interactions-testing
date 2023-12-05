@@ -3,6 +3,7 @@ import path from "path";
 import { testSiteHost, autofillTestPages } from "./constants";
 import { test, expect } from "./fixtures";
 import {
+  CipherType,
   FillProperties,
   LocatorWaitForOptions,
   PageGoToOptions,
@@ -53,12 +54,11 @@ test.describe("Extension autofills forms when triggered", () => {
     }
 
     await test.step("Close the extension welcome page when it pops up", async () => {
-      // If not in debug, wait for the extension to open the welcome page before continuing
-      if (!debugIsActive) {
-        await context.waitForEvent("page");
-      }
+      // Wait for the extension to open the welcome page before continuing
+      await context.waitForEvent("page");
 
-      let contextPages = context.pages();
+      let contextPages = await context.pages();
+      expect(contextPages.length).toBe(2);
 
       const welcomePage = contextPages[1];
       if (welcomePage) {
@@ -127,13 +127,18 @@ test.describe("Extension autofills forms when triggered", () => {
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
-    let pagesToTest =
-      targetTestPages === "static"
-        ? autofillTestPages.filter(({ url }) => url.startsWith(testSiteHost))
-        : targetTestPages === "public"
-          ? autofillTestPages.filter(({ url }) => !url.startsWith(testSiteHost))
-          : autofillTestPages;
+    let pagesToTest = autofillTestPages.filter(
+      ({ cipherType, url }) =>
+        // @TODO additional work needed for non-login ciphers
+        cipherType === CipherType.Login &&
+        (targetTestPages === "static"
+          ? url.startsWith(testSiteHost)
+          : targetTestPages === "public"
+            ? !url.startsWith(testSiteHost)
+            : true)
+    );
 
+    // When debug is active, only run tests against `onlyTest` pages if any are specified
     if (debugIsActive) {
       const onlyTestPages = pagesToTest.filter(({ onlyTest }) => onlyTest);
 

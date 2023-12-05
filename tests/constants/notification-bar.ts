@@ -1,5 +1,4 @@
-import { CipherType } from "../../clients/libs/common/src/vault/enums/cipher-type";
-import { UriMatchType } from "../../abstractions";
+import { CipherType, UriMatchType } from "../../abstractions";
 import { TestPage } from "../../abstractions/test-pages";
 import { testSiteHost } from "./server";
 
