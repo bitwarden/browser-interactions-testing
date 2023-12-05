@@ -50,6 +50,13 @@ type TestPage = {
   };
 };
 
+type NotificationTestPage = TestPage & {
+  actions?: {
+    submit?: (page: Page) => void;
+  };
+  shouldNotTriggerNotification?: boolean;
+};
+
 type LocatorWaitForOptions = {
   state?: "visible" | "attached" | "detached" | "hidden";
   timeout?: number;
@@ -61,4 +68,10 @@ type PageGoToOptions = {
   referer?: string;
 };
 
-export { FillProperties, TestPage, LocatorWaitForOptions, PageGoToOptions };
+export {
+  FillProperties,
+  TestPage,
+  NotificationTestPage,
+  LocatorWaitForOptions,
+  PageGoToOptions,
+};

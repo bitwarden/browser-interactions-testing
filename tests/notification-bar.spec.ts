@@ -144,7 +144,7 @@ test.describe("Extension autofills forms when triggered", () => {
     testPage.setDefaultNavigationTimeout(60000);
 
     for (const page of pagesToTest) {
-      const { url, inputs } = page;
+      const { url, inputs, actions, shouldNotTriggerNotification } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
       await test.step(`Fill and submit the form at ${url}`, async () => {
@@ -222,21 +222,32 @@ test.describe("Extension autofills forms when triggered", () => {
 
             // Submit
             await testPage.waitForTimeout(600);
-            await currentInputElement.press("Enter");
+            if (actions?.submit) {
+              await actions.submit(testPage);
+            } else {
+              currentInputElement.press("Enter");
+            }
 
-            const notificationBar = await testPage
-              .frameLocator("#bit-notification-bar-iframe")
-              .getByText("Should Bitwarden remember")
-              .first();
-            await notificationBar.waitFor(defaultWaitForOptions);
+            // Skip check if notification bar is not intended to trigger
+            // @TODO explicitly check that notification bar is absent in non-triggering cases
+            if (!shouldNotTriggerNotification) {
+              const notificationBar = await testPage
+                .frameLocator("#bit-notification-bar-iframe")
+                .getByText("Should Bitwarden remember")
+                .first();
 
-            expect(notificationBar).toBeVisible();
+              await notificationBar.waitFor({
+                ...defaultWaitForOptions,
+                timeout: 2000,
+              });
+              expect(notificationBar).toBeVisible();
 
-            // Close the notification bar for the next triggering case
-            await testPage
-              .frameLocator("#bit-notification-bar-iframe")
-              .getByRole("button", { name: "Close" })
-              .click();
+              // Close the notification bar for the next triggering case
+              await testPage
+                .frameLocator("#bit-notification-bar-iframe")
+                .getByRole("button", { name: "Close" })
+                .click();
+            }
           }
         }
       });

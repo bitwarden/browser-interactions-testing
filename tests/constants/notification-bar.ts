@@ -1,11 +1,11 @@
 import { CipherType, UriMatchType } from "../../abstractions";
-import { TestPage } from "../../abstractions/test-pages";
+import { NotificationTestPage } from "../../abstractions/test-pages";
 import { testSiteHost } from "./server";
 
 const testUserName = "bwplaywright";
 const testEmail = "bwplaywright@example.com";
 
-export const testPages: TestPage[] = [
+export const testPages: NotificationTestPage[] = [
   /**
    * Local webpages
    */
@@ -52,10 +52,38 @@ export const testPages: TestPage[] = [
       },
     },
   },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/input-constraints-login`,
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: { selector: "#email", value: testEmail },
+      password: {
+        selector: "#password",
+        value: "123456",
+      },
+    },
+  },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/search/simple-search`,
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: {
+        selector: "#search",
+        value: testUserName,
+      },
+      password: {
+        selector: "#search",
+        value: "fakeSearchPassword",
+      },
+    },
+    shouldNotTriggerNotification: true,
+  },
 ];
 
 // Known failure cases; expected to fail
-export const knownFailureCases: TestPage[] = [
+export const knownFailureCases: NotificationTestPage[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/multi-step-login`,
@@ -72,6 +100,38 @@ export const knownFailureCases: TestPage[] = [
         value: testEmail,
       },
       password: { selector: "#password", value: "fakeMultiStepPassword" },
+    },
+  },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/bare-inputs-login`,
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: { selector: "#username", value: testUserName },
+      password: { selector: "#password", value: "fakeBareInputsPassword" },
+    },
+    actions: {
+      submit: async (page) =>
+        await page.getByRole("button", { name: "Login", exact: true }).click(),
+    },
+  },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/shadow-root-inputs`,
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: {
+        selector: async (page) => await page.getByLabel("Username"),
+        value: testUserName,
+      },
+      password: {
+        selector: async (page) => await page.getByLabel("Password"),
+        value: "fakeShadowRootInputsPassword",
+      },
+    },
+    actions: {
+      submit: async (page) =>
+        await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
   },
 ];
