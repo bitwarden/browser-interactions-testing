@@ -31,10 +31,8 @@
   "lint-staged": {
     "*": "prettier --cache --write --ignore-unknown"
   },
-  "prettier": {
-    "trailingComma": "es5"
-  },
   "scripts": {
+    "prettier:fix": "prettier --write .",
     "prepare": "husky install && npm run setup:extension",
     "pretest": "rimraf tests-out screenshots test-summary test-results && tsc --incremental -p tests/tsconfig.json",
     "build:extension": "cd clients/apps/browser && rimraf build && npm run build",

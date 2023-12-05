@@ -1,17 +1,8 @@
-import { CipherType, UriMatchType, TestPage } from "../../abstractions";
+import { AutofillTestPage, CipherType, UriMatchType } from "../../abstractions";
 import { testSiteHost } from "./server";
+import { testUserName, testEmail, testUserEmail } from "./settings";
 
-const testUserName = "bwplaywright";
-const testEmail = "bwplaywright@example.com";
-
-/*
-Some websites "prequalify" an entered email to see if they have an associated account.
-If they don't, they may disallow password entry or force account create workflow, so it is
-important that `testUserEmail` is a real address with organizational control.
-*/
-const testUserEmail = "bwplaywright@gmail.com";
-
-export const testPages: TestPage[] = [
+export const testPages: AutofillTestPage[] = [
   /**
    * Local webpages
    */
@@ -233,7 +224,7 @@ export const testPages: TestPage[] = [
           // Open the login options modal
           await page
             .locator(
-              "header nav .znav-links ul[data-zg-section='reg-login'] a[href^='/user/acct/login/?cid=pf']"
+              "header nav .znav-links ul[data-zg-section='reg-login'] a[href^='/user/acct/login/?cid=pf']",
             )
             .click();
         },
@@ -1424,7 +1415,7 @@ export const testPages: TestPage[] = [
         preFillActions: async (page) => {
           // Click the log in button to trigger the login modal
           const loginButton = await page.locator(
-            "a.user-profile_header-login[href='/myaccount']"
+            "a.user-profile_header-login[href='/myaccount']",
           );
           await loginButton.click();
         },
@@ -1585,7 +1576,7 @@ export const testPages: TestPage[] = [
 ];
 
 // Known failure cases; expected to fail
-export const knownFailureCases: TestPage[] = [
+export const knownFailureCases: AutofillTestPage[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/many-inputs-login`,
@@ -1608,7 +1599,7 @@ export const knownFailureCases: TestPage[] = [
             .click();
           // Select login option from registration form
           const loadedLoginModal = await page.locator(
-            'form div.login a[href^="/account/login"]'
+            'form div.login a[href^="/account/login"]',
           );
           loadedLoginModal.click();
         },
@@ -1753,7 +1744,7 @@ export const knownFailureCases: TestPage[] = [
           await page.locator("#global-user-trigger").click();
           await page
             .locator(
-              '#global-viewport > .global-user a[tref="/members/v3_1/login"]'
+              '#global-viewport > .global-user a[tref="/members/v3_1/login"]',
             )
             .click();
         },

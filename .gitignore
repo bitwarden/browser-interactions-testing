@@ -29,8 +29,11 @@ ssl.key
 # Node
 node_modules
 npm-debug.log
-clients
 server
+
+# external project dependencies
+clients
+test-site
 
 # Playwright
 tests-out

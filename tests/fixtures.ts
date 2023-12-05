@@ -5,7 +5,7 @@ import { test as base, chromium, type BrowserContext } from "@playwright/test";
 const pathToExtension = path.join(
   __dirname,
   "../../",
-  process.env.CI ? "build" : process.env.EXTENSION_BUILD_PATH
+  process.env.CI ? "build" : process.env.EXTENSION_BUILD_PATH,
 );
 
 export const test = base.extend<{
@@ -40,12 +40,18 @@ export const test = base.extend<{
       },
       recordVideo: { dir: "tests-out/videos" },
     });
+
+    await Promise.all([
+      context.setDefaultTimeout(20000),
+      context.setDefaultNavigationTimeout(120000),
+    ]);
+
     await use(context);
   },
   extensionId: async ({ context }, use) => {
     let background;
     const manifest = JSON.parse(
-      fs.readFileSync(path.join(pathToExtension, "manifest.json"), "utf8")
+      fs.readFileSync(path.join(pathToExtension, "manifest.json"), "utf8"),
     );
 
     if (manifest?.manifest_version === 3) {

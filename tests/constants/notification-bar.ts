@@ -1,9 +1,10 @@
-import { CipherType, UriMatchType } from "../../abstractions";
-import { NotificationTestPage } from "../../abstractions/test-pages";
+import {
+  CipherType,
+  NotificationTestPage,
+  UriMatchType,
+} from "../../abstractions";
 import { testSiteHost } from "./server";
-
-const testUserName = "bwplaywright";
-const testEmail = "bwplaywright@example.com";
+import { testUserName, testEmail } from "./settings";
 
 export const testPages: NotificationTestPage[] = [
   /**

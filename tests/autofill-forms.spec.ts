@@ -1,41 +1,29 @@
 import { Page } from "@playwright/test";
 import path from "path";
-import { testSiteHost, autofillTestPages } from "./constants";
-import { test, expect } from "./fixtures";
 import {
-  CipherType,
-  FillProperties,
-  LocatorWaitForOptions,
-  PageGoToOptions,
-} from "../abstractions";
+  autofillTestPages,
+  debugIsActive,
+  defaultGotoOptions,
+  defaultWaitForOptions,
+  startFromTestUrl,
+  targetTestPages,
+  testSiteHost,
+  vaultEmail,
+  vaultHostURL,
+  vaultPassword,
+} from "./constants";
+import { test, expect } from "./fixtures";
+import { CipherType, FillProperties } from "../abstractions";
 
 export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 let testPage: Page;
-
-const vaultEmail = process.env.VAULT_EMAIL || "";
-const vaultPassword = process.env.VAULT_PASSWORD || "";
-const vaultHostURL = process.env.VAULT_HOST_URL;
-const startFromTestUrl = process.env.START_FROM_TEST_URL || null;
-const targetTestPages = process.env.TARGET;
-const debugIsActive = ["1", "console"].includes(process.env.PWDEBUG);
-const defaultGotoOptions: PageGoToOptions = {
-  waitUntil: "domcontentloaded",
-  timeout: 60000,
-};
-const defaultWaitForOptions: LocatorWaitForOptions = {
-  state: "visible",
-  timeout: 15000,
-};
 
 test.describe("Extension autofills forms when triggered", () => {
   test("Log in to the vault, open pages, and autofill forms", async ({
     context,
     extensionId,
   }) => {
-    context.setDefaultTimeout(20000);
-    context.setDefaultNavigationTimeout(120000);
-
     const [backgroundPage] = context.backgroundPages();
 
     async function doAutofill() {
@@ -48,8 +36,8 @@ test.describe("Extension autofills forms when triggered", () => {
               command: "collectPageDetails",
               tab: tabs[0],
               sender: "autofill_cmd",
-            })
-        )
+            }),
+        ),
       );
     }
 
@@ -69,7 +57,7 @@ test.describe("Extension autofills forms when triggered", () => {
 
       if (debugIsActive) {
         console.log(
-          (await testPage.evaluate(() => navigator.userAgent)) + "\n"
+          (await testPage.evaluate(() => navigator.userAgent)) + "\n",
         );
       }
     });
@@ -108,7 +96,7 @@ test.describe("Extension autofills forms when triggered", () => {
       await emailSubmitInput.click();
 
       const masterPasswordInput = await testPage.locator(
-        "input#masterPassword"
+        "input#masterPassword",
       );
       await masterPasswordInput.waitFor(defaultWaitForOptions);
       await masterPasswordInput.fill(vaultPassword);
@@ -135,7 +123,7 @@ test.describe("Extension autofills forms when triggered", () => {
           ? url.startsWith(testSiteHost)
           : targetTestPages === "public"
             ? !url.startsWith(testSiteHost)
-            : true)
+            : true),
     );
 
     // When debug is active, only run tests against `onlyTest` pages if any are specified
@@ -149,7 +137,7 @@ test.describe("Extension autofills forms when triggered", () => {
 
     if (startFromTestUrl) {
       const startTestIndex = pagesToTest.findIndex(
-        ({ url }) => url === startFromTestUrl
+        ({ url }) => url === startFromTestUrl,
       );
 
       pagesToTest =
@@ -213,7 +201,7 @@ test.describe("Extension autofills forms when triggered", () => {
             fullPage: true,
             path: path.join(
               screenshotsOutput,
-              `${url}-${inputKey}-autofill.png`
+              `${url}-${inputKey}-autofill.png`,
             ),
           });
 
@@ -227,7 +215,7 @@ test.describe("Extension autofills forms when triggered", () => {
             const nextInputPreFill = nextStepInput.preFillActions;
             if (nextInputPreFill) {
               try {
-                nextInputPreFill(testPage);
+                await nextInputPreFill(testPage);
               } catch (error) {
                 console.log("There was a prefill error:", error);
 
