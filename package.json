@@ -57,6 +57,7 @@
     "test:static:headless": "npm run pretest && TARGET=static HEADLESS=true playwright test",
     "test:static:autofill": "npm run pretest && TARGET=static playwright test tests/autofill-forms.spec.ts",
     "test:static:notification": "npm run pretest && TARGET=static playwright test tests/notification-bar.spec.ts",
+    "test:static:overlay": "npm run pretest && TARGET=static playwright test tests/input-overlay.spec.ts",
     "test:webserve": "cd clients/apps/web && npm run build:bit:watch",
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch"
   }
