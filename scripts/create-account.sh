@@ -7,19 +7,21 @@ set -o allexport
 . "$ROOT_DIR/.env"
 set +o allexport
 
+export VAULT_HOST=$VAULT_HOST_URL:$VAULT_HOST_PORT
+
 CURL_COMMAND() {
-  curl -s "$VAULT_HOST_URL/identity/accounts/register" \
+  curl -s "$VAULT_HOST/identity/accounts/register" \
     -sX POST \
     -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/109.0' \
     -H 'Accept: application/json' \
     -H 'Accept-Language: en-US,en;q=0.5' \
     -H 'Accept-Encoding: gzip, deflate, br' \
-    -H "Referer: $VAULT_HOST_URL/" \
+    -H "Referer: $VAULT_HOST/" \
     -H 'content-type: application/json; charset=utf-8' \
     -H 'device-type: 10' \
     -H 'Bitwarden-Client-Name: web' \
     -H 'Bitwarden-Client-Version: 2023.1.1' \
-    -H "Origin: $VAULT_HOST_URL" \
+    -H "Origin: $VAULT_HOST" \
     -H 'DNT: 1' \
     -H 'Connection: keep-alive' \
     -H 'Sec-Fetch-Dest: empty' \
@@ -49,8 +51,8 @@ CURL_COMMAND() {
 
 # wait for readiness
 until [[ "$(CURL_COMMAND | jq .validationErrors 2>/dev/null)" == *"already taken"* ]]; do
-  echo "Retrying account creation..."
-  sleep 1
+  echo "Retrying account creation at $VAULT_HOST..."
+  sleep 3
 done
 
-echo "Account created successfully!"
+echo "Account created successfully at $VAULT_HOST!"

@@ -9,8 +9,8 @@ services:
     image: bitwarden/self-host:beta # https://bitwarden.com/help/install-and-deploy-unified-beta/
     restart: always
     ports:
-      - "80:8080"
-      - "443:8443"
+      - ${VAULT_HOST_PORT}:8443
+      - ${VAULT_HOST_INSECURE_PORT}:8080
     volumes:
       - ./${BW_SSL_CERT}:/etc/bitwarden/${BW_SSL_CERT}
       - ./${BW_SSL_KEY}:/etc/bitwarden/${BW_SSL_KEY}
@@ -27,7 +27,7 @@ services:
     volumes:
       - data:/var/lib/mysql
     ports:
-      - "${BW_DB_PORT}:${BW_DB_PORT}"
+      - ${BW_DB_PORT}:${BW_DB_PORT}
 
 volumes:
   bitwarden:

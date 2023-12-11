@@ -18,9 +18,11 @@ BW_COMMAND() {
   bw "$@"
 }
 
+export VAULT_HOST=$VAULT_HOST_URL:$VAULT_HOST_PORT
+
 if [[ -z "${VAULT_HOST_URL:-}" ]]; then
     echo "VAULT_HOST_URL is not set, using local dev values"
-    export VAULT_HOST_URL='--api http://localhost:4000 --identity http://localhost:33656 --web-vault https://localhost:8080 --events http://localhost:46273'
+    export VAULT_HOST='--api http://localhost:4000 --identity http://localhost:33656 --web-vault https://localhost:8080 --events http://localhost:46273'
 fi
 
 # Ensure data file is created
@@ -30,7 +32,7 @@ BW_COMMAND status
 # Login to the vault
 # shellcheck disable=SC2086 # we want to pass the server host url as a single argument
 BW_COMMAND logout --quiet # In case there's an active outdated session (e.g. docker container was rebuilt)
-BW_COMMAND config server $VAULT_HOST_URL || true # no error if already configured
+BW_COMMAND config server $VAULT_HOST || true # no error if already configured
 BW_COMMAND login "$VAULT_EMAIL" "$VAULT_PASSWORD" --nointeraction || true # no error if already logged in
 BW_COMMAND sync || true # no error if already synced
 
