@@ -5,8 +5,6 @@ import {
   defaultGotoOptions,
   defaultWaitForOptions,
   notificationPages,
-  startFromTestUrl,
-  targetTestPages,
   testSiteHost,
   vaultEmail,
   vaultHostURL,
@@ -14,6 +12,7 @@ import {
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
+import { getNotificationPagesToTest } from "./utils";
 
 export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
@@ -103,29 +102,7 @@ test.describe("Extension autofills forms when triggered", () => {
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
-    let pagesToTest =
-      targetTestPages === "static"
-        ? notificationPages.filter(({ url }) => url.startsWith(testSiteHost))
-        : targetTestPages === "public"
-          ? notificationPages.filter(({ url }) => !url.startsWith(testSiteHost))
-          : notificationPages;
-
-    if (debugIsActive) {
-      const onlyTestPages = pagesToTest.filter(({ onlyTest }) => onlyTest);
-
-      if (onlyTestPages.length) {
-        pagesToTest = onlyTestPages;
-      }
-    }
-
-    if (startFromTestUrl) {
-      const startTestIndex = pagesToTest.findIndex(
-        ({ url }) => url === startFromTestUrl,
-      );
-
-      pagesToTest =
-        startTestIndex > 0 ? pagesToTest.slice(startTestIndex) : pagesToTest;
-    }
+    const pagesToTest = getNotificationPagesToTest(notificationPages);
 
     test.setTimeout(480000);
     testPage.setDefaultNavigationTimeout(60000);
