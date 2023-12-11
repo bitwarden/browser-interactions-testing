@@ -1,12 +1,12 @@
 import {
   CipherType,
-  NotificationTestPage,
+  NotificationPageTest,
   UriMatchType,
 } from "../../abstractions";
 import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 
-export const testPages: NotificationTestPage[] = [
+export const testPages: NotificationPageTest[] = [
   /**
    * Local webpages
    */
@@ -84,7 +84,7 @@ export const testPages: NotificationTestPage[] = [
 ];
 
 // Known failure cases; expected to fail
-export const knownFailureCases: NotificationTestPage[] = [
+export const knownFailureCases: NotificationPageTest[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/multi-step-login`,

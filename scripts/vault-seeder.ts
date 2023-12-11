@@ -1,7 +1,7 @@
 import fetch from "cross-fetch";
 import { configDotenv } from "dotenv";
 import {
-  AutofillTestPage,
+  AutofillPageTest,
   CardItemTemplate,
   CipherType,
   FieldTemplate,
@@ -85,7 +85,7 @@ class VaultSeeder {
   }
 
   private async createVaultItem(
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
     itemName: string,
     folderId: string,
   ): Promise<void> {
@@ -122,7 +122,7 @@ class VaultSeeder {
 
   private async updateVaultItem(
     existingItem: VaultItem,
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): Promise<void> {
     if (!this.isVaultItemModified(existingItem, testPage)) {
       console.log(`Skipping ${testPage.url}, no changes detected...`);
@@ -173,7 +173,7 @@ class VaultSeeder {
 
   private isVaultItemModified(
     vaultItem: ItemTemplate,
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): boolean {
     let comparedValues: [FillProperties | undefined, any][] = [];
     const isValueModified = (
@@ -239,7 +239,7 @@ class VaultSeeder {
   }
 
   private generateCustomFieldsLoginItemData(
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): FieldTemplate[] {
     if (testPage.cipherType !== CipherType.Login) {
       return [];
@@ -251,7 +251,7 @@ class VaultSeeder {
 
     return inputKeys.map((keyName: string) => {
       const input =
-        testPage.inputs[keyName as keyof AutofillTestPage["inputs"]];
+        testPage.inputs[keyName as keyof AutofillPageTest["inputs"]];
 
       return {
         name: (input?.selector as string).replace(/#/g, "") || "",
@@ -262,7 +262,7 @@ class VaultSeeder {
   }
 
   private generateLoginItemData(
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): LoginItemTemplate | null {
     if (testPage.cipherType !== CipherType.Login) {
       return null;
@@ -291,7 +291,7 @@ class VaultSeeder {
   }
 
   private generateCardItemData(
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): CardItemTemplate | null {
     if (testPage.cipherType !== CipherType.Card) {
       return null;
@@ -310,7 +310,7 @@ class VaultSeeder {
   }
 
   private generateIdentityItemData(
-    testPage: AutofillTestPage,
+    testPage: AutofillPageTest,
   ): IdentityItemTemplate | null {
     if (testPage.cipherType !== CipherType.Identity) {
       return null;

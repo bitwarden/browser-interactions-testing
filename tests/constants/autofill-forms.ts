@@ -1,8 +1,8 @@
-import { AutofillTestPage, CipherType, UriMatchType } from "../../abstractions";
+import { AutofillPageTest, CipherType, UriMatchType } from "../../abstractions";
 import { testSiteHost } from "./server";
 import { testUserName, testEmail, testUserEmail } from "./settings";
 
-export const testPages: AutofillTestPage[] = [
+export const testPages: AutofillPageTest[] = [
   /**
    * Local webpages
    */
@@ -1576,7 +1576,7 @@ export const testPages: AutofillTestPage[] = [
 ];
 
 // Known failure cases; expected to fail
-export const knownFailureCases: AutofillTestPage[] = [
+export const knownFailureCases: AutofillPageTest[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/many-inputs-login`,

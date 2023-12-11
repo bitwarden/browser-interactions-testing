@@ -1,6 +1,6 @@
 import {
-  AutofillTestPage,
-  NotificationTestPage,
+  AutofillPageTest,
+  NotificationPageTest,
   CipherType,
 } from "../abstractions";
 import {
@@ -11,13 +11,13 @@ import {
 } from "./constants";
 
 export function getNotificationPagesToTest(
-  notificationPageTests: NotificationTestPage[],
+  notificationPageTests: NotificationPageTest[],
 ) {
-  return getPagesToTest(notificationPageTests) as NotificationTestPage[];
+  return getPagesToTest(notificationPageTests) as NotificationPageTest[];
 }
 
 export function getPagesToTest(
-  pageTests: AutofillTestPage[] | NotificationTestPage[],
+  pageTests: AutofillPageTest[] | NotificationPageTest[],
 ) {
   const filteredPageTests = pageTests.filter(({ cipherType, url }) => {
     // @TODO additional work needed for non-login ciphers

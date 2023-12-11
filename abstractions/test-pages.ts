@@ -9,7 +9,7 @@ type FillProperties = {
   value: string;
 };
 
-type TestPage = {
+type PageTest = {
   cipherType: CipherType;
   url: string;
   uriMatchType?: UriMatchType;
@@ -49,11 +49,11 @@ type TestPage = {
   };
 };
 
-type AutofillTestPage = TestPage & {
+type AutofillPageTest = PageTest & {
   additionalLoginUrls?: string[];
 };
 
-type NotificationTestPage = TestPage & {
+type NotificationPageTest = PageTest & {
   actions?: {
     submit?: (page: Page) => void;
   };
@@ -73,9 +73,9 @@ type PageGoToOptions = {
 
 export {
   FillProperties,
-  AutofillTestPage,
-  TestPage,
-  NotificationTestPage,
+  AutofillPageTest,
+  PageTest,
+  NotificationPageTest,
   LocatorWaitForOptions,
   PageGoToOptions,
 };

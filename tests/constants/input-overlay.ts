@@ -1,8 +1,8 @@
-import { AutofillTestPage, CipherType, UriMatchType } from "../../abstractions";
+import { AutofillPageTest, CipherType, UriMatchType } from "../../abstractions";
 import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 
-export const testPages: AutofillTestPage[] = [
+export const testPages: AutofillPageTest[] = [
   /**
    * Local webpages
    */
