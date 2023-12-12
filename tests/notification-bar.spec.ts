@@ -18,7 +18,7 @@ export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 let testPage: Page;
 
-test.describe("Extension autofills forms when triggered", () => {
+test.describe("Extension triggers a notification bar when a page form is submitted", () => {
   test("Log in to the vault, open pages, and autofill forms", async ({
     context,
     extensionId,
