@@ -32,4 +32,4 @@ Some websites "prequalify" an entered email to see if they have an associated ac
 If they don't, they may disallow password entry or force account create workflow, so it is
 important that `testUserEmail` is a real address with organizational control.
 */
-export const testUserEmail = "bwplaywright@gmail.com";
+export const testUserEmail = process.env.PUBLIC_TEST_EMAIL || "";
