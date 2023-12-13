@@ -12,7 +12,7 @@ import {
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
-import { getPagesToTest } from "./utils";
+import { getPagesToTest, doAutofill } from "./utils";
 
 export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
@@ -24,21 +24,6 @@ test.describe("Extension autofills forms when triggered", () => {
     extensionId,
   }) => {
     const [backgroundPage] = context.backgroundPages();
-
-    async function doAutofill() {
-      await backgroundPage.evaluate(() =>
-        chrome.tabs.query(
-          { active: true },
-          (tabs) =>
-            tabs[0] &&
-            chrome.tabs.sendMessage(tabs[0]?.id || 0, {
-              command: "collectPageDetails",
-              tab: tabs[0],
-              sender: "autofill_cmd",
-            }),
-        ),
-      );
-    }
 
     await test.step("Close the extension welcome page when it pops up", async () => {
       // Wait for the extension to open the welcome page before continuing
@@ -148,7 +133,7 @@ test.describe("Extension autofills forms when triggered", () => {
             : await firstInputSelector(testPage);
         await firstInputElement.waitFor(defaultWaitForOptions);
 
-        await doAutofill();
+        await doAutofill(backgroundPage);
 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
@@ -204,7 +189,7 @@ test.describe("Extension autofills forms when triggered", () => {
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
 
-            await doAutofill();
+            await doAutofill(backgroundPage);
           }
 
           if (debugIsActive) {

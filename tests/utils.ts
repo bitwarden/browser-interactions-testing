@@ -55,3 +55,18 @@ export function getPagesToTest(
 
   return filteredPageTests;
 }
+
+export async function doAutofill(backgroundPage) {
+  await backgroundPage.evaluate(() =>
+    chrome.tabs.query(
+      { active: true },
+      (tabs) =>
+        tabs[0] &&
+        chrome.tabs.sendMessage(tabs[0]?.id || 0, {
+          command: "collectPageDetails",
+          tab: tabs[0],
+          sender: "autofill_cmd",
+        }),
+    ),
+  );
+}
