@@ -60,7 +60,7 @@ The aim of this project is to track and anticipate the compatibility of the Bitw
 - Do a clean-install with `npm ci` (this will also fetch and set up the Bitwarden clients repo)
   - If prompted, run `npx playwright install` as well
 - Clone the clients repo and install its dependencies with `npm run setup:extension`
-  - (Optional) Checkout the local `clients` to the branch with the version of the extension you want to test with (`master` by default)
+  - (Optional) Checkout the local `clients` to the branch with the version of the extension you want to test with (`main` by default)
 - Build the extension to test against with `npm run build:extension` or build the production version of the extension with `npm run build:extension:prod`.
 - For the targeted environment, configure the vault with the credentials you put in `.env`
 - (Only once) Generate SSL certificates with `npm run setup:ssl`. These will be used by the web client, Bitwarden CLI, and Docker Compose
