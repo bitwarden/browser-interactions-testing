@@ -1,8 +1,8 @@
-# Bitwarden Autofill Testing
+# Bitwarden Browser Interactions Testing
 
 This project leverages [Playwright](https://playwright.dev/) to run automated form-fill tests against real builds of the Bitwarden browser extension.
 
-- [Bitwarden Autofill Testing](#bitwarden-autofill-testing)
+- [Bitwarden Browser Interactions Testing](#bitwarden-browser-interactions-testing)
   - [Goals and Intent](#goals-and-intent)
   - [Limitations](#limitations)
   - [Requirements](#requirements)
@@ -17,22 +17,23 @@ This project leverages [Playwright](https://playwright.dev/) to run automated fo
     - [Headless Mode](#headless-mode)
     - [Execute only selected page tests](#execute-only-selected-page-tests)
     - [Start tests from a specific point](#start-tests-from-a-specific-point)
+  - [CI / CD](#ci--cd)
 
 ## Goals and Intent
 
-The aim of this project is to track and anticipate the compatibility of the Bitwarden extension autofill feature in controlled, static test scenarios as well as popular live scenarios. To that end, this project should:
+The aim of this project is to track and anticipate the compatibility of the Bitwarden extension features in controlled, static test scenarios as well as popular live scenarios. To that end, this project should:
 
 - incur requests against live sites as little as possible (no signing in, traversing deeply in the site, etc.)
 - use the same login portals and experiences that users would
 - test the span of likely login experiences
 - enable regular reporting and early notification on site breakages and code regressions with the Bitwarden extension
-- as a secondary concern, enable testing of other extension experiences related to the autofill feature
+- enable testing of other extension experiences that interact with browser client content
 
 ## Limitations
 
 - Extension builds can only be tested with Chromium clients at present.
-- Some sites can be inconsistently flaky due to factors such as live experiments changing the received experience, external dependencies taking too long to load, ads/trackers, and general network instability.
-- Some site prequalify emails/usernames before allowing password entry and/or use captchas in multi-step login flows. In these cases, we're typically only testing that the username/email was filled out properly.
+- Some live tests can be inconsistently flaky due to factors such as live experiments changing the received experience, external dependencies taking too long to load, ads/trackers, and general network instability.
+- Some website prequalify emails/usernames before allowing password entry and/or use captchas in multi-step login flows. In these cases, we're typically only testing that the username/email was filled out properly.
 
 ## Requirements
 
@@ -135,6 +136,6 @@ Passing the environment variable `START_FROM_TEST_URL` with the url of the test 
 
 ## CI / CD
 
-In order to leverage the provided Github Actions testing workflows, you'll need to create an actions secret named `ENV_FILE` in your project repo settings at `https://github.com/<your fork owner>/test-autofill/settings/secrets/actions`. The value of that secret should be the contents of your `.env` in Base64 format.
+In order to leverage the provided Github Actions testing workflows, you'll need to create an actions secret named `ENV_FILE` in your project repo settings at `https://github.com/<your fork owner>/browser-interactions-testing/settings/secrets/actions`. The value of that secret should be the contents of your `.env` in Base64 format.
 
 Additionally, in order to use the provided test site, you will also need to add an actions secret named `DEPLOY_SSH_PRIVATE_KEY`. The value of this secret should be the private key of a [public/private key pair](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key). The public key should be registered as a read-only [deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys#deploy-keys), by the test site project owner or fork owner.

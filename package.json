@@ -1,16 +1,16 @@
 {
-  "name": "@bitwarden/test-autofill",
+  "name": "@bitwarden/browser-interactions-testing",
   "version": "0.0.0",
-  "description": "Bitwarden Autofill Testing",
+  "description": "Bitwarden Browser Interactions Testing",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bitwarden/test-autofill.git"
+    "url": "git+https://github.com/bitwarden/browser-interactions-testing.git"
   },
   "author": "Bitwarden Inc. <hello@bitwarden.com> (https://bitwarden.com)",
   "license": "SEE LICENSE IN LICENSE.txt",
   "bugs": {
-    "url": "https://github.com/bitwarden/test-autofill/issues"
+    "url": "https://github.com/bitwarden/browser-interactions-testing/issues"
   },
   "homepage": "https://bitwarden.com",
   "devDependencies": {
