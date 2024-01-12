@@ -1,6 +1,8 @@
 name: test-all
 run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
+  repository_dispatch:
+    types: [trigger-workflow]
   workflow_dispatch:
     inputs:
       CLIENTS_BRANCH:
@@ -13,6 +15,7 @@ on:
         default: '{"autofill-v2": true, "autofill-overlay": true}'
         description: 'JSON key-value pairs representing feature flag states. (e.g. {"autofill-v2": true, "autofill-overlay": false})'
         type: string
+
 jobs:
   build-and-test:
     runs-on: ubuntu-22.04
@@ -40,7 +43,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: success
-          branch: ${{ inputs.CLIENTS_BRANCH }}
+          branch: ${{ github.event.client_payload.branch || inputs.CLIENTS_BRANCH }}
           name: ^dist-chrome-(?!MV3-)\w{7}\.zip$
           name_is_regexp: true
           repo: bitwarden/clients
