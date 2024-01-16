@@ -16,6 +16,8 @@ import { getPagesToTest, formatUrlToFilename } from "./utils";
 
 export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
+const inlineMenuAppearanceDelay = 800;
+
 let testPage: Page;
 
 test.describe("Extension presents page input overlay with options for vault interaction", () => {
@@ -134,7 +136,8 @@ test.describe("Extension presents page input overlay with options for vault inte
         await firstInputElement.waitFor(defaultWaitForOptions);
 
         // Navigate overlay for autofill
-        await firstInputElement.focus();
+        await firstInputElement.click();
+        await testPage.waitForTimeout(inlineMenuAppearanceDelay);
         await testPage.keyboard.press("ArrowDown");
         await testPage.keyboard.press("Space");
 
@@ -193,7 +196,8 @@ test.describe("Extension presents page input overlay with options for vault inte
             await nextInputElement.waitFor(defaultWaitForOptions);
 
             // Navigate overlay for autofill
-            await nextInputElement.focus();
+            await nextInputElement.click();
+            await testPage.waitForTimeout(inlineMenuAppearanceDelay);
             await testPage.keyboard.press("ArrowDown");
             await testPage.keyboard.press("Space");
           }
