@@ -4,7 +4,7 @@ import {
   debugIsActive,
   defaultGotoOptions,
   defaultWaitForOptions,
-  overlayPages,
+  inlineMenuPages,
   testSiteHost,
   vaultEmail,
   vaultHostURL,
@@ -20,7 +20,7 @@ const inlineMenuAppearanceDelay = 800;
 
 let testPage: Page;
 
-test.describe("Extension presents page input overlay with options for vault interaction", () => {
+test.describe("Extension presents page input inline menu with options for vault interaction", () => {
   test("Log in to the vault, open pages, and autofill forms", async ({
     context,
     extensionId,
@@ -59,7 +59,7 @@ test.describe("Extension presents page input overlay with options for vault inte
           fullPage: true,
           path: path.join(
             screenshotsOutput,
-            "environment_configured-input_overlay_tests.png",
+            "environment_configured-inline_menu_tests.png",
           ),
         });
 
@@ -101,7 +101,7 @@ test.describe("Extension presents page input overlay with options for vault inte
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
-    const pagesToTest = getPagesToTest(overlayPages);
+    const pagesToTest = getPagesToTest(inlineMenuPages);
 
     test.setTimeout(480000);
     testPage.setDefaultNavigationTimeout(60000);
@@ -110,7 +110,7 @@ test.describe("Extension presents page input overlay with options for vault inte
       const { url, inputs } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
-      await test.step(`Fill the form via overlay and submit at ${url}`, async () => {
+      await test.step(`Fill the form via inline menu and submit at ${url}`, async () => {
         await testPage.goto(url, defaultGotoOptions);
 
         const inputKeys = Object.keys(inputs);
@@ -135,7 +135,7 @@ test.describe("Extension presents page input overlay with options for vault inte
             : await firstInputSelector(testPage);
         await firstInputElement.waitFor(defaultWaitForOptions);
 
-        // Navigate overlay for autofill
+        // Navigate inline menu for autofill
         await firstInputElement.click();
         await testPage.waitForTimeout(inlineMenuAppearanceDelay);
         await testPage.keyboard.press("ArrowDown");
@@ -164,7 +164,7 @@ test.describe("Extension presents page input overlay with options for vault inte
             fullPage: true,
             path: path.join(
               screenshotsOutput,
-              `${formatUrlToFilename(url)}-${inputKey}-overlay.png`,
+              `${formatUrlToFilename(url)}-${inputKey}-inline_menu.png`,
             ),
           });
 
@@ -195,7 +195,7 @@ test.describe("Extension presents page input overlay with options for vault inte
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
 
-            // Navigate overlay for autofill
+            // Navigate inline menu for autofill
             await nextInputElement.click();
             await testPage.waitForTimeout(inlineMenuAppearanceDelay);
             await testPage.keyboard.press("ArrowDown");
