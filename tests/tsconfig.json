@@ -6,6 +6,6 @@
     "sourceMap": true,
     "outDir": "../tests-out",
     "experimentalDecorators": true,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+  },
 }
