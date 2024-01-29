@@ -33,7 +33,7 @@
   },
   "scripts": {
     "prettier:fix": "prettier --write .",
-    "prepare": "husky install",
+    "prepare": "husky",
     "pretest": "rimraf tests-out screenshots test-summary test-results && tsc --incremental -p tests/tsconfig.json",
     "build:extension": "cd clients/apps/browser && rimraf build && npm run build",
     "build:extension:prod": "cd clients/apps/browser && rimraf build && npm run build:prod",
