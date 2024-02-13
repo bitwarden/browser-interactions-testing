@@ -1,8 +1,8 @@
-# Bitwarden Browser Interactions Testing
+# Bitwarden B.I.T. (Browser Interactions Testing)
 
 This project leverages [Playwright](https://playwright.dev/) to run automated form-fill tests against real builds of the Bitwarden browser extension.
 
-- [Bitwarden Browser Interactions Testing](#bitwarden-browser-interactions-testing)
+- [Bitwarden B.I.T. (Browser Interactions Testing)](#bitwarden-bit-browser-interactions-testing)
   - [Goals and Intent](#goals-and-intent)
   - [Limitations](#limitations)
   - [Requirements](#requirements)
