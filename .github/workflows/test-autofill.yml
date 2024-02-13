@@ -5,7 +5,7 @@ on:
     inputs:
       CLIENTS_BRANCH:
         required: true
-        default: 'main'
+        default: "main"
         description: "clients branch or commit hash of extensions build to use"
         type: string
       FEATURE_FLAGS:
@@ -20,9 +20,9 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-          node-version: '18'
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+          node-version: "18"
 
       - name: Create dotenv file
         run: |
