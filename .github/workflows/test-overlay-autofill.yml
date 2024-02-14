@@ -6,7 +6,7 @@ on:
       CLIENTS_BRANCH:
         required: true
         default: "main"
-        description: "clients branch or commit hash of extensions build to use"
+        description: "clients branch of browser build to use"
         type: string
       FEATURE_FLAGS:
         required: true
@@ -37,7 +37,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
-          workflow_conclusion: success
+          workflow_conclusion: ""
           branch: ${{ inputs.CLIENTS_BRANCH }}
           name: ^dist-chrome-(?!MV3-)\w{7}\.zip$
           name_is_regexp: true
