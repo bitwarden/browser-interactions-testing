@@ -33,7 +33,7 @@ jobs:
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS }}}" > flags.json
 
       - name: Download extension artifact
-        uses: dawidd6/action-download-artifact@e7466d1a7587ed14867642c2ca74b5bcc1e19a2d # v3.0.0
+        uses: dawidd6/action-download-artifact@72aaadce3bc708349fc665eee3785cbb1b6e51d0 # v3.1.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
