@@ -339,13 +339,16 @@ async function getValues() {
     256,
   );
 
-  const stretchedMasterKey = await stretchKey(masterKey.arr.buffer);
   const masterKeyHash = await pbkdf2(
     masterKey.arr.buffer,
     masterPassword,
     1,
     256,
   );
+
+  const masterKeyBytes = new Uint8Array(masterKeyHash.arr);
+  const masterKeyString = btoa(String.fromCharCode(...masterKeyBytes));
+  const stretchedMasterKey = await stretchKey(masterKey.arr.buffer);
 
   const protectedSymKey = await aesEncrypt(
     symKey.key.arr,
@@ -363,7 +366,7 @@ async function getValues() {
     `\n`,
     `# Generated crypto values`,
     `KDF_ITERATIONS=${defaultKdfIterations}`,
-    `MASTER_PASSWORD_HASH="${masterKeyHash.b64}"`,
+    `MASTER_PASSWORD_HASH="${masterKeyString}"`,
     `PROTECTED_SYMMETRIC_KEY="${protectedSymKey.string}"`,
     `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY="${publicKey.b64}"`,
     `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY="${protectedPrivateKey.string}"`,
