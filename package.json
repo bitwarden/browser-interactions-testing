@@ -46,6 +46,7 @@
     "setup:test-site": "rimraf test-site && ./scripts/setup-test-site.sh",
     "setup:install": "ts-node ./scripts/generate-installation.ts",
     "setup:vault": "npm run seed:vault:account && npm run seed:vault:ciphers",
+    "setup:crypto": "node ./scripts/generate-crypto.js",
     "setup:all": "./scripts/first-time-setup.sh",
     "start:test-site": "./scripts/serve-test-site.sh",
     "test:all": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test",
