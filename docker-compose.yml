@@ -6,7 +6,7 @@ services:
       - db
     env_file:
       - .env
-    image: bitwarden/self-host:2024.3.0-beta # https://github.com/bitwarden/self-host/releases
+    image: bitwarden/self-host:2024.3.1-beta # https://github.com/bitwarden/self-host/releases
     restart: always
     ports:
       - ${VAULT_HOST_PORT}:8443
