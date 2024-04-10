@@ -58,7 +58,10 @@ test.describe("Extension autofills forms when triggered", () => {
 
         await testPage.screenshot({
           fullPage: true,
-          path: path.join(screenshotsOutput, `environment_configured.png`),
+          path: path.join(
+            screenshotsOutput,
+            "environment_configured-autofill_tests.png",
+          ),
         });
 
         const serverConfigContent = await testPage.locator("#baseUrlHelp");
@@ -197,6 +200,22 @@ test.describe("Extension autofills forms when triggered", () => {
           }
         }
       });
+
+      // Skip form submission check for public sites
+      if (isLocalPage) {
+        await test.step(`Notification should not appear when submitting the form at ${url}`, async () => {
+          // Submit
+          await testPage.keyboard.press("Enter");
+
+          // Target notification close button since it's present on all notification bar cases
+          const notificationBarCloseButtonLocator = testPage
+            .frameLocator("#bit-notification-bar-iframe")
+            .getByRole("button", { name: "Close" })
+            .first();
+
+          await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+        });
+      }
     }
 
     // Hold the window open (don't automatically close out) when debugging
