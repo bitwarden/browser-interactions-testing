@@ -21,40 +21,6 @@ export const testPages: NotificationPageTest[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${testSiteHost}/forms/login/iframe-login/`,
-    uriMatchType: UriMatchType.StartsWith,
-    inputs: {
-      username: {
-        selector: async (page) =>
-          await page.frameLocator("#test-iframe").locator("#username"),
-        value: testUserName,
-      },
-      password: {
-        selector: async (page) =>
-          await page.frameLocator("#test-iframe").locator("#password"),
-        value: "fakeIframeBasicFormPassword",
-      },
-    },
-  },
-  {
-    cipherType: CipherType.Login,
-    url: `${testSiteHost}/forms/login/iframe-sandboxed-login`,
-    uriMatchType: UriMatchType.StartsWith,
-    inputs: {
-      username: {
-        selector: async (page) =>
-          await page.frameLocator("#test-iframe").locator("#username"),
-        value: testUserName,
-      },
-      password: {
-        selector: async (page) =>
-          await page.frameLocator("#test-iframe").locator("#password"),
-        value: "fakeSandboxedIframeBasicFormPassword",
-      },
-    },
-  },
-  {
-    cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/input-constraints-login`,
     uriMatchType: UriMatchType.StartsWith,
     inputs: {
@@ -85,6 +51,60 @@ export const testPages: NotificationPageTest[] = [
 
 // Known failure cases; expected to fail
 export const knownFailureCases: NotificationPageTest[] = [
+  {
+    // @TODO works, but need to add seeding ciphers with multiple URIs for the correct behaviour
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/iframe-login/`,
+    // @TODO support multiple URIs
+    // `${testSiteHost}/login-page-bare`
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: {
+        selector: async (page) =>
+          await page.frameLocator("#test-iframe").locator("#username"),
+        value: testUserName,
+      },
+      password: {
+        selector: async (page) =>
+          await page.frameLocator("#test-iframe").locator("#password"),
+        value: "fakeIframeBasicFormPassword",
+      },
+    },
+    actions: {
+      submit: async (page) =>
+        await page
+          .frameLocator("#test-iframe")
+          .getByRole("button", { name: "Login", exact: true })
+          .click(),
+    },
+  },
+  {
+    // @TODO works, but need to add seeding ciphers with multiple URIs for the correct behaviour
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/iframe-sandboxed-login`,
+    // @TODO support multiple URIs
+    // `${testSiteHost}/login-page-bare`
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: {
+        selector: async (page) =>
+          await page.frameLocator("#test-iframe").locator("#username"),
+        value: testUserName,
+      },
+      password: {
+        selector: async (page) =>
+          await page.frameLocator("#test-iframe").locator("#password"),
+        value: "fakeSandboxedIframeBasicFormPassword",
+      },
+    },
+    actions: {
+      submit: async (page) =>
+        await page
+          .frameLocator("#test-iframe")
+          .getByRole("button", { name: "Login", exact: true })
+          .click(),
+    },
+  },
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/multi-step-login`,

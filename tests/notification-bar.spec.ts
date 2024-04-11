@@ -18,7 +18,7 @@ export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 let testPage: Page;
 
-test.describe("Extension triggers a notification bar when a page form is submitted", () => {
+test.describe("Extension triggers a notification bar when a page form is submitted with non-stored values", () => {
   test("Log in to the vault, open pages, and autofill forms", async ({
     context,
     extensionId,
@@ -29,7 +29,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       // Wait for the extension to open the welcome page before continuing
       await context.waitForEvent("page");
 
-      let contextPages = context.pages();
+      let contextPages = await context.pages();
       expect(contextPages.length).toBe(2);
 
       const welcomePage = contextPages[1];
@@ -102,6 +102,16 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
+    // Needed to allow the background reload further down
+    await test.step("Set vault to never timeout", async () => {
+      const extensionAutofillSettingsURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/tabs/settings`;
+      await testPage.goto(extensionAutofillSettingsURL, defaultGotoOptions);
+      await testPage
+        .getByLabel("Vault timeout", { exact: true })
+        .selectOption("9: null");
+      await testPage.getByRole("button", { name: "Yes" }).click();
+    });
+
     const pagesToTest = getNotificationPagesToTest(notificationPages);
 
     test.setTimeout(480000);
@@ -111,10 +121,18 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       const { url, inputs, actions, shouldNotTriggerNotification } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
-      await test.step(`Fill and submit the form at ${url}`, async () => {
+      if (!isLocalPage) {
+        console.log(
+          "notification bar tests cannot be run against public sites",
+        );
+
+        return;
+      }
+
+      await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
         await testPage.goto(url, defaultGotoOptions);
 
-        // @TODO workaround for flaky background loading
+        // @TODO workaround for extension not handling popstate events
         await backgroundPage.reload();
 
         const inputKeys = Object.keys(inputs);
@@ -136,24 +154,18 @@ test.describe("Extension triggers a notification bar when a page form is submitt
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
 
-          const expectedValue = currentInput.value;
+          // Use new input values to trigger the notification bar prompt
+          let expectedValue = `new+${currentInput.value}`;
+
+          // Only use new input password values to trigger the notification bar update prompt
+          if (inputKey === "password") {
+            // Only rearrange value to ensure value will fit length constraints
+            expectedValue = currentInput.value.split("").reverse().join("");
+          }
 
           currentInputElement.fill(expectedValue);
 
-          // Do not soft expect on local test pages; we want to stop the tests before hitting live pages
-          if (isLocalPage) {
-            await expect(currentInputElement).toHaveValue(expectedValue);
-          } else {
-            await expect.soft(currentInputElement).toHaveValue(expectedValue);
-          }
-
-          await testPage.screenshot({
-            fullPage: true,
-            path: path.join(
-              screenshotsOutput,
-              `${formatUrlToFilename(url)}-${inputKey}-notification.png`,
-            ),
-          });
+          await expect(currentInputElement).toHaveValue(expectedValue);
 
           const nextStepInput: FillProperties | undefined =
             currentInput.multiStepNextInputKey &&
@@ -178,48 +190,143 @@ test.describe("Extension triggers a notification bar when a page form is submitt
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
           }
+        }
 
-          if (inputKey === inputKeys.slice(-1)[0]) {
-            if (debugIsActive) {
-              await testPage.pause();
-            }
+        await test.step(`the new cipher notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+          // Submit
+          if (actions?.submit) {
+            await actions.submit(testPage);
+          } else {
+            await testPage.keyboard.press("Enter");
+          }
 
-            // Submit
-            await testPage.waitForTimeout(600);
-            if (actions?.submit) {
-              await actions.submit(testPage);
-            } else {
-              currentInputElement.press("Enter");
-            }
+          await testPage.screenshot({
+            fullPage: true,
+            path: path.join(
+              screenshotsOutput,
+              `${formatUrlToFilename(url)}-notification-new-cipher.png`,
+            ),
+          });
 
-            // Skip check if notification bar is not intended to trigger
-            // @TODO explicitly check that notification bar is absent in non-triggering cases
-            if (!shouldNotTriggerNotification) {
-              const notificationBar = await testPage
-                .frameLocator("#bit-notification-bar-iframe")
-                .getByText("Should Bitwarden remember")
-                .first();
+          const newCipherNotificationBarLocator = testPage
+            .frameLocator("#bit-notification-bar-iframe")
+            .getByText("Should Bitwarden remember this password for you?");
 
-              await notificationBar.waitFor({
-                ...defaultWaitForOptions,
-                timeout: 2000,
-              });
-              expect(notificationBar).toBeVisible();
+          const notificationBarCloseButtonLocator = testPage
+            .frameLocator("#bit-notification-bar-iframe")
+            .getByRole("button", { name: "Close" });
 
-              // Close the notification bar for the next triggering case
-              await testPage
-                .frameLocator("#bit-notification-bar-iframe")
-                .getByRole("button", { name: "Close" })
-                .click();
+          if (shouldNotTriggerNotification) {
+            // Target the notification close button since it's present on all notification bar cases
+            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+          } else {
+            // Ensure the correct type of notification appears
+            await expect(newCipherNotificationBarLocator).toBeVisible();
+
+            // Close the notification bar for the next triggering case
+            await notificationBarCloseButtonLocator.click();
+          }
+        });
+      });
+
+      await test.step(`fill the form with a stored username/email and a non-stored password at ${url}`, async () => {
+        await testPage.goto(url, defaultGotoOptions);
+
+        // @TODO workaround for extension not handling popstate events
+        await backgroundPage.reload();
+
+        const inputKeys = Object.keys(inputs);
+
+        for (const inputKey of inputKeys) {
+          const currentInput: FillProperties = inputs[inputKey];
+
+          if (currentInput?.preFillActions) {
+            try {
+              await currentInput.preFillActions(testPage);
+            } catch (error) {
+              console.log("There was a prefill error:", error);
             }
           }
-        }
-      });
-    }
 
-    // Hold the window open (don't automatically close out) when debugging
-    if (debugIsActive) {
-      await testPage.pause();
+          const currentInputSelector = currentInput.selector;
+          const currentInputElement =
+            typeof currentInputSelector === "string"
+              ? await testPage.locator(currentInputSelector).first()
+              : await currentInputSelector(testPage);
+
+          let expectedValue = currentInput.value;
+
+          // Only use new input password values to trigger the notification bar update prompt
+          if (inputKey === "password") {
+            // Only rearrange value to ensure value will fit length constraints
+            expectedValue = currentInput.value.split("").reverse().join("");
+          }
+
+          currentInputElement.fill(expectedValue);
+
+          await expect(currentInputElement).toHaveValue(expectedValue);
+
+          const nextStepInput: FillProperties | undefined =
+            currentInput.multiStepNextInputKey &&
+            inputs[currentInput.multiStepNextInputKey];
+
+          if (nextStepInput) {
+            await currentInputElement.press("Enter");
+
+            const nextInputPreFill = nextStepInput.preFillActions;
+            if (nextInputPreFill) {
+              try {
+                await nextInputPreFill(testPage);
+              } catch (error) {
+                console.log("There was a prefill error:", error);
+              }
+            }
+
+            const nextInputSelector = nextStepInput.selector;
+            const nextInputElement =
+              typeof nextInputSelector === "string"
+                ? await testPage.locator(nextInputSelector).first()
+                : await nextInputSelector(testPage);
+            await nextInputElement.waitFor(defaultWaitForOptions);
+          }
+        }
+
+        await test.step(`the update password notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+          // Submit
+          if (actions?.submit) {
+            await actions.submit(testPage);
+          } else {
+            await testPage.keyboard.press("Enter");
+          }
+
+          await testPage.screenshot({
+            fullPage: true,
+            path: path.join(
+              screenshotsOutput,
+              `${formatUrlToFilename(url)}-notification-update-cipher.png`,
+            ),
+          });
+
+          const updatePasswordNotificationBarLocator = testPage
+            .frameLocator("#bit-notification-bar-iframe")
+            .getByText("Do you want to update this password in Bitwarden?");
+
+          const notificationBarCloseButtonLocator = testPage
+            .frameLocator("#bit-notification-bar-iframe")
+            .getByRole("button", { name: "Close" });
+
+          if (shouldNotTriggerNotification) {
+            // Target the notification close button since it's present on all notification bar cases
+            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+          } else {
+            // Ensure the correct type of notification appears
+            await expect(updatePasswordNotificationBarLocator).toBeVisible();
+
+            // Close the notification bar for the next triggering case
+            await notificationBarCloseButtonLocator.click();
+          }
+        });
+      });
     }
   });
 });
