@@ -52,7 +52,7 @@ jobs:
       - name: Generate and install certs
         run: |
           npm run setup:ssl
-          sudo apt-get install libnss3-tools
+          sudo apt-get install libnss3-tools=2:3.68.2-0ubuntu1
           . .env
           mkdir -p $HOME/.pki/nssdb
           certutil -d $HOME/.pki/nssdb -N --empty-password
