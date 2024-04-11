@@ -47,13 +47,14 @@ type PageTest = {
     passportNumber?: FillProperties;
     licenseNumber?: FillProperties;
   };
+  skipTests?: string[];
 };
 
 type AutofillPageTest = PageTest & {
   additionalLoginUrls?: string[];
 };
 
-type NotificationPageTest = PageTest & {
+type NotificationPageTest = AutofillPageTest & {
   actions?: {
     submit?: (page: Page) => void;
   };

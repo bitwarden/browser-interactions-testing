@@ -18,6 +18,7 @@ export const testPages: AutofillPageTest[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/iframe-login`,
+    additionalLoginUrls: [`${testSiteHost}/login-page-bare`],
     uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
@@ -39,6 +40,7 @@ export const testPages: AutofillPageTest[] = [
   {
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/iframe-sandboxed-login`,
+    additionalLoginUrls: [`${testSiteHost}/login-page-bare`],
     uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {

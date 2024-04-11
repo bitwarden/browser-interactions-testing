@@ -9,6 +9,7 @@ import {
   vaultEmail,
   vaultHostURL,
   vaultPassword,
+  NotificationTestNames,
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
@@ -118,7 +119,8 @@ test.describe("Extension triggers a notification bar when a page form is submitt
     testPage.setDefaultNavigationTimeout(60000);
 
     for (const page of pagesToTest) {
-      const { url, inputs, actions, shouldNotTriggerNotification } = page;
+      const { url, inputs, actions, shouldNotTriggerNotification, skipTests } =
+        page;
       const isLocalPage = url.startsWith(testSiteHost);
 
       if (!isLocalPage) {
@@ -130,6 +132,12 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       }
 
       await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
+        if (skipTests?.includes(NotificationTestNames.NewCredentials)) {
+          console.log(`Skipping known failure for ${url}`);
+
+          return;
+        }
+
         await testPage.goto(url, defaultGotoOptions);
 
         // @TODO workaround for extension not handling popstate events
@@ -230,6 +238,12 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       });
 
       await test.step(`fill the form with a stored username/email and a non-stored password at ${url}`, async () => {
+        if (skipTests?.includes(NotificationTestNames.PasswordUpdate)) {
+          console.log(`Skipping known failure for ${url}`);
+
+          return;
+        }
+
         await testPage.goto(url, defaultGotoOptions);
 
         // @TODO workaround for extension not handling popstate events

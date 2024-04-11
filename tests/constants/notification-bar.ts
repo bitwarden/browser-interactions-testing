@@ -6,6 +6,11 @@ import {
 import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 
+export const TestNames = {
+  PasswordUpdate: "passwordUpdate",
+  NewCredentials: "newCredentials",
+};
+
 export const testPages: NotificationPageTest[] = [
   /**
    * Local webpages
@@ -33,30 +38,7 @@ export const testPages: NotificationPageTest[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${testSiteHost}/forms/search/simple-search`,
-    uriMatchType: UriMatchType.StartsWith,
-    inputs: {
-      username: {
-        selector: "#search",
-        value: testUserName,
-      },
-      password: {
-        selector: "#search",
-        value: "fakeSearchPassword",
-      },
-    },
-    shouldNotTriggerNotification: true,
-  },
-];
-
-// Known failure cases; expected to fail
-export const knownFailureCases: NotificationPageTest[] = [
-  {
-    // @TODO works, but need to add seeding ciphers with multiple URIs for the correct behaviour
-    cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/iframe-login/`,
-    // @TODO support multiple URIs
-    // `${testSiteHost}/login-page-bare`
     uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
@@ -77,13 +59,11 @@ export const knownFailureCases: NotificationPageTest[] = [
           .getByRole("button", { name: "Login", exact: true })
           .click(),
     },
+    skipTests: [TestNames.PasswordUpdate],
   },
   {
-    // @TODO works, but need to add seeding ciphers with multiple URIs for the correct behaviour
     cipherType: CipherType.Login,
     url: `${testSiteHost}/forms/login/iframe-sandboxed-login`,
-    // @TODO support multiple URIs
-    // `${testSiteHost}/login-page-bare`
     uriMatchType: UriMatchType.StartsWith,
     inputs: {
       username: {
@@ -104,6 +84,7 @@ export const knownFailureCases: NotificationPageTest[] = [
           .getByRole("button", { name: "Login", exact: true })
           .click(),
     },
+    skipTests: [TestNames.PasswordUpdate],
   },
   {
     cipherType: CipherType.Login,
@@ -122,6 +103,7 @@ export const knownFailureCases: NotificationPageTest[] = [
       },
       password: { selector: "#password", value: "fakeMultiStepPassword" },
     },
+    skipTests: [TestNames.NewCredentials, TestNames.PasswordUpdate],
   },
   {
     cipherType: CipherType.Login,
@@ -135,6 +117,7 @@ export const knownFailureCases: NotificationPageTest[] = [
       submit: async (page) =>
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
+    skipTests: [TestNames.NewCredentials, TestNames.PasswordUpdate],
   },
   {
     cipherType: CipherType.Login,
@@ -154,5 +137,22 @@ export const knownFailureCases: NotificationPageTest[] = [
       submit: async (page) =>
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
+    skipTests: [TestNames.NewCredentials, TestNames.PasswordUpdate],
+  },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/search/simple-search`,
+    uriMatchType: UriMatchType.StartsWith,
+    inputs: {
+      username: {
+        selector: "#search",
+        value: testUserName,
+      },
+      password: {
+        selector: "#search",
+        value: "fakeSearchPassword",
+      },
+    },
+    shouldNotTriggerNotification: true,
   },
 ];
