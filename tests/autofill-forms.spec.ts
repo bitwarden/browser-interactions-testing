@@ -10,7 +10,7 @@ import {
   vaultHostURL,
   vaultPassword,
   TestNames,
-} from "./constants";
+} from "../constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
 import { getPagesToTest, doAutofill, formatUrlToFilename } from "./utils";

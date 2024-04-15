@@ -15,7 +15,7 @@ import {
 import {
   localPageCiphers,
   publicPageCiphers,
-} from "../tests/constants/vault-ciphers";
+} from "../constants/vault-ciphers";
 
 const PLAYWRIGHT_CIPHERS_FOLDER = "AutofillPlaywrightTestingItems";
 

@@ -1,4 +1,4 @@
-import { PageCipher, CipherType, UriMatchType } from "../../abstractions";
+import { PageCipher, CipherType, UriMatchType } from "../abstractions";
 import { testSiteHost } from "./server";
 import {
   testUserName,

@@ -128,7 +128,7 @@ Pass the environment variable `HEADLESS=true` or use the provided npm scripts to
 
 ### Execute only selected page tests
 
-Each test page entry in the `testPages` constant of `tests/constants.ts` can take the optional property `onlyTest`. If debug mode is active and one or more pages has a truthy `onlyTest` value, only those pages will be tested.
+Each test page entry in the `testPages` constant of `constants/test-pages.ts` can take the optional property `onlyTest`. If debug mode is active and one or more pages has a truthy `onlyTest` value, only those pages will be tested.
 
 If debug mode is not active, `onlyTest` values will be ignored.
 

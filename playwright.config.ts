@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-import { testSiteHost } from "./tests/constants/server";
+import { testSiteHost } from "./constants/server";
 
 const config: PlaywrightTestConfig = {
   testDir: "./tests-out",

@@ -5,7 +5,7 @@ import {
   startFromTestUrl,
   targetTestPages,
   testSiteHost,
-} from "./constants";
+} from "../constants";
 
 export function getPagesToTest(pageTests: PageTest[]) {
   const filteredPageTests = pageTests.filter(({ url }) => {

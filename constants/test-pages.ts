@@ -1,4 +1,4 @@
-import { PageTest } from "../../abstractions";
+import { PageTest } from "../abstractions";
 import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 
@@ -14,7 +14,7 @@ export const TestNames = {
 
   Notes:
     - input `value` properties are used by autofill tests to represent expected values, and by other tests as values to be entered
-    - properties prefixed with `shouldNot` are representations of expected behaviour, not expected failures
+    - properties prefixed with `shouldNot` are representations of expected behaviour, not known failures
 */
 export const testPages: PageTest[] = [
   {
@@ -50,9 +50,9 @@ export const testPages: PageTest[] = [
           .click(),
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO expected failure
-      TestNames.MessageAutofill, // @TODO expected failure
-      TestNames.PasswordUpdateNotification, // @TODO expected failure
+      TestNames.InlineMenuAutofill, // @TODO known failure
+      TestNames.MessageAutofill, // @TODO known failure
+      TestNames.PasswordUpdateNotification, // @TODO known failure
     ],
   },
   {
@@ -81,9 +81,9 @@ export const testPages: PageTest[] = [
           .click(),
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO expected failure
-      TestNames.MessageAutofill, // @TODO expected failure
-      TestNames.PasswordUpdateNotification, // @TODO expected failure
+      TestNames.InlineMenuAutofill, // @TODO known failure
+      TestNames.MessageAutofill, // @TODO known failure
+      TestNames.PasswordUpdateNotification, // @TODO known failure
     ],
   },
   {
@@ -97,8 +97,8 @@ export const testPages: PageTest[] = [
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
     skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO expected failure
-      TestNames.PasswordUpdateNotification, // @TODO expected failure
+      TestNames.NewCredentialsNotification, // @TODO known failure
+      TestNames.PasswordUpdateNotification, // @TODO known failure
     ],
   },
   // @TODO add test for /forms/login/hidden-login
@@ -129,8 +129,8 @@ export const testPages: PageTest[] = [
       password: { selector: "#password", value: "fakeMultiStepPassword" },
     },
     skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO expected failure
-      TestNames.PasswordUpdateNotification, // @TODO expected failure
+      TestNames.NewCredentialsNotification, // @TODO known failure
+      TestNames.PasswordUpdateNotification, // @TODO known failure
     ],
   },
   // @TODO add test for /forms/login/security-code-multi-input
@@ -151,8 +151,8 @@ export const testPages: PageTest[] = [
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
     skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO expected failure
-      TestNames.PasswordUpdateNotification, // @TODO expected failure
+      TestNames.NewCredentialsNotification, // @TODO known failure
+      TestNames.PasswordUpdateNotification, // @TODO known failure
     ],
   },
   // @TODO add test for /forms/create/create-account

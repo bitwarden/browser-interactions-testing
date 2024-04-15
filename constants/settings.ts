@@ -1,4 +1,4 @@
-import { LocatorWaitForOptions, PageGoToOptions } from "../../abstractions";
+import { LocatorWaitForOptions, PageGoToOptions } from "../abstractions";
 
 export const debugIsActive = ["1", "console"].includes(
   process.env.PWDEBUG || "",
