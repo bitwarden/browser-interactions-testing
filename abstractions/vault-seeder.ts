@@ -56,12 +56,6 @@ type IdentityItemTemplate = {
   licenseNumber: string;
 };
 
-type FieldTemplate = {
-  name: string;
-  value: string;
-  type: number;
-};
-
 type FolderTemplate = {
   name: string;
 };
@@ -74,7 +68,7 @@ type ItemTemplate = {
   name: string;
   notes: string;
   favorite: boolean;
-  fields: FieldTemplate[];
+  fields?: PageCipherField[];
   login: LoginItemTemplate | null;
   secureNote: null;
   card: CardItemTemplate | null;
@@ -91,16 +85,70 @@ type FolderItem = {
   id: string;
 } & FolderTemplate;
 
+type PageCipher = {
+  cipherType: CipherType;
+  url: string;
+  uriMatchType?: UriMatchType;
+  totpSecret?: string;
+  fields?: LoginFields & CardFields & IdentityFields;
+  additionalLoginUrls?: string[];
+};
+
+type LoginFields = {
+  username?: PageCipherField;
+  password?: PageCipherField;
+  totp?: PageCipherField;
+};
+
+type CardFields = {
+  cardholderName?: PageCipherField;
+  brand?: PageCipherField;
+  number?: PageCipherField;
+  expMonth?: PageCipherField;
+  expYear?: PageCipherField;
+  code?: PageCipherField;
+};
+
+type IdentityFields = {
+  title?: PageCipherField;
+  firstName?: PageCipherField;
+  middleName?: PageCipherField;
+  lastName?: PageCipherField;
+  address1?: PageCipherField;
+  address2?: PageCipherField;
+  address3?: PageCipherField;
+  city?: PageCipherField;
+  state?: PageCipherField;
+  postalCode?: PageCipherField;
+  country?: PageCipherField;
+  company?: PageCipherField;
+  email?: PageCipherField;
+  phone?: PageCipherField;
+  ssn?: PageCipherField;
+  passportNumber?: PageCipherField;
+  licenseNumber?: PageCipherField;
+};
+
+type PageCipherField = {
+  /**
+   * field selector name, not the field name in the vault
+   */
+  name?: string;
+  value: string;
+  type?: number;
+};
+
 export {
-  CipherType,
-  UriMatchType,
-  LoginUriTemplate,
-  LoginItemTemplate,
   CardItemTemplate,
-  IdentityItemTemplate,
-  FieldTemplate,
-  FolderTemplate,
-  ItemTemplate,
-  VaultItem,
+  CipherType,
   FolderItem,
+  FolderTemplate,
+  IdentityItemTemplate,
+  ItemTemplate,
+  LoginItemTemplate,
+  LoginUriTemplate,
+  PageCipher,
+  PageCipherField,
+  UriMatchType,
+  VaultItem,
 };

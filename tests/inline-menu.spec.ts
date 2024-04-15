@@ -4,11 +4,12 @@ import {
   debugIsActive,
   defaultGotoOptions,
   defaultWaitForOptions,
-  inlineMenuPages,
+  testPages,
   testSiteHost,
   vaultEmail,
   vaultHostURL,
   vaultPassword,
+  TestNames,
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
@@ -21,7 +22,7 @@ const inlineMenuAppearanceDelay = 800;
 let testPage: Page;
 
 test.describe("Extension presents page input inline menu with options for vault interaction", () => {
-  test("Log in to the vault, open pages, and autofill forms", async ({
+  test("Log in to the vault, open pages, and run page tests", async ({
     context,
     extensionId,
   }) => {
@@ -101,16 +102,22 @@ test.describe("Extension presents page input inline menu with options for vault 
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
-    const pagesToTest = getPagesToTest(inlineMenuPages);
+    const pagesToTest = getPagesToTest(testPages);
 
     test.setTimeout(480000);
     testPage.setDefaultNavigationTimeout(60000);
 
     for (const page of pagesToTest) {
-      const { url, inputs } = page;
+      const { url, inputs, skipTests } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
-      await test.step(`Fill the form via inline menu and submit at ${url}`, async () => {
+      await test.step(`fill the form via inline menu and submit at ${url}`, async () => {
+        if (skipTests?.includes(TestNames.InlineMenuAutofill)) {
+          console.log(`Skipping known failure for ${url}`);
+
+          return;
+        }
+
         await testPage.goto(url, defaultGotoOptions);
 
         const inputKeys = Object.keys(inputs);

@@ -1,22 +1,21 @@
 import fetch from "cross-fetch";
 import { configDotenv } from "dotenv";
 import {
-  AutofillPageTest,
   CardItemTemplate,
   CipherType,
-  FieldTemplate,
-  FillProperties,
   FolderItem,
   IdentityItemTemplate,
   ItemTemplate,
   LoginItemTemplate,
+  PageCipher,
+  PageCipherField,
   UriMatchType,
   VaultItem,
 } from "../abstractions";
 import {
-  testPages,
-  knownFailureCases,
-} from "../tests/constants/autofill-forms";
+  localPageCiphers,
+  publicPageCiphers,
+} from "../tests/constants/vault-ciphers";
 
 const PLAYWRIGHT_CIPHERS_FOLDER = "AutofillPlaywrightTestingItems";
 
@@ -65,41 +64,40 @@ class VaultSeeder {
       vaultItems.forEach((item) => (existingVaultItems[item.name] = item));
     }
 
-    // Include known failure cases in vault seeding for test debugging
-    const allTestCases = [...testPages, ...knownFailureCases];
+    const allCiphers = [...localPageCiphers, ...publicPageCiphers];
 
-    for (let index = 0; index < allTestCases.length; index++) {
-      const testPage = allTestCases[index];
-      const testPageItemName = `${index} ${testPage.url}`;
-      const existingItem = existingVaultItems[testPageItemName];
+    for (let index = 0; index < allCiphers.length; index++) {
+      const pageCipher = allCiphers[index];
+      const newVaultItemName = `${index} ${pageCipher.url}`;
+      const existingVaultItem = existingVaultItems[newVaultItemName];
 
-      if (existingItem) {
-        await this.updateVaultItem(existingItem, testPage);
+      if (existingVaultItem) {
+        await this.updateVaultItem(existingVaultItem, pageCipher);
         continue;
       }
 
-      await this.createVaultItem(testPage, testPageItemName, testsFolder.id);
+      await this.createVaultItem(pageCipher, newVaultItemName, testsFolder.id);
     }
   }
 
   private async createVaultItem(
-    testPage: AutofillPageTest,
-    itemName: string,
+    pageCipher: PageCipher,
+    vaultItemName: string,
     folderId: string,
   ): Promise<void> {
     const itemData: ItemTemplate = {
       organizationId: null,
       collectionIds: null,
       folderId,
-      type: testPage.cipherType,
-      name: itemName,
+      type: pageCipher.cipherType,
+      name: vaultItemName,
       notes: "",
       favorite: false,
-      fields: this.generateCustomFieldsLoginItemData(testPage),
-      login: this.generateLoginItemData(testPage),
+      fields: this.generateCustomFieldsLoginItemData(pageCipher),
+      login: this.generateLoginItemData(pageCipher),
       secureNote: null,
-      card: this.generateCardItemData(testPage),
-      identity: this.generateIdentityItemData(testPage),
+      card: this.generateCardItemData(pageCipher),
+      identity: this.generateIdentityItemData(pageCipher),
       reprompt: 0,
     };
 
@@ -110,50 +108,45 @@ class VaultSeeder {
     );
     if (!success) {
       console.error(
-        `ERROR: Unable to create login item for ${testPage.url}, ${message}`,
+        `ERROR: Unable to create login item for ${pageCipher.url}, ${message}`,
       );
       return;
     }
 
-    console.log(`Created vault item for ${testPage.url}...`);
+    console.log(`Created vault item for ${pageCipher.url}...`);
   }
 
   private async updateVaultItem(
-    existingItem: VaultItem,
-    testPage: AutofillPageTest,
+    existingVaultItem: VaultItem,
+    pageCipher: PageCipher,
   ): Promise<void> {
-    if (!this.isVaultItemModified(existingItem, testPage)) {
-      console.log(`Skipping ${testPage.url}, no changes detected...`);
-      return;
+    let itemData: ItemTemplate = existingVaultItem;
+    if (pageCipher.cipherType === CipherType.Login) {
+      itemData.login = this.generateLoginItemData(pageCipher);
+      itemData.fields = this.generateCustomFieldsLoginItemData(pageCipher);
     }
 
-    let itemData: ItemTemplate = existingItem;
-    if (testPage.cipherType === CipherType.Login) {
-      itemData.login = this.generateLoginItemData(testPage);
-      itemData.fields = this.generateCustomFieldsLoginItemData(testPage);
+    if (pageCipher.cipherType === CipherType.Card) {
+      itemData.card = this.generateCardItemData(pageCipher);
     }
 
-    if (testPage.cipherType === CipherType.Card) {
-      itemData.card = this.generateCardItemData(testPage);
-    }
-
-    if (testPage.cipherType === CipherType.Identity) {
-      itemData.identity = this.generateIdentityItemData(testPage);
+    if (pageCipher.cipherType === CipherType.Identity) {
+      itemData.identity = this.generateIdentityItemData(pageCipher);
     }
 
     const { success, message } = await this.queryApi(
-      `/object/item/${existingItem.id}`,
+      `/object/item/${existingVaultItem.id}`,
       "PUT",
       itemData,
     );
     if (!success) {
       console.error(
-        `ERROR: Unable to update login item for ${testPage.url}, ${message}`,
+        `ERROR: Unable to update login item for ${pageCipher.url}, ${message}`,
       );
       return;
     }
 
-    console.log(`Updated vault item for ${testPage.url}...`);
+    console.log(`Updated vault item for ${pageCipher.url}...`);
   }
 
   private async deleteVaultItem(vaultItem: VaultItem): Promise<void> {
@@ -169,108 +162,43 @@ class VaultSeeder {
     }
   }
 
-  private isVaultItemModified(
-    vaultItem: ItemTemplate,
-    testPage: AutofillPageTest,
-  ): boolean {
-    let comparedValues: [FillProperties | undefined, any][] = [];
-    const isValueModified = (
-      testItem?: FillProperties,
-      vaultValue?: any,
-    ): boolean => {
-      const testValue = testItem?.value;
-      return Boolean(testValue) && testValue !== vaultValue;
-    };
-    const inputData = testPage.inputs;
-    const vaultLogin = vaultItem.login;
-    if (testPage.cipherType === CipherType.Login && vaultLogin) {
-      comparedValues = [
-        [inputData.username, vaultLogin.username],
-        [inputData.password, vaultLogin.password],
-        [inputData.totp, vaultLogin.totp],
-      ];
-    }
-
-    const vaultCard = vaultItem.card;
-    if (testPage.cipherType === CipherType.Card && vaultCard) {
-      comparedValues = [
-        [inputData.cardholderName, vaultCard.cardholderName],
-        [inputData.brand, vaultCard.brand],
-        [inputData.number, vaultCard.number],
-        [inputData.expMonth, vaultCard.expMonth],
-        [inputData.expYear, vaultCard.expYear],
-        [inputData.code, vaultCard.code],
-      ];
-    }
-
-    const vaultIdentity = vaultItem.identity;
-    if (testPage.cipherType === CipherType.Identity && vaultIdentity) {
-      comparedValues = [
-        [inputData.title, vaultIdentity.title],
-        [inputData.firstName, vaultIdentity.firstName],
-        [inputData.middleName, vaultIdentity.middleName],
-        [inputData.lastName, vaultIdentity.lastName],
-        [inputData.address1, vaultIdentity.address1],
-        [inputData.address2, vaultIdentity.address2],
-        [inputData.address3, vaultIdentity.address3],
-        [inputData.city, vaultIdentity.city],
-        [inputData.state, vaultIdentity.state],
-        [inputData.postalCode, vaultIdentity.postalCode],
-        [inputData.country, vaultIdentity.country],
-        [inputData.company, vaultIdentity.company],
-        [inputData.email, vaultIdentity.email],
-        [inputData.phone, vaultIdentity.phone],
-        [inputData.ssn, vaultIdentity.ssn],
-        [inputData.username, vaultIdentity.username],
-        [inputData.passportNumber, vaultIdentity.passportNumber],
-        [inputData.licenseNumber, vaultIdentity.licenseNumber],
-      ];
-    }
-
-    for (const [testItem, vaultValue] of comparedValues) {
-      if (isValueModified(testItem, vaultValue)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   private generateCustomFieldsLoginItemData(
-    testPage: AutofillPageTest,
-  ): FieldTemplate[] {
-    if (testPage.cipherType !== CipherType.Login) {
-      return [];
+    pageCipher: PageCipher,
+  ): PageCipherField[] | undefined {
+    if (pageCipher.cipherType !== CipherType.Login) {
+      return;
     }
 
-    const inputKeys = Object.keys(testPage.inputs).filter(
-      (keyName) => !["username", "password", "totp"].includes(keyName),
+    const fields = pageCipher?.fields || {};
+    const inputKeys = Object.keys(fields).filter(
+      (keyName) => !["username", "password"].includes(keyName),
     );
 
-    return inputKeys.map((keyName: string) => {
-      const input =
-        testPage.inputs[keyName as keyof AutofillPageTest["inputs"]];
+    return (inputKeys as string[]).map((keyName) => {
+      const field = pageCipher.fields?.[keyName as keyof typeof fields];
 
       return {
-        name: (input?.selector as string).replace(/#/g, "") || "",
-        value: input?.value || "",
+        name: field?.name || "",
+        value: field?.value || "",
         type: 1,
       };
     });
   }
 
   private generateLoginItemData(
-    testPage: AutofillPageTest,
+    testPage: PageCipher,
   ): LoginItemTemplate | null {
     if (testPage.cipherType !== CipherType.Login) {
       return null;
     }
+
     let uris = [
       {
         match: testPage.uriMatchType || UriMatchType.Domain,
         uri: testPage.url,
       },
     ];
+
     testPage.additionalLoginUrls?.forEach((url) =>
       uris.push({
         match: testPage.uriMatchType || UriMatchType.Domain,
@@ -278,25 +206,23 @@ class VaultSeeder {
       }),
     );
 
-    const { username, password, totp } = testPage.inputs;
+    const { username, password } = testPage.fields || {};
 
     return {
       uris,
       username: username?.value || "",
       password: password?.value || "",
-      totp: totp?.value || "",
+      totp: testPage.totpSecret || "",
     };
   }
 
-  private generateCardItemData(
-    testPage: AutofillPageTest,
-  ): CardItemTemplate | null {
+  private generateCardItemData(testPage: PageCipher): CardItemTemplate | null {
     if (testPage.cipherType !== CipherType.Card) {
       return null;
     }
 
     const { cardholderName, brand, number, expMonth, expYear, code } =
-      testPage.inputs;
+      testPage.fields || {};
     return {
       cardholderName: cardholderName?.value || "",
       brand: brand?.value || "",
@@ -308,7 +234,7 @@ class VaultSeeder {
   }
 
   private generateIdentityItemData(
-    testPage: AutofillPageTest,
+    testPage: PageCipher,
   ): IdentityItemTemplate | null {
     if (testPage.cipherType !== CipherType.Identity) {
       return null;
@@ -333,7 +259,8 @@ class VaultSeeder {
       username,
       passportNumber,
       licenseNumber,
-    } = testPage.inputs;
+    } = testPage.fields || {};
+
     return {
       title: title?.value || "",
       firstName: firstName?.value || "",

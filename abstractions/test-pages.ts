@@ -1,5 +1,5 @@
 import { Page, Locator } from "@playwright/test";
-import { CipherType, UriMatchType } from "./vault-seeder";
+import { TestNames } from "../tests/constants/test-pages";
 
 type FillProperties = {
   multiStepNextInputKey?: string;
@@ -10,10 +10,7 @@ type FillProperties = {
 };
 
 type PageTest = {
-  cipherType: CipherType;
   url: string;
-  uriMatchType?: UriMatchType;
-  onlyTest?: boolean;
   inputs: {
     // Login fields
     username?: FillProperties;
@@ -47,19 +44,15 @@ type PageTest = {
     passportNumber?: FillProperties;
     licenseNumber?: FillProperties;
   };
-  skipTests?: string[];
-};
-
-type AutofillPageTest = PageTest & {
-  additionalLoginUrls?: string[];
-};
-
-type NotificationPageTest = AutofillPageTest & {
+  onlyTest?: boolean;
+  skipTests?: TestNameKeys[];
   actions?: {
     submit?: (page: Page) => void;
   };
   shouldNotTriggerNotification?: boolean;
 };
+
+type TestNameKeys = (typeof TestNames)[keyof typeof TestNames];
 
 type LocatorWaitForOptions = {
   state?: "visible" | "attached" | "detached" | "hidden";
@@ -72,11 +65,4 @@ type PageGoToOptions = {
   referer?: string;
 };
 
-export {
-  FillProperties,
-  AutofillPageTest,
-  PageTest,
-  NotificationPageTest,
-  LocatorWaitForOptions,
-  PageGoToOptions,
-};
+export { FillProperties, LocatorWaitForOptions, PageGoToOptions, PageTest };

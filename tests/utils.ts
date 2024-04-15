@@ -1,9 +1,5 @@
 import { Page } from "@playwright/test";
-import {
-  AutofillPageTest,
-  NotificationPageTest,
-  CipherType,
-} from "../abstractions";
+import { PageTest } from "../abstractions/test-pages";
 import {
   debugIsActive,
   startFromTestUrl,
@@ -11,21 +7,8 @@ import {
   testSiteHost,
 } from "./constants";
 
-export function getNotificationPagesToTest(
-  notificationPageTests: NotificationPageTest[],
-) {
-  return getPagesToTest(notificationPageTests) as NotificationPageTest[];
-}
-
-export function getPagesToTest(
-  pageTests: AutofillPageTest[] | NotificationPageTest[],
-) {
-  const filteredPageTests = pageTests.filter(({ cipherType, url }) => {
-    // @TODO additional work needed for non-login ciphers
-    if (cipherType !== CipherType.Login) {
-      return false;
-    }
-
+export function getPagesToTest(pageTests: PageTest[]) {
+  const filteredPageTests = pageTests.filter(({ url }) => {
     if (targetTestPages === "static") {
       return url.startsWith(testSiteHost);
     } else if (targetTestPages === "public") {

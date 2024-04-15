@@ -26,6 +26,7 @@ export const vaultPassword = process.env.VAULT_PASSWORD || "";
 
 export const testUserName = "bwplaywright";
 export const testEmail = "bwplaywright@example.com";
+export const testTotpSeed = "ABCD EFGH IJKL MNOP";
 
 /*
 Some websites "prequalify" an entered email to see if they have an associated account.

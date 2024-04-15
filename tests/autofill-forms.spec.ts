@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 import path from "path";
 import {
-  autofillTestPages,
+  testPages,
   debugIsActive,
   defaultGotoOptions,
   defaultWaitForOptions,
@@ -9,6 +9,7 @@ import {
   vaultEmail,
   vaultHostURL,
   vaultPassword,
+  TestNames,
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
@@ -19,7 +20,7 @@ export const screenshotsOutput = path.join(__dirname, "../screenshots");
 let testPage: Page;
 
 test.describe("Extension autofills forms when triggered", () => {
-  test("Log in to the vault, open pages, and autofill forms", async ({
+  test("Log in to the vault, open pages, and run page tests", async ({
     context,
     extensionId,
   }) => {
@@ -102,16 +103,22 @@ test.describe("Extension autofills forms when triggered", () => {
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 
-    const pagesToTest = getPagesToTest(autofillTestPages);
+    const pagesToTest = getPagesToTest(testPages);
 
     test.setTimeout(480000);
     testPage.setDefaultNavigationTimeout(60000);
 
     for (const page of pagesToTest) {
-      const { url, inputs } = page;
+      const { url, inputs, skipTests } = page;
       const isLocalPage = url.startsWith(testSiteHost);
 
       await test.step(`Autofill the form at ${url}`, async () => {
+        if (skipTests?.includes(TestNames.MessageAutofill)) {
+          console.log(`Skipping known failure for ${url}`);
+
+          return;
+        }
+
         await testPage.goto(url, defaultGotoOptions);
 
         const inputKeys = Object.keys(inputs);

@@ -4,23 +4,23 @@ import {
   debugIsActive,
   defaultGotoOptions,
   defaultWaitForOptions,
-  notificationPages,
+  testPages,
   testSiteHost,
   vaultEmail,
   vaultHostURL,
   vaultPassword,
-  NotificationTestNames,
+  TestNames,
 } from "./constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
-import { getNotificationPagesToTest, formatUrlToFilename } from "./utils";
+import { getPagesToTest, formatUrlToFilename } from "./utils";
 
 export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 let testPage: Page;
 
 test.describe("Extension triggers a notification bar when a page form is submitted with non-stored values", () => {
-  test("Log in to the vault, open pages, and autofill forms", async ({
+  test("Log in to the vault, open pages, and run page tests", async ({
     context,
     extensionId,
   }) => {
@@ -113,7 +113,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       await testPage.getByRole("button", { name: "Yes" }).click();
     });
 
-    const pagesToTest = getNotificationPagesToTest(notificationPages);
+    const pagesToTest = getPagesToTest(testPages);
 
     test.setTimeout(480000);
     testPage.setDefaultNavigationTimeout(60000);
@@ -126,13 +126,14 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       if (!isLocalPage) {
         console.log(
           "notification bar tests cannot be run against public sites",
+          // ...because they require a submit, which we don't want to do on live sites
         );
 
         return;
       }
 
       await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
-        if (skipTests?.includes(NotificationTestNames.NewCredentials)) {
+        if (skipTests?.includes(TestNames.NewCredentialsNotification)) {
           console.log(`Skipping known failure for ${url}`);
 
           return;
@@ -238,7 +239,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       });
 
       await test.step(`fill the form with a stored username/email and a non-stored password at ${url}`, async () => {
-        if (skipTests?.includes(NotificationTestNames.PasswordUpdate)) {
+        if (skipTests?.includes(TestNames.PasswordUpdateNotification)) {
           console.log(`Skipping known failure for ${url}`);
 
           return;
