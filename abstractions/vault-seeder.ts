@@ -1,21 +1,11 @@
-enum CipherType {
-  Login = 1,
-  SecureNote = 2,
-  Card = 3,
-  Identity = 4,
-}
+import { CipherType, UriMatchType } from "../constants";
 
-enum UriMatchType {
-  Domain = 0,
-  Host = 1,
-  StartsWith = 2,
-  Exact = 3,
-  RegularExpression = 4,
-  Never = 5,
-}
+type CipherTypeAbstraction = (typeof CipherType)[keyof typeof CipherType];
+
+type UriMatchTypeAbstraction = (typeof UriMatchType)[keyof typeof UriMatchType];
 
 type LoginUriTemplate = {
-  match: UriMatchType;
+  match: UriMatchTypeAbstraction;
   uri: string;
 };
 
@@ -86,9 +76,9 @@ type FolderItem = {
 } & FolderTemplate;
 
 type PageCipher = {
-  cipherType: CipherType;
+  cipherType: CipherTypeAbstraction;
   url: string;
-  uriMatchType?: UriMatchType;
+  uriMatchType?: UriMatchTypeAbstraction;
   totpSecret?: string;
   fields?: LoginFields & CardFields & IdentityFields;
   additionalLoginUrls?: string[];
@@ -140,7 +130,7 @@ type PageCipherField = {
 
 export {
   CardItemTemplate,
-  CipherType,
+  CipherTypeAbstraction,
   FolderItem,
   FolderTemplate,
   IdentityItemTemplate,
@@ -149,6 +139,6 @@ export {
   LoginUriTemplate,
   PageCipher,
   PageCipherField,
-  UriMatchType,
+  UriMatchTypeAbstraction,
   VaultItem,
 };

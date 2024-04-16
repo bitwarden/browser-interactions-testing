@@ -1,4 +1,4 @@
-import { PageCipher, CipherType, UriMatchType } from "../abstractions";
+import { PageCipher } from "../abstractions";
 import { testSiteHost } from "./server";
 import {
   testUserName,
@@ -6,6 +6,22 @@ import {
   testUserEmail,
   testTotpSeed,
 } from "./settings";
+
+export const CipherType = {
+  Login: 1,
+  SecureNote: 2,
+  Card: 3,
+  Identity: 4,
+} as const;
+
+export const UriMatchType = {
+  Domain: 0,
+  Host: 1,
+  StartsWith: 2,
+  Exact: 3,
+  RegularExpression: 4,
+  Never: 5,
+} as const;
 
 /*
   Ciphers to seed the vault with

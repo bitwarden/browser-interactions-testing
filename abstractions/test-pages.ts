@@ -1,5 +1,5 @@
 import { Page, Locator } from "@playwright/test";
-import { TestNames } from "../constants/test-pages";
+import { TestNames } from "../constants";
 
 type FillProperties = {
   multiStepNextInputKey?: string;

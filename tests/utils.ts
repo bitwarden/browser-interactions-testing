@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { PageTest } from "../abstractions/test-pages";
+import { PageTest } from "../abstractions";
 import {
   debugIsActive,
   startFromTestUrl,

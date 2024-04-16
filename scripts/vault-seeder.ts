@@ -2,20 +2,20 @@ import fetch from "cross-fetch";
 import { configDotenv } from "dotenv";
 import {
   CardItemTemplate,
-  CipherType,
   FolderItem,
   IdentityItemTemplate,
   ItemTemplate,
   LoginItemTemplate,
   PageCipher,
   PageCipherField,
-  UriMatchType,
   VaultItem,
 } from "../abstractions";
 import {
+  CipherType,
   localPageCiphers,
   publicPageCiphers,
-} from "../constants/vault-ciphers";
+  UriMatchType,
+} from "../constants";
 
 const PLAYWRIGHT_CIPHERS_FOLDER = "AutofillPlaywrightTestingItems";
 
