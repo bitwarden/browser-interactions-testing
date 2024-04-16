@@ -1,7 +1,22 @@
 import path from "path";
 import fs from "fs";
-import { test as base, chromium, type BrowserContext } from "@playwright/test";
+import {
+  test as base,
+  chromium,
+  Page,
+  type BrowserContext,
+} from "@playwright/test";
 import { configDotenv } from "dotenv";
+
+import {
+  debugIsActive,
+  defaultGotoOptions,
+  defaultWaitForOptions,
+  screenshotsOutput,
+  vaultEmail,
+  vaultPassword,
+  vaultHostURL,
+} from "../constants";
 
 configDotenv();
 
@@ -14,6 +29,7 @@ const pathToExtension = path.join(
 export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
+  extensionSetup: Page;
 }>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
@@ -74,6 +90,88 @@ export const test = base.extend<{
 
     const extensionId = background.url().split("/")[2];
     await use(extensionId);
+  },
+  extensionSetup: async ({ context, extensionId }, use) => {
+    let testPage: Page;
+
+    await test.step("Close the extension welcome page when it pops up", async () => {
+      // Wait for the extension to open the welcome page before continuing
+      if (!debugIsActive) {
+        await context.waitForEvent("page");
+      }
+
+      let contextPages = await context.pages();
+
+      // close all but the first tab
+      await Promise.all(
+        contextPages.slice(1).map((contextPage) => contextPage.close()),
+      );
+
+      testPage = contextPages[0];
+
+      if (debugIsActive) {
+        console.log(
+          (await testPage.evaluate(() => navigator.userAgent)) + "\n",
+        );
+      }
+    });
+
+    await test.step("Configure the environment", async () => {
+      if (vaultHostURL) {
+        const extensionURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/environment`;
+        await testPage.goto(extensionURL, defaultGotoOptions);
+        const baseUrlInput = await testPage.locator("input#baseUrl");
+        await baseUrlInput.waitFor(defaultWaitForOptions);
+
+        await testPage.fill("input#baseUrl", vaultHostURL);
+
+        await testPage.screenshot({
+          fullPage: true,
+          path: path.join(
+            screenshotsOutput,
+            "environment_configured-autofill_tests.png",
+          ),
+        });
+
+        const serverConfigContent = await testPage.locator("#baseUrlHelp");
+        await testPage.click("button[type='submit']");
+        await serverConfigContent.waitFor({
+          ...defaultWaitForOptions,
+          state: "detached",
+        });
+      }
+    });
+
+    await test.step("Log in to the extension vault", async () => {
+      const emailInput = await testPage.getByLabel("Email address");
+      await emailInput.waitFor(defaultWaitForOptions);
+      await emailInput.fill(vaultEmail);
+      const emailSubmitInput = await testPage.getByRole("button", {
+        name: "Continue",
+      });
+      await emailSubmitInput.click();
+
+      const masterPasswordInput = await testPage.locator(
+        "input#masterPassword",
+      );
+      await masterPasswordInput.waitFor(defaultWaitForOptions);
+      await masterPasswordInput.fill(vaultPassword);
+
+      const loginButton = await testPage.getByRole("button", {
+        name: "Log in with master password",
+      });
+      await loginButton.waitFor(defaultWaitForOptions);
+      await loginButton.click();
+
+      const extensionURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/tabs/vault`;
+      await testPage.waitForURL(extensionURL, defaultGotoOptions);
+      const vaultFilterBox = await testPage
+        .locator("app-vault-filter main .box.list")
+        .first();
+      await vaultFilterBox.waitFor(defaultWaitForOptions);
+    });
+
+    await use(testPage);
   },
 });
 

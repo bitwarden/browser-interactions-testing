@@ -1,18 +1,24 @@
+import path from "path";
 import { LocatorWaitForOptions, PageGoToOptions } from "../abstractions";
 
 export const debugIsActive = ["1", "console"].includes(
   process.env.PWDEBUG || "",
 );
 
+export const defaultTestTimeout = 480000;
+export const defaultNavigationTimeout = 60000;
+
 export const defaultGotoOptions: PageGoToOptions = {
   waitUntil: "domcontentloaded",
-  timeout: 60000,
+  timeout: defaultNavigationTimeout,
 };
 
 export const defaultWaitForOptions: LocatorWaitForOptions = {
   state: "visible",
   timeout: 15000,
 };
+
+export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 export const startFromTestUrl = process.env.START_FROM_TEST_URL || null;
 

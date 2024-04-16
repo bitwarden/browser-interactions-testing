@@ -13,7 +13,7 @@ export const TestNames = {
   Test pages and instructions for interactions
 
   Notes:
-    - input `value` properties are used by autofill tests to represent expected values, and by other tests as values to be entered
+    - input `value` properties are used by autofill tests to represent expected values, and by other tests as values to be entered ( @TODO separate these concerns )
     - properties prefixed with `shouldNot` are representations of expected behaviour, not known failures
 */
 export const testPages: PageTest[] = [
