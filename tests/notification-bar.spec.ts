@@ -6,7 +6,6 @@ import {
   defaultWaitForOptions,
   screenshotsOutput,
   TestNames,
-  testSiteHost,
 } from "../constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
@@ -39,16 +38,6 @@ test.describe("Extension triggers a notification bar when a page form is submitt
     for (const page of pagesToTest) {
       const { url, inputs, actions, shouldNotTriggerNotification, skipTests } =
         page;
-      const isLocalPage = url.startsWith(testSiteHost);
-
-      if (!isLocalPage) {
-        console.log(
-          "notification bar tests cannot be run against public sites",
-          // ...because they require a submit, which we don't want to do on live sites
-        );
-
-        return;
-      }
 
       await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
         if (skipTests?.includes(TestNames.NewCredentialsNotification)) {

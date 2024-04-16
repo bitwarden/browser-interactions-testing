@@ -14,6 +14,7 @@ import {
   CipherType,
   pageCiphers as localPageCiphers,
   UriMatchType,
+  testSiteHost,
 } from "../constants";
 import { pageCiphers as publicPageCiphers } from "../constants/public";
 
@@ -68,7 +69,17 @@ class VaultSeeder {
 
     for (let index = 0; index < allCiphers.length; index++) {
       const pageCipher = allCiphers[index];
-      const newVaultItemName = `${index} ${pageCipher.url}`;
+      const newVaultItemName = `${index} ${pageCipher.url}`
+        .replace(
+          // Remove host from item name
+          testSiteHost,
+          "",
+        )
+        .replace(
+          // Remove protocol from item name
+          "https://",
+          "",
+        );
       const existingVaultItem = existingVaultItems[newVaultItemName];
 
       if (existingVaultItem) {
