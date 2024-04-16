@@ -22,8 +22,6 @@ export const screenshotsOutput = path.join(__dirname, "../screenshots");
 
 export const startFromTestUrl = process.env.START_FROM_TEST_URL || null;
 
-export const targetTestPages = process.env.TARGET;
-
 export const vaultEmail = process.env.VAULT_EMAIL || "";
 
 export const vaultHostURL = `${process.env.VAULT_HOST_URL}:${process.env.VAULT_HOST_PORT}`;

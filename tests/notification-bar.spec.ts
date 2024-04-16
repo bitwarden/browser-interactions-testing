@@ -6,7 +6,6 @@ import {
   defaultWaitForOptions,
   screenshotsOutput,
   TestNames,
-  testPages,
   testSiteHost,
 } from "../constants";
 import { test, expect } from "./fixtures";
@@ -35,7 +34,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
     });
 
     const [backgroundPage] = context.backgroundPages();
-    const pagesToTest = getPagesToTest(testPages);
+    const pagesToTest = getPagesToTest();
 
     for (const page of pagesToTest) {
       const { url, inputs, actions, shouldNotTriggerNotification, skipTests } =

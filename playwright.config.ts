@@ -35,6 +35,8 @@ const config: PlaywrightTestConfig = {
     ["html", { open: "never", outputFolder: "test-summary" }],
     ["json", { outputFile: "test-summary/test-results.json" }],
   ],
+  // Do not report slow tests as threshold are expected to be large and varying
+  reportSlowTests: null,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */

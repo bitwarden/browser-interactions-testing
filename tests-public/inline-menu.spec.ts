@@ -8,9 +8,9 @@ import {
   screenshotsOutput,
   TestNames,
 } from "../constants";
-import { test, expect } from "./fixtures";
+import { test, expect } from "../tests/fixtures";
 import { FillProperties } from "../abstractions";
-import { getPagesToTest, formatUrlToFilename } from "./utils";
+import { getPagesToTest, formatUrlToFilename } from "../tests/utils";
 
 const inlineMenuAppearanceDelay = 800;
 
@@ -23,7 +23,7 @@ test.describe("Extension presents page input inline menu with options for vault 
     let testPage = await extensionSetup;
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
 
-    const pagesToTest = getPagesToTest();
+    const pagesToTest = getPagesToTest(true);
 
     for (const page of pagesToTest) {
       const { url, inputs, skipTests } = page;
@@ -77,7 +77,8 @@ test.describe("Extension presents page input inline menu with options for vault 
             ? ""
             : currentInput.value;
 
-          await expect(currentInputElement).toHaveValue(expectedValue);
+          // Soft expect on live pages
+          await expect.soft(currentInputElement).toHaveValue(expectedValue);
 
           await testPage.screenshot({
             fullPage: true,

@@ -8,14 +8,17 @@ import {
   screenshotsOutput,
   TestNames,
 } from "../constants";
-import { test, expect } from "./fixtures";
+import { test, expect } from "../tests/fixtures";
 import { FillProperties } from "../abstractions";
-import { getPagesToTest, formatUrlToFilename } from "./utils";
+import {
+  getPagesToTest,
+  doAutofill,
+  formatUrlToFilename,
+} from "../tests/utils";
 
-const inlineMenuAppearanceDelay = 800;
-
-test.describe("Extension presents page input inline menu with options for vault interaction", () => {
+test.describe("Extension autofills forms when triggered", () => {
   test("Log in to the vault, open pages, and run page tests", async ({
+    context,
     extensionSetup,
   }) => {
     test.setTimeout(defaultTestTimeout);
@@ -23,13 +26,14 @@ test.describe("Extension presents page input inline menu with options for vault 
     let testPage = await extensionSetup;
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
 
-    const pagesToTest = getPagesToTest();
+    const [backgroundPage] = context.backgroundPages();
+    const pagesToTest = getPagesToTest(true);
 
     for (const page of pagesToTest) {
       const { url, inputs, skipTests } = page;
 
-      await test.step(`fill the form via inline menu and submit at ${url}`, async () => {
-        if (skipTests?.includes(TestNames.InlineMenuAutofill)) {
+      await test.step(`Autofill the form at ${url}`, async () => {
+        if (skipTests?.includes(TestNames.MessageAutofill)) {
           console.log(`Skipping known failure for ${url}`);
 
           return;
@@ -59,11 +63,7 @@ test.describe("Extension presents page input inline menu with options for vault 
             : await firstInputSelector(testPage);
         await firstInputElement.waitFor(defaultWaitForOptions);
 
-        // Navigate inline menu for autofill
-        await firstInputElement.click();
-        await testPage.waitForTimeout(inlineMenuAppearanceDelay);
-        await testPage.keyboard.press("ArrowDown");
-        await testPage.keyboard.press("Space");
+        await doAutofill(backgroundPage);
 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
@@ -77,13 +77,14 @@ test.describe("Extension presents page input inline menu with options for vault 
             ? ""
             : currentInput.value;
 
-          await expect(currentInputElement).toHaveValue(expectedValue);
+          // Soft expect on live pages
+          await expect.soft(currentInputElement).toHaveValue(expectedValue);
 
           await testPage.screenshot({
             fullPage: true,
             path: path.join(
               screenshotsOutput,
-              `${formatUrlToFilename(url)}-${inputKey}-inline_menu.png`,
+              `${formatUrlToFilename(url)}-${inputKey}-autofill-public.png`,
             ),
           });
 
@@ -114,11 +115,7 @@ test.describe("Extension presents page input inline menu with options for vault 
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
 
-            // Navigate inline menu for autofill
-            await nextInputElement.click();
-            await testPage.waitForTimeout(inlineMenuAppearanceDelay);
-            await testPage.keyboard.press("ArrowDown");
-            await testPage.keyboard.press("Space");
+            await doAutofill(backgroundPage);
           }
 
           if (debugIsActive) {
@@ -126,6 +123,8 @@ test.describe("Extension presents page input inline menu with options for vault 
           }
         }
       });
+
+      // Note, no form submission check for public sites
     }
 
     // Hold the window open (don't automatically close out) when debugging

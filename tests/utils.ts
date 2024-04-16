@@ -1,22 +1,9 @@
 import { Page } from "@playwright/test";
-import { PageTest } from "../abstractions";
-import {
-  debugIsActive,
-  startFromTestUrl,
-  targetTestPages,
-  testSiteHost,
-} from "../constants";
+import { debugIsActive, startFromTestUrl, testPages } from "../constants";
+import { testPages as publicTestPages } from "../constants/public";
 
-export function getPagesToTest(pageTests: PageTest[]) {
-  const filteredPageTests = pageTests.filter(({ url }) => {
-    if (targetTestPages === "static") {
-      return url.startsWith(testSiteHost);
-    } else if (targetTestPages === "public") {
-      return !url.startsWith(testSiteHost);
-    } else {
-      return true;
-    }
-  });
+export function getPagesToTest(usePublicTestPages: boolean = false) {
+  const filteredPageTests = usePublicTestPages ? publicTestPages : testPages;
 
   // When debug is active, only run tests against `onlyTest` pages if any are specified
   if (debugIsActive) {

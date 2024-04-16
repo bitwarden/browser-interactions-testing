@@ -7,8 +7,6 @@ import {
   defaultWaitForOptions,
   screenshotsOutput,
   TestNames,
-  testPages,
-  testSiteHost,
 } from "../constants";
 import { test, expect } from "./fixtures";
 import { FillProperties } from "../abstractions";
@@ -25,11 +23,10 @@ test.describe("Extension autofills forms when triggered", () => {
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
 
     const [backgroundPage] = context.backgroundPages();
-    const pagesToTest = getPagesToTest(testPages);
+    const pagesToTest = getPagesToTest();
 
     for (const page of pagesToTest) {
       const { url, inputs, skipTests } = page;
-      const isLocalPage = url.startsWith(testSiteHost);
 
       await test.step(`Autofill the form at ${url}`, async () => {
         if (skipTests?.includes(TestNames.MessageAutofill)) {
@@ -76,12 +73,7 @@ test.describe("Extension autofills forms when triggered", () => {
             ? ""
             : currentInput.value;
 
-          // Do not soft expect on local test pages; we want to stop the tests before hitting live pages
-          if (isLocalPage) {
-            await expect(currentInputElement).toHaveValue(expectedValue);
-          } else {
-            await expect.soft(currentInputElement).toHaveValue(expectedValue);
-          }
+          await expect(currentInputElement).toHaveValue(expectedValue);
 
           await testPage.screenshot({
             fullPage: true,
@@ -127,21 +119,18 @@ test.describe("Extension autofills forms when triggered", () => {
         }
       });
 
-      // Skip form submission check for public sites
-      if (isLocalPage) {
-        await test.step(`Notification should not appear when submitting the form at ${url}`, async () => {
-          // Submit
-          await testPage.keyboard.press("Enter");
+      await test.step(`Notification should not appear when submitting the form at ${url}`, async () => {
+        // Submit
+        await testPage.keyboard.press("Enter");
 
-          // Target notification close button since it's present on all notification bar cases
-          const notificationBarCloseButtonLocator = testPage
-            .frameLocator("#bit-notification-bar-iframe")
-            .getByRole("button", { name: "Close" })
-            .first();
+        // Target notification close button since it's present on all notification bar cases
+        const notificationBarCloseButtonLocator = testPage
+          .frameLocator("#bit-notification-bar-iframe")
+          .getByRole("button", { name: "Close" })
+          .first();
 
-          await expect(notificationBarCloseButtonLocator).not.toBeVisible();
-        });
-      }
+        await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+      });
     }
 
     // Hold the window open (don't automatically close out) when debugging

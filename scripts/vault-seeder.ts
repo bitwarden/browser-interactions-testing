@@ -12,10 +12,10 @@ import {
 } from "../abstractions";
 import {
   CipherType,
-  localPageCiphers,
-  publicPageCiphers,
+  pageCiphers as localPageCiphers,
   UriMatchType,
 } from "../constants";
+import { pageCiphers as publicPageCiphers } from "../constants/public";
 
 const PLAYWRIGHT_CIPHERS_FOLDER = "AutofillPlaywrightTestingItems";
 
