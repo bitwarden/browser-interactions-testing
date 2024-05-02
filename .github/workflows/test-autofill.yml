@@ -84,11 +84,24 @@ jobs:
       - name: Setup the vault test account ciphers
         run: npm run seed:vault:ciphers:ci
 
-      - name: Setup test site
+      - name: Download test site build
+        uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build.yml
+          workflow_conclusion: ""
+          branch: main
+          name: build-files
+          path: test-site
+          repo: bitwarden/test-the-web
+          if_no_artifact_found: fail
+
+      - name: Copy over certs and install test site dependencies
         run: |
-          eval `ssh-agent -s`
-          ssh-add - <<< '${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}'
-          npm run setup:test-site
+          cp ssl.crt test-site/api/
+          cp ssl.key test-site/api/
+          cd test-site
+          npm ci
 
       - name: Run autofill tests
         run: npm run test:static:autofill:ci
