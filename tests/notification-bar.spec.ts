@@ -51,7 +51,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
         await testPage.goto(url, defaultGotoOptions);
 
         // @TODO workaround for content script not being ready
-        await testPage.waitForTimeout(500);
+        await testPage.waitForTimeout(1000);
 
         const inputKeys = Object.keys(inputs);
 
@@ -168,7 +168,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
         await testPage.goto(url, defaultGotoOptions);
 
         // @TODO workaround for content script not being ready
-        await testPage.waitForTimeout(500);
+        await testPage.waitForTimeout(1000);
 
         const inputKeys = Object.keys(inputs);
 
