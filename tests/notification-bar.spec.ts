@@ -24,7 +24,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
 
     // Needed to allow the background reload further down
     await test.step("Set vault to never timeout", async () => {
-      const extensionAutofillSettingsURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/tabs/settings`;
+      const extensionAutofillSettingsURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/account-security`;
       await testPage.goto(extensionAutofillSettingsURL, defaultGotoOptions);
       await testPage
         .getByLabel("Vault timeout", { exact: true })
