@@ -28,7 +28,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
       await testPage.goto(extensionAutofillSettingsURL, defaultGotoOptions);
       await testPage
         .getByLabel("Vault timeout", { exact: true })
-        .selectOption("9: null");
+        .selectOption("9: never");
       await testPage.getByRole("button", { name: "Yes" }).click();
     });
 
