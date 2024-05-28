@@ -16,7 +16,7 @@
   "devDependencies": {
     "@playwright/test": "1.44.1",
     "@types/chrome": "0.0.268",
-    "@types/node": "20.12.7",
+    "@types/node": "20.12.12",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
     "dotenv": "16.4.5",
@@ -71,7 +71,7 @@
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch"
   },
   "engines": {
-    "node": "20.12.x",
+    "node": "20.14.x",
     "npm": "~10"
   }
 }
