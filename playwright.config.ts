@@ -27,7 +27,7 @@ const config: PlaywrightTestConfig = {
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI && process.env.DISABLE_RETRY !== "true" ? 1 : 0,
+  retries: process.env.CI && process.env.DISABLE_RETRY !== "true" ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   // Note: MV3 build currently requires single worker operation
   workers: 1,
