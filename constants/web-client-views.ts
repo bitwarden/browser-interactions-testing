@@ -1,4 +1,4 @@
-export const authenticatedWebClientViewPaths = [
+export const authenticatedWebClientViewPaths = new Set([
   "vault",
   "vault?organizationId=unassigned&type=trash",
   "sends",
@@ -17,13 +17,13 @@ export const authenticatedWebClientViewPaths = [
   "settings/emergency-access",
   "settings/sponsored-families",
   "create-organization",
-];
+]);
 
-export const unauthenticatedWebClientViewPaths = [
+export const unauthenticatedWebClientViewPaths = new Set([
   "login",
   "register?email=notarealemail@bitwarden.com",
   // @TODO requires stepping through email input
   // "login-with-device",
   "sso?email=notarealemail@bitwarden.com",
   "login-with-passkey",
-];
+]);

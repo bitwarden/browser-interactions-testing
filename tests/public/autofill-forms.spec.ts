@@ -7,7 +7,7 @@ import {
   screenshotsOutput,
   TestNames,
 } from "../../constants";
-import { test, expect } from "../fixtures";
+import { test, expect } from "../fixtures.browser";
 import { FillProperties } from "../../abstractions";
 import { getPagesToTest, doAutofill, formatUrlToFilename } from "../utils";
 

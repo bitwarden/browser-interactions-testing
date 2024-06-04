@@ -32,10 +32,8 @@ export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
   extensionSetup: Page;
-  webClientSetup: Page;
   manifestVersion: number;
 }>({
-  // eslint-disable-next-line no-empty-pattern
   context: async ({ browser }, use) => {
     console.log(
       "\x1b[1m\x1b[36m%s\x1b[0m", // cyan foreground
@@ -183,41 +181,6 @@ export const test = base.extend<{
       const vaultFilterBox = await testPage
         .locator("app-vault-filter main .box.list")
         .first();
-      await vaultFilterBox.waitFor(defaultWaitForOptions);
-    });
-
-    await use(testPage);
-  },
-  webClientSetup: async ({ context }, use) => {
-    let testPage: Page;
-
-    let contextPages = await context.pages();
-    testPage = contextPages[0];
-
-    await test.step("Log in to the web vault", async () => {
-      await testPage.goto(`${vaultHostURL}/#/login`, defaultGotoOptions);
-
-      const emailInput = await testPage.getByLabel("Email address");
-      await emailInput.waitFor(defaultWaitForOptions);
-      await emailInput.fill(vaultEmail);
-      const emailSubmitInput = await testPage.getByRole("button");
-      await emailSubmitInput.click();
-
-      const masterPasswordInput = await testPage.locator(
-        "input#login_input_master-password",
-      );
-      await masterPasswordInput.waitFor(defaultWaitForOptions);
-      await masterPasswordInput.fill(vaultPassword);
-
-      const loginButton = await testPage.getByRole("button", {
-        name: "Log in with master password",
-      });
-      await loginButton.waitFor(defaultWaitForOptions);
-      await loginButton.click();
-
-      const vaultURL = `${vaultHostURL}/#/vault`;
-      await testPage.waitForURL(vaultURL, defaultGotoOptions);
-      const vaultFilterBox = await testPage.locator("app-vault-items");
       await vaultFilterBox.waitFor(defaultWaitForOptions);
     });
 

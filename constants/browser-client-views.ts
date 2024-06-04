@@ -1,4 +1,4 @@
-export const browserClientViewPaths = [
+export const browserClientViewPaths = new Set([
   "register",
   "home",
   "environment",
@@ -22,4 +22,4 @@ export const browserClientViewPaths = [
   "options",
   "appearance",
   "about",
-];
+]);
