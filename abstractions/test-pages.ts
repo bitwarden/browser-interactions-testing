@@ -5,6 +5,7 @@ type FillProperties = {
   multiStepNextInputKey?: string;
   preFillActions?: (page: Page) => void;
   selector: string | ((page: Page) => Promise<Locator>);
+  // @TODO add shouldNotHaveInlineMenu (e.g. search inputs, etc)
   shouldNotFill?: boolean;
   value: string;
 };
@@ -15,6 +16,8 @@ type PageTest = {
     // Login fields
     username?: FillProperties;
     password?: FillProperties;
+    newPassword?: FillProperties;
+    newPasswordRetype?: FillProperties;
     totp?: FillProperties;
 
     // Card fields
@@ -49,6 +52,7 @@ type PageTest = {
   actions?: {
     submit?: (page: Page) => void;
   };
+  // @TODO split this to `shouldNotTriggerNewNotification` and `shouldNotTriggerUpdateNotification`
   shouldNotTriggerNotification?: boolean;
 };
 

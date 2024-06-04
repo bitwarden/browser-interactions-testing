@@ -72,7 +72,7 @@ test.describe("Extension presents page input inline menu with options for vault 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
           const currentInputSelector = currentInput.selector;
-          const currentInputElement =
+          const currentInputSelectedElement =
             typeof currentInputSelector === "string"
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
@@ -81,7 +81,7 @@ test.describe("Extension presents page input inline menu with options for vault 
             ? ""
             : currentInput.value;
 
-          await expect(currentInputElement).toHaveValue(expectedValue);
+          await expect(currentInputSelectedElement).toHaveValue(expectedValue);
 
           await testPage.screenshot({
             fullPage: true,
@@ -96,7 +96,7 @@ test.describe("Extension presents page input inline menu with options for vault 
             inputs[currentInput.multiStepNextInputKey];
 
           if (nextStepInput) {
-            await currentInputElement.press("Enter");
+            await currentInputSelectedElement.press("Enter");
 
             const nextInputPreFill = nextStepInput.preFillActions;
             if (nextInputPreFill) {

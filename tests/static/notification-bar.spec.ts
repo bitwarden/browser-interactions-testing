@@ -114,6 +114,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
+        // @TODO split shouldNotTriggerNotification to shouldNotTriggerNewNotification here
         await test.step(`the new cipher notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
@@ -138,6 +139,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             .frameLocator("#bit-notification-bar-iframe")
             .getByRole("button", { name: "Close" });
 
+          // @TODO split shouldNotTriggerNotification to shouldNotTriggerNewNotification here
           if (shouldNotTriggerNotification) {
             // Target the notification close button since it's present on all notification bar cases
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();
@@ -230,6 +232,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
+        // @TODO split shouldNotTriggerNotification to shouldNotTriggerUpdateNotification here
         await test.step(`the update password notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
@@ -254,6 +257,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             .frameLocator("#bit-notification-bar-iframe")
             .getByRole("button", { name: "Close" });
 
+          // @TODO split shouldNotTriggerNotification to shouldNotTriggerUpdateNotification here
           if (shouldNotTriggerNotification) {
             // Target the notification close button since it's present on all notification bar cases
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();

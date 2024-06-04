@@ -64,10 +64,15 @@ test.describe("Extension autofills forms when triggered", () => {
 
         await doAutofill(background);
 
+        /* Pause a moment before capturing input values.
+           (otherwise, when expecting an empty value, the test may pass before the fill,
+           potentially resulting in a false positive) */
+        await testPage.waitForTimeout(800);
+
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
           const currentInputSelector = currentInput.selector;
-          const currentInputElement =
+          const currentInputSelectedElement =
             typeof currentInputSelector === "string"
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
@@ -76,7 +81,7 @@ test.describe("Extension autofills forms when triggered", () => {
             ? ""
             : currentInput.value;
 
-          await expect(currentInputElement).toHaveValue(expectedValue);
+          await expect(currentInputSelectedElement).toHaveValue(expectedValue);
 
           await testPage.screenshot({
             fullPage: true,
@@ -91,7 +96,7 @@ test.describe("Extension autofills forms when triggered", () => {
             inputs[currentInput.multiStepNextInputKey];
 
           if (nextStepInput) {
-            await currentInputElement.press("Enter");
+            await currentInputSelectedElement.press("Enter");
 
             const nextInputPreFill = nextStepInput.preFillActions;
             if (nextInputPreFill) {
