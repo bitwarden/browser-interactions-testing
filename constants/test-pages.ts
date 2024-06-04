@@ -147,6 +147,21 @@ export const testPages: PageTest[] = [
         selector: "#username",
         value: testUserName,
       },
+      code: {
+        selector: "input[name='honeypotCode']",
+        shouldNotFill: true,
+        value: "fakeLoginHoneypotCode",
+      },
+      newPassword: {
+        selector: "input[name='honeypotPassword']",
+        shouldNotFill: true,
+        value: "fakeLoginHoneypotPassword",
+      },
+      email: {
+        selector: "input[name='honeypotEmail']",
+        shouldNotFill: true,
+        value: "fakeLoginHoneypotEmail",
+      },
       password: {
         selector: "#password",
         value: "fakeLoginHoneypotPassword",
