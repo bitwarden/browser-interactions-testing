@@ -1,5 +1,5 @@
-name: Test-autofill
-run-name: Autofill tests with MV${{ inputs.TEST_MV2 == true && 2 || 3 }} extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
+name: All-a11y-evaluation
+run-name: All a11y evaluations with MV${{ inputs.TEST_MV2 == true && 2 || 3 }} extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
@@ -108,8 +108,8 @@ jobs:
           cd test-site
           npm ci
 
-      - name: Run autofill tests
-        run: npm run test:static:autofill:ci
+      - name: Run all a11y evaluation
+        run: npm run test:a11y:ci
 
       - name: Update job summary
         if: always()

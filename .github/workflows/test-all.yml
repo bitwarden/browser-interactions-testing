@@ -115,6 +115,10 @@ jobs:
       - name: Run all tests
         run: npm run test:static:ci
 
+      - name: Update job summary
+        if: always()
+        run: echo "$(<./test-summary/test-summary.md)" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload results as artifact
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         if: always()

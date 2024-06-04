@@ -1,18 +1,9 @@
-name: Test-autofill
-run-name: Autofill tests with MV${{ inputs.TEST_MV2 == true && 2 || 3 }} extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
+# @TODO facilitate web client build selection; right now, these tests are tied to whatever version of web is served from the self-host image used in the `docker-compose.yml`
+name: Web-client-a11y-evaluation
+run-name: Web client a11y evaluation by @${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
-      TEST_MV2:
-        default: false
-        description: "test with the manifest version 2 extension build"
-        required: false
-        type: boolean
-      CLIENTS_BRANCH:
-        default: "main"
-        description: "clients branch of browser build to use"
-        required: true
-        type: string
       FEATURE_FLAGS:
         default: "{}"
         description: 'JSON key-value pairs representing feature flag states. (e.g. {"autofill-v2": true, "autofill-overlay": false})'
@@ -39,24 +30,6 @@ jobs:
 
       - name: Create feature flags file
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS }}}" > flags.json
-
-      - name: Download extension artifact
-        uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build-browser.yml
-          workflow_conclusion: ""
-          branch: ${{ inputs.CLIENTS_BRANCH }}
-          name: ${{ inputs.TEST_MV2 == true && '^dist-chrome-\w{7}\.zip$' || 'dist-chrome-MV3-\w{7}\.zip' }}
-          name_is_regexp: true
-          repo: bitwarden/clients
-          if_no_artifact_found: fail
-          skip_unpack: true
-
-      - name: Unzip extension artifact
-        run: |
-          unzip -o *dist-chrome-*.zip.zip
-          unzip -o 'dist-chrome*.zip' -d build
 
       - name: Generate and install certs
         run: |
@@ -108,8 +81,8 @@ jobs:
           cd test-site
           npm ci
 
-      - name: Run autofill tests
-        run: npm run test:static:autofill:ci
+      - name: Run web client a11y evaluation
+        run: npm run test:a11y:web:ci
 
       - name: Update job summary
         if: always()
