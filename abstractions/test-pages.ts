@@ -5,7 +5,7 @@ type FillProperties = {
   multiStepNextInputKey?: string;
   preFillActions?: (page: Page) => void;
   selector: string | ((page: Page) => Promise<Locator>);
-  // @TODO add shouldNotHaveInlineMenu (e.g. search inputs, etc)
+  shouldNotHaveInlineMenu?: boolean;
   shouldNotFill?: boolean;
   value: string;
 };

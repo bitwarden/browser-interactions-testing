@@ -16,6 +16,7 @@ const inlineMenuAppearanceDelay = 800;
 test.describe("Extension presents page input inline menu with options for vault interaction", () => {
   test("Log in to the vault, open pages, and run page tests", async ({
     extensionSetup,
+    extensionId,
   }) => {
     let testPage = await extensionSetup;
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
@@ -66,6 +67,28 @@ test.describe("Extension presents page input inline menu with options for vault 
         // Navigate inline menu for autofill
         await firstInputElement.click();
         await testPage.waitForTimeout(inlineMenuAppearanceDelay);
+
+        // returns `null` if no match is found
+        const inlineMenu = await testPage.frame({
+          url: `chrome-extension://${extensionId}/overlay/button.html`,
+        });
+
+        // Check if inline menu appears when it should/shouldn't
+        if (firstInput.shouldNotHaveInlineMenu) {
+          expect(
+            inlineMenu,
+            "an inline menu should NOT appear for the target input",
+          ).toBe(null);
+
+          // return early since we can't initiate autofill
+          return;
+        } else {
+          expect(
+            inlineMenu,
+            "as inline menu should appear for the target input",
+          ).not.toBe(null);
+        }
+
         await testPage.keyboard.press("ArrowDown");
         await testPage.keyboard.press("Space");
 

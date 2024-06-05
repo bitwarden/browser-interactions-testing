@@ -170,6 +170,7 @@ export const testPages: PageTest[] = [
     skipTests: [
       TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear
       TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear
+      TestNames.InlineMenuAutofill, // @TODO known failure - inline menu fills "honeypotPassword" honeypot input
     ],
   },
   {
@@ -261,6 +262,7 @@ export const testPages: PageTest[] = [
     inputs: {
       username: {
         shouldNotFill: true,
+        shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
@@ -271,34 +273,33 @@ export const testPages: PageTest[] = [
       },
     },
     shouldNotTriggerNotification: true,
-    skipTests: [
-      TestNames.InlineMenuAutofill, // No inline menu to test for this input // @TODO do a shouldNotHaveInlineMenu check instead
-    ],
+    skipTests: [],
   },
   {
     url: `${testSiteHost}/forms/search/inline-search`,
     inputs: {
       username: {
         shouldNotFill: true,
+        shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
       password: {
         shouldNotFill: true,
+        shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: "fakeSearchPassword",
       },
     },
     shouldNotTriggerNotification: true,
-    skipTests: [
-      TestNames.InlineMenuAutofill, // No inline menu to test for this input // @TODO do a shouldNotHaveInlineMenu check instead
-    ],
+    skipTests: [],
   },
   {
     url: `${testSiteHost}/forms/search/typeless-search`,
     inputs: {
       username: {
         shouldNotFill: true,
+        shouldNotHaveInlineMenu: true,
         selector: "input.typeless-search-input",
         value: testUserName,
       },
@@ -309,9 +310,7 @@ export const testPages: PageTest[] = [
       },
     },
     shouldNotTriggerNotification: true,
-    skipTests: [
-      TestNames.InlineMenuAutofill, // No inline menu to test for this input // @TODO do a shouldNotHaveInlineMenu check instead
-    ],
+    skipTests: [],
   },
   {
     url: `${testSiteHost}/forms/update/update-email`,
