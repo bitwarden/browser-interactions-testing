@@ -52,8 +52,8 @@ type PageTest = {
   actions?: {
     submit?: (page: Page) => void;
   };
-  // @TODO split this to `shouldNotTriggerNewNotification` and `shouldNotTriggerUpdateNotification`
-  shouldNotTriggerNotification?: boolean;
+  shouldNotTriggerNewNotification?: boolean;
+  shouldNotTriggerUpdateNotification?: boolean;
 };
 
 type TestNameKeys = (typeof TestNames)[keyof typeof TestNames];

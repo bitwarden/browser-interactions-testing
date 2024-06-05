@@ -272,7 +272,8 @@ export const testPages: PageTest[] = [
         value: "fakeSearchPassword",
       },
     },
-    shouldNotTriggerNotification: true,
+    shouldNotTriggerNewNotification: true,
+    shouldNotTriggerUpdateNotification: true,
     skipTests: [],
   },
   {
@@ -291,7 +292,8 @@ export const testPages: PageTest[] = [
         value: "fakeSearchPassword",
       },
     },
-    shouldNotTriggerNotification: true,
+    shouldNotTriggerNewNotification: true,
+    shouldNotTriggerUpdateNotification: true,
     skipTests: [],
   },
   {
@@ -309,7 +311,8 @@ export const testPages: PageTest[] = [
         value: "fakeSearchPassword",
       },
     },
-    shouldNotTriggerNotification: true,
+    shouldNotTriggerNewNotification: true,
+    shouldNotTriggerUpdateNotification: true,
     skipTests: [],
   },
   {
@@ -325,7 +328,9 @@ export const testPages: PageTest[] = [
         value: "fakeUpdateEmailPagePassword",
       },
     },
+    shouldNotTriggerNewNotification: true,
     skipTests: [
+      TestNames.NewCredentialsNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one
       TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one
       TestNames.InlineMenuAutofill, // @TODO known failure - fills new email input with attribute `autocomplete="off"`
       TestNames.MessageAutofill, // @TODO known failure - fills new email input with attribute `autocomplete="off"`
@@ -349,8 +354,8 @@ export const testPages: PageTest[] = [
         value: "newFakeUpdatePasswordPagePassword",
       },
     },
+    shouldNotTriggerNewNotification: true,
     skipTests: [
-      TestNames.NewCredentialsNotification, // New credentials won't be used for this case
       TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the current password field)
       TestNames.InlineMenuAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"`
       TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"`

@@ -31,8 +31,14 @@ test.describe("Extension triggers a notification bar when a page form is submitt
     const pagesToTest = getPagesToTest();
 
     for (const page of pagesToTest) {
-      const { url, inputs, actions, shouldNotTriggerNotification, skipTests } =
-        page;
+      const {
+        url,
+        inputs,
+        actions,
+        shouldNotTriggerNewNotification,
+        shouldNotTriggerUpdateNotification,
+        skipTests,
+      } = page;
 
       await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
         if (skipTests?.includes(TestNames.NewCredentialsNotification)) {
@@ -114,8 +120,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
-        // @TODO split shouldNotTriggerNotification to shouldNotTriggerNewNotification here
-        await test.step(`the new cipher notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+        await test.step(`the new cipher notification bar should ${shouldNotTriggerNewNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
             await actions.submit(testPage);
@@ -139,8 +144,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             .frameLocator("#bit-notification-bar-iframe")
             .getByRole("button", { name: "Close" });
 
-          // @TODO split shouldNotTriggerNotification to shouldNotTriggerNewNotification here
-          if (shouldNotTriggerNotification) {
+          if (shouldNotTriggerNewNotification) {
             // Target the notification close button since it's present on all notification bar cases
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           } else {
@@ -232,8 +236,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
-        // @TODO split shouldNotTriggerNotification to shouldNotTriggerUpdateNotification here
-        await test.step(`the update password notification bar should ${shouldNotTriggerNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+        await test.step(`the update password notification bar should ${shouldNotTriggerUpdateNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
             await actions.submit(testPage);
@@ -257,8 +260,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             .frameLocator("#bit-notification-bar-iframe")
             .getByRole("button", { name: "Close" });
 
-          // @TODO split shouldNotTriggerNotification to shouldNotTriggerUpdateNotification here
-          if (shouldNotTriggerNotification) {
+          if (shouldNotTriggerUpdateNotification) {
             // Target the notification close button since it's present on all notification bar cases
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           } else {
