@@ -22,7 +22,7 @@ export const authenticatedWebClientViewPaths = new Set([
 export const unauthenticatedWebClientViewPaths = new Set([
   "login",
   "register?email=notarealemail@bitwarden.com",
-  // @TODO requires stepping through email input
+  // @TODO requires stepping through email input (with a passing check)
   // "login-with-device",
   "sso?email=notarealemail@bitwarden.com",
   "login-with-passkey",

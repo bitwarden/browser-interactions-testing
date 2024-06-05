@@ -64,7 +64,7 @@ test.describe("Extension presents page input inline menu with options for vault 
             : await firstInputSelector(testPage);
         await firstInputElement.waitFor(defaultWaitForOptions);
 
-        // Navigate inline menu for autofill
+        // Focus the target input for the inline menu to appear
         await firstInputElement.click();
         await testPage.waitForTimeout(inlineMenuAppearanceDelay);
 
@@ -89,6 +89,7 @@ test.describe("Extension presents page input inline menu with options for vault 
           ).not.toBe(null);
         }
 
+        // Navigate inline menu for autofill
         await testPage.keyboard.press("ArrowDown");
         await testPage.keyboard.press("Space");
 
