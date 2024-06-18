@@ -107,7 +107,7 @@ Create and start the containers and volumes with `docker compose up -d --build -
 - Run headless testing with `npm run test:static:headless`
 - Run headed tests in debug mode with `npm run test:static:debug`
 - Run only the public pages testing with `npm run test:public:debug`
-- Testing builds and uses the Manifest v3 version of the browser client by default; the v2 version can be build with `npm run build:extension:v2`
+- Test builds use the Manifest v3 version of the browser client by default; the v2 version can be built with `npm run build:extension:v2`
 
 ## Feature flags
 

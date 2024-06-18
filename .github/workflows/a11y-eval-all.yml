@@ -1,13 +1,8 @@
 name: All-a11y-evaluation
-run-name: All a11y evaluations with MV${{ inputs.TEST_MV2 == true && 2 || 3 }} extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
+run-name: All a11y evaluations with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
-      TEST_MV2:
-        default: false
-        description: "test with the manifest version 2 extension build"
-        required: false
-        type: boolean
       CLIENTS_BRANCH:
         default: "main"
         description: "clients branch of browser build to use"
@@ -47,7 +42,7 @@ jobs:
           workflow: build-browser.yml
           workflow_conclusion: ""
           branch: ${{ inputs.CLIENTS_BRANCH }}
-          name: ${{ inputs.TEST_MV2 == true && '^dist-chrome-\w{7}\.zip$' || 'dist-chrome-MV3-\w{7}\.zip' }}
+          name: dist-chrome-MV3-\w{7}\.zip
           name_is_regexp: true
           repo: bitwarden/clients
           if_no_artifact_found: fail
