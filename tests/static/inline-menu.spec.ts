@@ -69,9 +69,16 @@ test.describe("Extension presents page input inline menu with options for vault 
         await testPage.waitForTimeout(inlineMenuAppearanceDelay);
 
         // returns `null` if no match is found
-        const inlineMenu = await testPage.frame({
+        let inlineMenu = await testPage.frame({
           url: `chrome-extension://${extensionId}/overlay/button.html`,
         });
+
+        if (!inlineMenu) {
+          inlineMenu = await testPage.frame({
+            // If feature flag "inline-menu-positioning-improvements" is active
+            url: `chrome-extension://${extensionId}/overlay/menu.html`,
+          });
+        }
 
         // Check if inline menu appears when it should/shouldn't
         if (firstInput.shouldNotHaveInlineMenu) {
