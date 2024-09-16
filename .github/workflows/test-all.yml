@@ -35,6 +35,8 @@ jobs:
         run: |
           sudo setcap 'cap_net_bind_service=+ep' `which node`
           echo "${{ secrets.ENV_FILE }}" | base64 --decode > .env
+          echo "BW_INSTALLATION_ID=${{ secrets.BW_INSTALLATION_ID }}" >> .env
+          echo "BW_INSTALLATION_KEY=${{ secrets.BW_INSTALLATION_KEY }}" >> .env
 
       - name: Create feature flags file
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS || '{}' }}}" > flags.json
@@ -73,9 +75,6 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-
-      - name: Generate and install keys
-        run: npm run setup:install
 
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
