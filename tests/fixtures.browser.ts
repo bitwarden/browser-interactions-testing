@@ -179,10 +179,17 @@ export const test = base.extend<{
 
       const extensionURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/tabs/vault`;
       await testPage.waitForURL(extensionURL, defaultGotoOptions);
+      // Legacy UI
       const vaultFilterBox = await testPage
         .locator("app-vault-filter main .box.list")
         .first();
-      await vaultFilterBox.waitFor(defaultWaitForOptions);
+
+      // New UI refresh
+      const vaultListItems = await testPage
+        .locator("app-vault-list-items-container#allItems")
+        .first();
+
+      await vaultFilterBox.or(vaultListItems).waitFor(defaultWaitForOptions);
     });
 
     await use(testPage);
