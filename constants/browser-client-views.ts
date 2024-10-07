@@ -18,8 +18,10 @@ export const browserClientViewPaths = new Set([
   "folders",
   "vault-settings",
   "export",
-  "sync",
-  "options",
   "appearance",
   "about",
+  "more-from-bitwarden",
+  "premium",
 ]);
+
+export const browserClientViewPathsRefreshUI = new Set(["lockV2", "trash"]);

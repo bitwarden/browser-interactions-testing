@@ -1,5 +1,6 @@
 import {
   browserClientViewPaths,
+  browserClientViewPathsRefreshUI,
   debugIsActive,
   messageColor,
 } from "../../constants";
@@ -16,8 +17,13 @@ test.describe("Browser client", { tag: ["@browser-client", "@a11y"] }, () => {
 
     let testPage = await extensionSetup;
     let violationsCount = 0;
+    let viewPaths = [
+      ...browserClientViewPaths,
+      ...browserClientViewPathsRefreshUI,
+    ];
 
-    for (const viewPath of browserClientViewPaths) {
+    // Note: if a path is nonexistent, it will load to the vault tab and evaluate that
+    for (const viewPath of viewPaths) {
       await test.step(`for path: \`${urlSharedPathBase}${viewPath}\``, async () => {
         const newViolationsCount = await a11yTestView({
           testInfo,
