@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-test:
     name: Build and test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
@@ -36,7 +36,7 @@ jobs:
       - name: Generate and install certs
         run: |
           npm run setup:ssl
-          sudo apt-get install libnss3-tools=2:3.68.2-0ubuntu1
+          sudo apt-get install libnss3-tools=2:3.98-1build1
           . .env
           mkdir -p $HOME/.pki/nssdb
           certutil -d $HOME/.pki/nssdb -N --empty-password
