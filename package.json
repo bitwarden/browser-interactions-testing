@@ -17,7 +17,7 @@
     "@axe-core/playwright": "4.10.0",
     "@playwright/test": "1.47.2",
     "@types/chrome": "0.0.277",
-    "@types/node": "20.16.10",
+    "@types/node": "20.16.11",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
     "dotenv": "16.4.5",
@@ -79,7 +79,7 @@
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch"
   },
   "engines": {
-    "node": "20.17.x",
+    "node": "20.18.x",
     "npm": "~10"
   }
 }
