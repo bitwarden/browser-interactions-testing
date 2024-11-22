@@ -17,7 +17,7 @@
     "@axe-core/playwright": "4.10.1",
     "@playwright/test": "1.48.2",
     "@types/chrome": "0.0.283",
-    "@types/node": "22.9.0",
+    "@types/node": "22.9.1",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
     "dotenv": "16.4.5",
