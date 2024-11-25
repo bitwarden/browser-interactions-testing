@@ -16,7 +16,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.10.1",
     "@playwright/test": "1.49.0",
-    "@types/chrome": "0.0.283",
+    "@types/chrome": "0.0.284",
     "@types/node": "22.9.1",
     "cross-env": "7.0.3",
     "cross-fetch": "4.0.0",
