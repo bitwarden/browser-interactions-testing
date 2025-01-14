@@ -41,9 +41,11 @@ test.describe("Extension triggers a notification bar when a page form is submitt
     await test.step("Set vault to never timeout", async () => {
       const extensionAutofillSettingsURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/account-security`;
       await testPage.goto(extensionAutofillSettingsURL, defaultGotoOptions);
-      await testPage
-        .getByLabel("Vault timeout", { exact: true })
-        .selectOption("9: never");
+      const timeoutOptionsInput = await testPage.getByLabel("Timeout", {
+        exact: true,
+      });
+      await timeoutOptionsInput.fill("Never");
+      await timeoutOptionsInput.press("Enter");
       await testPage.getByRole("button", { name: "Yes" }).click();
     });
 
