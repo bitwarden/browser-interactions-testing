@@ -149,6 +149,9 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             await testPage.keyboard.press("Enter");
           }
 
+          // Wait for form submit redirect
+          await testPage.waitForLoadState();
+
           await testPage.screenshot({
             fullPage: true,
             path: path.join(
@@ -264,6 +267,9 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           } else {
             await testPage.keyboard.press("Enter");
           }
+
+          // Wait for form submit redirect
+          await testPage.waitForLoadState();
 
           await testPage.screenshot({
             fullPage: true,
