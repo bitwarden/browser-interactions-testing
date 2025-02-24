@@ -160,17 +160,17 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const newCipherNotificationBarLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
-            .contentFrame()
-            .getByText("Should Bitwarden remember this password for you?");
+          const notificationBarLocator = await testPage.frameLocator(
+            "#bit-notification-bar-iframe",
+          );
 
-          const notificationBarCloseButtonLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
-            .contentFrame()
-            .getByRole("button", { name: "Close" });
+          const newCipherNotificationBarLocator =
+            notificationBarLocator.getByText(
+              "Should Bitwarden remember this password for you?",
+            );
+
+          const notificationBarCloseButtonLocator =
+            notificationBarLocator.getByRole("button", { name: "Close" });
 
           if (shouldNotTriggerNewNotification) {
             // Target the notification close button since it's present on all notification bar cases
@@ -286,17 +286,17 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const updatePasswordNotificationBarLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
-            .contentFrame()
-            .getByText("Do you want to update this password in Bitwarden?");
+          const notificationBarLocator = await testPage.frameLocator(
+            "#bit-notification-bar-iframe",
+          );
 
-          const notificationBarCloseButtonLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
-            .contentFrame()
-            .getByRole("button", { name: "Close" });
+          const updatePasswordNotificationBarLocator =
+            notificationBarLocator.getByText(
+              "Do you want to update this password in Bitwarden?",
+            );
+
+          const notificationBarCloseButtonLocator =
+            notificationBarLocator.getByRole("button", { name: "Close" });
 
           if (shouldNotTriggerUpdateNotification) {
             // Target the notification close button since it's present on all notification bar cases
