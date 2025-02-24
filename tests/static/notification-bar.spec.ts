@@ -161,11 +161,15 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           });
 
           const newCipherNotificationBarLocator = testPage
-            .frameLocator("#bit-notification-bar-iframe")
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame()
             .getByText("Should Bitwarden remember this password for you?");
 
           const notificationBarCloseButtonLocator = testPage
-            .frameLocator("#bit-notification-bar-iframe")
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame()
             .getByRole("button", { name: "Close" });
 
           if (shouldNotTriggerNewNotification) {
@@ -177,6 +181,9 @@ test.describe("Extension triggers a notification bar when a page form is submitt
 
             // Close the notification bar for the next triggering case
             await notificationBarCloseButtonLocator.click();
+
+            await testPage.waitForTimeout(400);
+            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           }
         });
       });
@@ -280,11 +287,15 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           });
 
           const updatePasswordNotificationBarLocator = testPage
-            .frameLocator("#bit-notification-bar-iframe")
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame()
             .getByText("Do you want to update this password in Bitwarden?");
 
           const notificationBarCloseButtonLocator = testPage
-            .frameLocator("#bit-notification-bar-iframe")
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame()
             .getByRole("button", { name: "Close" });
 
           if (shouldNotTriggerUpdateNotification) {
@@ -296,6 +307,9 @@ test.describe("Extension triggers a notification bar when a page form is submitt
 
             // Close the notification bar for the next triggering case
             await notificationBarCloseButtonLocator.click();
+
+            await testPage.waitForTimeout(400);
+            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           }
         });
       });
