@@ -182,7 +182,6 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             // Close the notification bar for the next triggering case
             await notificationBarCloseButtonLocator.click();
 
-            await testPage.waitForTimeout(400);
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           }
         });
@@ -308,7 +307,6 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             // Close the notification bar for the next triggering case
             await notificationBarCloseButtonLocator.click();
 
-            await testPage.waitForTimeout(400);
             await expect(notificationBarCloseButtonLocator).not.toBeVisible();
           }
         });
