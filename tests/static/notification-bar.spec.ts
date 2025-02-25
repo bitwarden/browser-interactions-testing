@@ -160,9 +160,10 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const notificationBarLocator = await testPage.frameLocator(
-            "#bit-notification-bar-iframe",
-          );
+          const notificationBarLocator = await testPage
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame();
 
           const newCipherNotificationBarLocator =
             notificationBarLocator.getByText(
@@ -285,9 +286,10 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const notificationBarLocator = await testPage.frameLocator(
-            "#bit-notification-bar-iframe",
-          );
+          const notificationBarLocator = await testPage
+            .locator("#bit-notification-bar-iframe")
+            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
+            .contentFrame();
 
           const updatePasswordNotificationBarLocator =
             notificationBarLocator.getByText(
