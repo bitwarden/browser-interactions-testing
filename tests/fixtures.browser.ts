@@ -131,12 +131,22 @@ export const test = base.extend<{
 
     await test.step("Configure the environment", async () => {
       if (vaultHostURL) {
-        const extensionURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/environment`;
+        const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
         await testPage.goto(extensionURL, defaultGotoOptions);
-        const baseUrlInput = await testPage.locator("input#baseUrl");
+
+        await testPage.getByText("self-hosted").click();
+        await testPage
+          .locator(
+            '[data-testid="environment-selector-dialog-item-self-hosted"]',
+          )
+          .click();
+
+        const baseUrlInput = await testPage.locator(
+          "input#self_hosted_env_settings_form_input_base_url",
+        );
         await baseUrlInput.waitFor(defaultWaitForOptions);
 
-        await testPage.fill("input#baseUrl", vaultHostURL);
+        await baseUrlInput.fill(vaultHostURL);
 
         await testPage.screenshot({
           fullPage: true,
@@ -147,12 +157,7 @@ export const test = base.extend<{
           ),
         });
 
-        const serverConfigContent = await testPage.locator("#baseUrlHelp");
-        await testPage.click("button[type='submit']");
-        await serverConfigContent.waitFor({
-          ...defaultWaitForOptions,
-          state: "detached",
-        });
+        await testPage.click("bit-dialog button[type='submit']");
       }
     });
 
@@ -175,7 +180,7 @@ export const test = base.extend<{
       await loginButton.waitFor(defaultWaitForOptions);
       await loginButton.click();
 
-      const extensionURL = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/tabs/vault`;
+      const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/tabs/vault`;
       await testPage.waitForURL(extensionURL, defaultGotoOptions);
       // Legacy UI
       const vaultFilterBox = await testPage
