@@ -119,6 +119,7 @@ jobs:
         with:
           name: test-summary
           path: |
+            ./flags.json
             ./test-summary
             ./tests-out/videos
             ./tests-out/screenshots
