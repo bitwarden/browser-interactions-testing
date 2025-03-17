@@ -1,4 +1,4 @@
-name: Test-all
+name: Test-all-custom-flags
 run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
   push:
@@ -12,9 +12,10 @@ on:
         description: "clients branch of browser build to use"
         required: true
         type: string
-      REMOTE_VAULT_CONFIG_MATCH:
-        description: "URL to an endpoint returning a vault configuration (will default to US prod configuration)"
-        required: false
+      FEATURE_FLAGS:
+        default: "{}"
+        description: 'JSON key-value pairs representing feature flag states. (e.g. {"autofill-v2": true, "autofill-overlay": false})'
+        required: true
         type: string
 jobs:
   build-and-test:
@@ -36,7 +37,9 @@ jobs:
           echo "${{ secrets.ENV_FILE }}" | base64 --decode > .env
           echo "BW_INSTALLATION_ID=${{ secrets.BW_INSTALLATION_ID }}" >> .env
           echo "BW_INSTALLATION_KEY=${{ secrets.BW_INSTALLATION_KEY }}" >> .env
-          echo "REMOTE_VAULT_CONFIG_MATCH=${{ inputs.REMOTE_VAULT_CONFIG_MATCH || vars.BW_REMOTE_VAULT_CONFIG_MATCH }}" >> .env
+
+      - name: Create feature flags file
+        run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS || '{}' }}}" > flags.json
 
       - name: Download extension artifact
         uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
@@ -72,11 +75,6 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-
-      - name: Match feature flags file to remote config
-        run: |
-          touch flags.json
-          npm run setup:flags
 
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
@@ -121,7 +119,6 @@ jobs:
         with:
           name: test-summary
           path: |
-            ./flags.json
             ./test-summary
             ./tests-out/videos
             ./tests-out/screenshots

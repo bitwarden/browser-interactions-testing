@@ -59,6 +59,11 @@ async function matchRemoteFeatureFlags() {
     } catch (error) {
       throw error;
     }
+  } else {
+    console.warn(
+      "\x1b[1m\x1b[33m%s\x1b[0m", // bold, yellow foreground
+      "No remote config URL was provided!\n",
+    );
   }
 
   return;
