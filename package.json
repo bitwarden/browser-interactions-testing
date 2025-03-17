@@ -45,6 +45,7 @@
     "setup:all": "./scripts/first-time-setup.sh",
     "setup:extension": "rimraf clients && git clone https://github.com/bitwarden/clients.git clients && cd clients && npm ci",
     "setup:install": "ts-node ./scripts/generate-installation.ts",
+    "setup:flags": "ts-node ./scripts/match-server-config.ts",
     "setup:ssl": "./scripts/generate-certs.sh",
     "setup:test-site": "rimraf test-site && ./scripts/setup-test-site.sh",
     "setup:vault": "npm run seed:vault:account && npm run seed:vault:ciphers",
