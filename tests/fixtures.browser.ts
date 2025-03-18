@@ -134,10 +134,9 @@ export const test = base.extend<{
         const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
         await testPage.goto(extensionURL, defaultGotoOptions);
 
-        const environmentSelectorMenuButton = await testPage.getByRole(
-          "button",
-          { name: "self-hosted" },
-        );
+        const environmentSelectorMenuButton = await testPage
+          .locator("environment-selector")
+          .getByRole("button");
 
         await environmentSelectorMenuButton.waitFor(defaultWaitForOptions);
         await environmentSelectorMenuButton.click();
