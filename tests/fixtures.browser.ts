@@ -134,12 +134,20 @@ export const test = base.extend<{
         const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
         await testPage.goto(extensionURL, defaultGotoOptions);
 
-        await testPage.getByText("self-hosted").click();
-        await testPage
-          .locator(
-            '[data-testid="environment-selector-dialog-item-self-hosted"]',
-          )
-          .click();
+        const environmentSelectorMenuButton = await testPage.getByRole(
+          "button",
+          { name: "self-hosted" },
+        );
+
+        await environmentSelectorMenuButton.waitFor(defaultWaitForOptions);
+        await environmentSelectorMenuButton.click();
+
+        const environmentSelectorMenu = await testPage.getByTestId(
+          "environment-selector-dialog-item-self-hosted",
+        );
+
+        await environmentSelectorMenu.waitFor(defaultWaitForOptions);
+        await environmentSelectorMenu.click();
 
         const baseUrlInput = await testPage.locator(
           "input#self_hosted_env_settings_form_input_base_url",
