@@ -125,6 +125,7 @@ export const testPages: PageTest[] = [
       },
     },
     skipTests: [
+      TestNames.MessageAutofill, // @TODO known failure - notification appears inappropriately (PM-19376)
       TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8697)
       TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8697)
     ],
@@ -191,6 +192,7 @@ export const testPages: PageTest[] = [
       password: { selector: "#password", value: "fakeMultiStepPassword" },
     },
     skipTests: [
+      TestNames.MessageAutofill, // @TODO known failure - notification appears inappropriately (PM-19376)
       TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8697)
       TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8697)
     ],
