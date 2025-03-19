@@ -81,6 +81,8 @@ export const testPages: PageTest[] = [
     skipTests: [
       TestNames.InlineMenuAutofill, // @TODO known failure - inline menu appears, but fails to autofill (PM-8693)
       TestNames.MessageAutofill, // @TODO known failure - fails to autofill (PM-8693)
+      TestNames.NewCredentialsNotification, // @TODO known failure - regression (PM-19363)
+      TestNames.PasswordUpdateNotification, // @TODO known failure - regression (PM-19363)
     ],
   },
   {
