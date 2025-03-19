@@ -10,15 +10,15 @@ import { test, expect } from "../fixtures.browser";
 import { FillProperties } from "../../abstractions";
 import { getPagesToTest, formatUrlToFilename } from "../utils";
 
-const testOutputPath = "notification-bar";
+const testOutputPath = "notifications";
 let testRetryCount = 0;
 
-// Notification bar tests are currently flaky, so give them an extra retry
+// Notification tests are currently flaky, so give them an extra retry
 test.describe.configure({
   retries: process.env.CI && process.env.DISABLE_RETRY !== "true" ? 2 : 0,
 });
 
-test.describe("Extension triggers a notification bar when a page form is submitted with non-stored values", () => {
+test.describe("Extension triggers a notification when a page form is submitted with non-stored values", () => {
   test.use({
     recordVideoConfig: process.env.DISABLE_VIDEO !== "true" && {
       dir: `tests-out/videos/${testOutputPath}`,
@@ -99,10 +99,10 @@ test.describe("Extension triggers a notification bar when a page form is submitt
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
 
-          // Use new input values to trigger the notification bar prompt
+          // Use new input values to trigger the notification prompt
           let expectedValue = `new+${currentInput.value}`;
 
-          // Only use new input password values to trigger the notification bar update prompt
+          // Only use new input password values to trigger the notification update prompt
           if (inputKey === "password") {
             // Only rearrange value to ensure value will fit length constraints
             expectedValue = currentInput.value.split("").reverse().join("");
@@ -141,7 +141,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
-        await test.step(`the new cipher notification bar should ${shouldNotTriggerNewNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+        await test.step(`the new cipher notification should ${shouldNotTriggerNewNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
             await actions.submit(testPage);
@@ -160,30 +160,31 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const notificationBarLocator = await testPage
+          const notificationLocator = await testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const newCipherNotificationBarLocator =
-            notificationBarLocator.getByText(
-              "Should Bitwarden remember this password for you?",
-            );
+          const newCipherNotificationLocator = notificationLocator.getByText(
+            "Should Bitwarden remember this password for you?",
+          );
 
-          const notificationBarCloseButtonLocator =
-            notificationBarLocator.getByRole("button", { name: "Close" });
+          const notificationCloseButtonLocator = notificationLocator.getByRole(
+            "button",
+            { name: "Close" },
+          );
 
           if (shouldNotTriggerNewNotification) {
-            // Target the notification close button since it's present on all notification bar cases
-            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+            // Target the notification close button since it's present on all notification cases
+            await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
-            await expect(newCipherNotificationBarLocator).toBeVisible();
+            await expect(newCipherNotificationLocator).toBeVisible();
 
-            // Close the notification bar for the next triggering case
-            await notificationBarCloseButtonLocator.click();
+            // Close the notification for the next triggering case
+            await notificationCloseButtonLocator.click();
 
-            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+            await expect(notificationCloseButtonLocator).not.toBeVisible();
           }
         });
       });
@@ -228,7 +229,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
 
           let expectedValue = currentInput.value;
 
-          // Only use new input password values to trigger the notification bar update prompt
+          // Only use new input password values to trigger the notification update prompt
           if (inputKey === "password") {
             // Only rearrange value to ensure value will fit length constraints
             expectedValue = currentInput.value.split("").reverse().join("");
@@ -267,7 +268,7 @@ test.describe("Extension triggers a notification bar when a page form is submitt
           }
         }
 
-        await test.step(`the update password notification bar should ${shouldNotTriggerUpdateNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+        await test.step(`the update password notification should ${shouldNotTriggerUpdateNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
             await actions.submit(testPage);
@@ -286,30 +287,32 @@ test.describe("Extension triggers a notification bar when a page form is submitt
             ),
           });
 
-          const notificationBarLocator = await testPage
+          const notificationLocator = await testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const updatePasswordNotificationBarLocator =
-            notificationBarLocator.getByText(
+          const updatePasswordNotificationLocator =
+            notificationLocator.getByText(
               "Do you want to update this password in Bitwarden?",
             );
 
-          const notificationBarCloseButtonLocator =
-            notificationBarLocator.getByRole("button", { name: "Close" });
+          const notificationCloseButtonLocator = notificationLocator.getByRole(
+            "button",
+            { name: "Close" },
+          );
 
           if (shouldNotTriggerUpdateNotification) {
-            // Target the notification close button since it's present on all notification bar cases
-            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+            // Target the notification close button since it's present on all notification cases
+            await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
-            await expect(updatePasswordNotificationBarLocator).toBeVisible();
+            await expect(updatePasswordNotificationLocator).toBeVisible();
 
-            // Close the notification bar for the next triggering case
-            await notificationBarCloseButtonLocator.click();
+            // Close the notification for the next triggering case
+            await notificationCloseButtonLocator.click();
 
-            await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+            await expect(notificationCloseButtonLocator).not.toBeVisible();
           }
         });
       });

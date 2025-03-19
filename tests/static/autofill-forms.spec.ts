@@ -149,13 +149,13 @@ test.describe("Extension autofills forms when triggered", () => {
         // Submit
         await testPage.keyboard.press("Enter");
 
-        // Target notification close button since it's present on all notification bar cases
-        const notificationBarCloseButtonLocator = testPage
+        // Target notification close button since it's present on all notification cases
+        const notificationCloseButtonLocator = testPage
           .frameLocator("#bit-notification-bar-iframe")
           .getByRole("button", { name: "Close" })
           .first();
 
-        await expect(notificationBarCloseButtonLocator).not.toBeVisible();
+        await expect(notificationCloseButtonLocator).not.toBeVisible();
       });
     }
 

@@ -73,9 +73,9 @@
     "test:static:inline-menu": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/inline-menu.spec.ts",
     "test:static:inline-menu:ci": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt xvfb-run playwright test tests/static/inline-menu.spec.ts",
     "test:static:inline-menu:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/inline-menu.spec.ts",
-    "test:static:notification": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/notification-bar.spec.ts",
-    "test:static:notification:ci": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt xvfb-run playwright test tests/static/notification-bar.spec.ts",
-    "test:static:notification:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/notification-bar.spec.ts",
+    "test:static:notification": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/notifications.spec.ts",
+    "test:static:notification:ci": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt xvfb-run playwright test tests/static/notifications.spec.ts",
+    "test:static:notification:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/notifications.spec.ts",
     "test:webserve": "cd clients/apps/web && npm run build:bit:watch",
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch"
   },
