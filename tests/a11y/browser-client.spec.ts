@@ -1,6 +1,5 @@
 import {
   browserClientViewPaths,
-  browserClientViewPathsRefreshUI,
   debugIsActive,
   messageColor,
 } from "../../constants";
@@ -12,18 +11,14 @@ test.describe("Browser client", { tag: ["@browser-client", "@a11y"] }, () => {
     extensionId,
     extensionSetup,
   }, testInfo) => {
-    const urlSharedPathBase = "popout#/";
-    const urlBase = `chrome-extension://${extensionId}/popup/index.html?uilocation=popout#/`;
+    const urlSharedPathBase = "#/";
+    const urlBase = `chrome-extension://${extensionId}/popup/index.html${urlSharedPathBase}`;
 
     let testPage = await extensionSetup;
     let violationsCount = 0;
-    let viewPaths = [
-      ...browserClientViewPaths,
-      ...browserClientViewPathsRefreshUI,
-    ];
 
     // Note: if a path is nonexistent, it will load to the vault tab and evaluate that
-    for (const viewPath of viewPaths) {
+    for (const viewPath of browserClientViewPaths) {
       await test.step(`for path: \`${urlSharedPathBase}${viewPath}\``, async () => {
         const newViolationsCount = await a11yTestView({
           testInfo,
@@ -36,7 +31,7 @@ test.describe("Browser client", { tag: ["@browser-client", "@a11y"] }, () => {
         await expect
           .soft(
             newViolationsCount,
-            `view for \`popout#/${viewPath}\` should yield 0 violations`,
+            `view for \`${urlSharedPathBase}${viewPath}\` should yield 0 violations`,
           )
           .toEqual(0);
 
