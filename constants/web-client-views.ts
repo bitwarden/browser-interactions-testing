@@ -7,16 +7,23 @@ export const authenticatedWebClientViewPaths = new Set([
   "tools/export",
   "reports",
   "reports/breach-report",
+  "reports/exposed-passwords-report",
+  "reports/reused-passwords-report",
+  "reports/weak-passwords-report",
+  "reports/unsecured-websites-report",
+  "reports/inactive-two-factor-report",
   "settings/account",
   "settings/security/change-password",
   "settings/security/two-factor",
+  "settings/security/device-management",
   "settings/security/security-keys",
   "settings/preferences",
-  "settings/subscription/premium",
+  "settings/subscription/premium", // # non-premium accounts only
   "settings/domain-rules",
   "settings/emergency-access",
   "settings/sponsored-families",
   "create-organization",
+  // @TODO secrets manager & admin console
 ]);
 
 export const unauthenticatedWebClientViewPaths = new Set([
