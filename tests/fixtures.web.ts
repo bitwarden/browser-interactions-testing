@@ -76,9 +76,7 @@ export const test = base.extend<{
       const emailSubmitInput = await testPage.getByRole("button");
       await emailSubmitInput.click();
 
-      const masterPasswordInput = await testPage.locator(
-        "input#login_input_master-password",
-      );
+      const masterPasswordInput = await testPage.getByLabel("Master password");
       await masterPasswordInput.waitFor(defaultWaitForOptions);
       await masterPasswordInput.fill(vaultPassword);
 
