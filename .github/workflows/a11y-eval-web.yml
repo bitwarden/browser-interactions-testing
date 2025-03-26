@@ -21,7 +21,7 @@ jobs:
         with:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-          node-version: "20"
+          node-version: "23"
 
       - name: Create dotenv file
         run: |

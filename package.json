@@ -80,7 +80,7 @@
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch"
   },
   "engines": {
-    "node": "22.13.x",
+    "node": "23.10.x",
     "npm": "~11.2.0"
   }
 }
