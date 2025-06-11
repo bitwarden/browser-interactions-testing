@@ -40,7 +40,7 @@ jobs:
         uses: bitwarden/gh-actions/get-keyvault-secrets@main
         with:
           keyvault: gh-browser-interactions
-          secrets: "ENV_FILE,BW_INSTALLATION_ID,BW_INSTALLATION_KEY"
+          secrets: "ENV-FILE,BW-INSTALLATION-ID,BW-INSTALLATION-KEY"
 
       - name: Azure Logout
         uses: bitwarden/gh-actions/azure-logout@main
@@ -48,9 +48,9 @@ jobs:
       - name: Create dotenv file
         run: |
           sudo setcap 'cap_net_bind_service=+ep' `which node`
-          echo "${{ steps.get-kv-secrets.outputs.ENV_FILE }}" | base64 --decode > .env
-          echo "BW_INSTALLATION_ID=${{ steps.get-kv-secrets.outputs.BW_INSTALLATION_ID }}" >> .env
-          echo "BW_INSTALLATION_KEY=${{ steps.get-kv-secrets.outputs.BW_INSTALLATION_KEY }}" >> .env
+          echo "${{ steps.get-kv-secrets.outputs.ENV-FILE }}" | base64 --decode > .env
+          echo "BW_INSTALLATION_ID=${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}" >> .env
+          echo "BW_INSTALLATION_KEY=${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}" >> .env
 
       - name: Create feature flags file
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS }}}" > flags.json
