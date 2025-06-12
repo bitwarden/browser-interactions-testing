@@ -77,7 +77,9 @@ async function createAccount() {
       return;
     } else if (
       typeof preCreationResponseData !== "string" ||
-      !preCreationResponseData.match(/^BwRegistrationEmailVerificationToken_.*/)
+      !preCreationResponseData.startsWith(
+        "BwRegistrationEmailVerificationToken_",
+      )
     ) {
       console.log(
         "Unexpected response: expected BwRegistrationEmailVerificationToken",
