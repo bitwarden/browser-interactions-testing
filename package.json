@@ -49,7 +49,7 @@
     "setup:ssl": "./scripts/generate-certs.sh",
     "setup:test-site": "rimraf test-site && ./scripts/setup-test-site.sh",
     "setup:vault": "npm run seed:vault:account && npm run seed:vault:ciphers",
-    "setup:crypto": "node ./scripts/generate-crypto.js",
+    "setup:crypto": "ts-node ./scripts/generate-crypto.ts",
     "start:cli": "./scripts/cli-serve-helper.sh",
     "start:test-site": "./scripts/serve-test-site.sh",
     "stop:cli": "kill $(ps -e | grep 'bw serve' | grep -v 'vault-seeder' | awk '{print $1}')",

@@ -3,7 +3,6 @@
 // A purpose-built modification of
 // https://github.com/bitwarden/qa-tools/blob/main/crypto-browser/crypto.js
 
-const crypto = require("crypto");
 const fs = require("fs");
 const { configDotenv } = require("dotenv");
 
@@ -11,7 +10,13 @@ configDotenv();
 
 const defaultKdfIterations = 600000;
 
-// Object Classes
+interface Cipher {
+  encType: string;
+  iv: { [key: string]: any };
+  ct: { [key: string]: any };
+  mac: { [key: string]: any };
+  string: string;
+}
 
 class Cipher {
   constructor(encType, iv, ct, mac) {
@@ -37,7 +42,13 @@ class Cipher {
   }
 }
 
-class SymmetricCryptoKey {
+interface SymmetricCryptoKey {
+  key: ByteData;
+  encKey: ByteData;
+  macKey: ByteData;
+}
+
+class SymmetricCryptoKey implements SymmetricCryptoKey {
   constructor(buf) {
     if (!arguments.length) {
       this.key = new ByteData();
@@ -58,8 +69,13 @@ class SymmetricCryptoKey {
   }
 }
 
-class ByteData {
-  constructor(buf) {
+interface ByteData {
+  arr: Uint8Array<any>;
+  b64: string;
+}
+
+class ByteData implements ByteData {
+  constructor(buf?: any) {
     if (!arguments.length) {
       this.arr = null;
       this.b64 = null;
@@ -69,22 +85,6 @@ class ByteData {
     this.arr = new Uint8Array(buf);
     this.b64 = toB64(buf);
   }
-}
-
-async function masterKey(newValue) {
-  const self = this;
-
-  if (!newValue || !newValue.arr || !self.masterPasswordBuffer) {
-    return new ByteData();
-  }
-
-  self.stretchedMasterKey = await stretchKey(newValue.arr.buffer);
-  self.masterKeyHash = await pbkdf2(
-    newValue.arr.buffer,
-    self.masterPasswordBuffer,
-    1,
-    256,
-  );
 }
 
 async function generateKeys() {
@@ -134,10 +134,6 @@ function toB64(buf) {
     binary += String.fromCharCode(bytes[i]);
   }
   return buf.toString("base64");
-}
-
-function hasValue(str) {
-  return str && str !== "";
 }
 
 // Crypto
@@ -348,13 +344,13 @@ async function getValues() {
   ) {
     console.warn(
       "\x1b[1m\x1b[33m%s\x1b[0m",
-      "There are existing crypto values in your dotenv file. Remove them or update the values manually with the tools on https://bitwarden.com/crypto.html\n",
+      "There are existing crypto values in your dotenv file. Remove them or update the values manually with guidance from https://bitwarden.com/help/bitwarden-security-white-paper/#hashing-key-derivation-and-encryption\n",
     );
 
     return;
   }
 
-  await generateKeys();
+  const { symKey, publicKey, privateKey } = await generateKeys();
   const masterKey = await pbkdf2(
     masterPassword,
     email,
