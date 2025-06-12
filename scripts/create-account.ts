@@ -113,26 +113,6 @@ async function createAccount() {
       emitSuccessMessage(vaultHost);
       return;
     }
-
-    let emailIsTaken = false;
-
-    const responseErrors =
-      Object.values(responseData?.validationErrors || {})[0] || [];
-
-    for (let error of responseErrors) {
-      if (emailIsTaken) {
-        break;
-      }
-
-      emailIsTaken = !!error.match(/^Email \'.*\' is already taken\.$/g)
-        ?.length;
-    }
-
-    if (emailIsTaken) {
-      emitSuccessMessage(vaultHost);
-
-      return;
-    }
   } catch (error) {
     // Server isn't ready yet
   }
