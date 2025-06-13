@@ -3,32 +3,26 @@
 // A purpose-built modification of
 // https://github.com/bitwarden/qa-tools/blob/main/crypto-browser/crypto.js
 
-const fs = require("fs");
-const { configDotenv } = require("dotenv");
+import fs from "fs";
+import { configDotenv } from "dotenv";
 
 configDotenv();
 
 const defaultKdfIterations = 600000;
 
-interface Cipher {
-  encType: string;
-  iv: { [key: string]: any };
-  ct: { [key: string]: any };
-  mac: { [key: string]: any };
-  string: string;
-}
-
 class Cipher {
-  constructor(encType, iv, ct, mac) {
-    if (!arguments.length) {
-      this.encType = null;
-      this.iv = null;
-      this.ct = null;
-      this.mac = null;
-      this.string = null;
-      return;
-    }
+  encType: number;
+  iv: ByteData;
+  ct: ByteData;
+  mac: ByteData | null;
+  string: string;
 
+  constructor(
+    encType: number,
+    iv: ByteData,
+    ct: ByteData,
+    mac: ByteData | undefined,
+  ) {
     this.encType = encType;
     this.iv = iv;
     this.ct = ct;
@@ -42,21 +36,12 @@ class Cipher {
   }
 }
 
-interface SymmetricCryptoKey {
+class SymmetricCryptoKey {
   key: ByteData;
   encKey: ByteData;
   macKey: ByteData;
-}
 
-class SymmetricCryptoKey implements SymmetricCryptoKey {
-  constructor(buf) {
-    if (!arguments.length) {
-      this.key = new ByteData();
-      this.encKey = new ByteData();
-      this.macKey = new ByteData();
-      return;
-    }
-
+  constructor(buf: ArrayBuffer | Uint8Array<ArrayBuffer>) {
     this.key = new ByteData(buf);
 
     // First half
@@ -69,38 +54,26 @@ class SymmetricCryptoKey implements SymmetricCryptoKey {
   }
 }
 
-interface ByteData {
-  arr: Uint8Array<any>;
+class ByteData {
+  arr: Uint8Array<ArrayBuffer>;
   b64: string;
-}
 
-class ByteData implements ByteData {
-  constructor(buf?: any) {
-    if (!arguments.length) {
-      this.arr = null;
-      this.b64 = null;
-      return;
-    }
-
+  constructor(buf: ArrayBuffer | Uint8Array<ArrayBuffer>) {
     this.arr = new Uint8Array(buf);
     this.b64 = toB64(buf);
   }
 }
 
 async function generateKeys() {
-  const self = this;
-
-  const symKey = new Uint8Array(512 / 8);
+  let symKey = new Uint8Array(512 / 8);
   crypto.getRandomValues(symKey);
-  self.symKey = new SymmetricCryptoKey(symKey);
 
-  const keyPair = await generateRsaKeyPair();
-  self.publicKey = keyPair.publicKey;
-  self.privateKey = keyPair.privateKey;
+  const { publicKey, privateKey } = (await generateRsaKeyPair()) || {};
+
   return {
-    symKey: self.symKey,
-    publicKey: keyPair.publicKey,
-    privateKey: keyPair.privateKey,
+    symKey: new SymmetricCryptoKey(symKey),
+    publicKey,
+    privateKey,
   };
 }
 
@@ -118,7 +91,7 @@ const encTypes = {
 
 // Helpers
 
-function fromUtf8(str) {
+function fromUtf8(str: string) {
   const strUtf8 = decodeURIComponent(encodeURIComponent(str));
   const bytes = new Uint8Array(strUtf8.length);
   for (let i = 0; i < strUtf8.length; i++) {
@@ -127,7 +100,7 @@ function fromUtf8(str) {
   return bytes.buffer;
 }
 
-function toB64(buf) {
+function toB64(buf: ArrayBuffer | Uint8Array<ArrayBuffer> | Buffer) {
   let binary = "";
   const bytes = new Uint8Array(buf);
   for (let i = 0; i < bytes.byteLength; i++) {
@@ -138,7 +111,12 @@ function toB64(buf) {
 
 // Crypto
 
-async function pbkdf2(password, salt, iterations, length) {
+async function pbkdf2(
+  password: BufferSource,
+  salt: ArrayBuffer,
+  iterations: number,
+  length: number,
+) {
   const importAlg = {
     name: "PBKDF2",
   };
@@ -177,7 +155,11 @@ async function pbkdf2(password, salt, iterations, length) {
   }
 }
 
-async function aesEncrypt(data, encKey, macKey) {
+async function aesEncrypt(
+  data: ArrayBuffer,
+  encKey: ByteData,
+  macKey: ByteData,
+) {
   const keyOptions = {
     name: "AES-CBC",
   };
@@ -217,7 +199,7 @@ async function aesEncrypt(data, encKey, macKey) {
   }
 }
 
-async function computeMac(data, key) {
+async function computeMac(data: ArrayBuffer, key: ArrayBuffer) {
   const alg = {
     name: "HMAC",
     hash: { name: "SHA-256" },
@@ -228,7 +210,10 @@ async function computeMac(data, key) {
   return crypto.subtle.sign(alg, importedKey, data);
 }
 
-function buildDataForMac(ivArr, ctArr) {
+function buildDataForMac(
+  ivArr: Uint8Array<ArrayBuffer>,
+  ctArr: Uint8Array<ArrayBuffer>,
+) {
   const dataForMac = new Uint8Array(ivArr.length + ctArr.length);
   dataForMac.set(ivArr, 0);
   dataForMac.set(ctArr, ivArr.length);
@@ -263,7 +248,7 @@ async function generateRsaKeyPair() {
   }
 }
 
-async function stretchKey(key) {
+async function stretchKey(key: ArrayBuffer) {
   const newKey = new Uint8Array(64);
   newKey.set(await hkdfExpand(key, new Uint8Array(fromUtf8("enc")), 32));
   newKey.set(await hkdfExpand(key, new Uint8Array(fromUtf8("mac")), 32), 32);
@@ -271,7 +256,11 @@ async function stretchKey(key) {
 }
 
 // ref: https://tools.ietf.org/html/rfc5869
-async function hkdfExpand(prk, info, size) {
+async function hkdfExpand(
+  prk: ArrayBuffer,
+  info: Uint8Array<ArrayBuffer>,
+  size: number,
+) {
   const alg = {
     name: "HMAC",
     hash: { name: "SHA-256" },
@@ -357,6 +346,11 @@ async function getValues() {
     defaultKdfIterations,
     256,
   );
+
+  if (!masterKey?.arr.buffer || !publicKey?.arr || !privateKey?.arr.buffer) {
+    return;
+  }
+
   const stretchedMasterKey = await stretchKey(masterKey.arr.buffer);
   const protectedSymKey = await aesEncrypt(
     symKey.key.arr.buffer,
@@ -365,19 +359,28 @@ async function getValues() {
   );
 
   const masterKeyHash = await pbkdf2(masterKey.arr, masterPassword, 1, 256);
+
+  if (!masterKeyHash?.arr || !protectedSymKey) {
+    return;
+  }
+
   const masterKeyHashBytes = new Uint8Array(masterKeyHash.arr);
   const masterKeyHashString = btoa(String.fromCharCode(...masterKeyHashBytes));
   // protectedSymKey.string
-  const cipher = protectedSymKey;
-  const encType = cipher.encType;
-  const iv = btoa(String.fromCharCode(...cipher.iv.arr));
-  const ct = btoa(String.fromCharCode(...cipher.ct.arr));
-  const mac = btoa(String.fromCharCode(...cipher.mac.arr));
-  const result = `${encType}.${iv}|${ct}|${mac}`;
+  const encType = protectedSymKey.encType;
+  const iv = btoa(String.fromCharCode(...protectedSymKey.iv.arr));
+  const ct = btoa(String.fromCharCode(...protectedSymKey.ct.arr));
+  let result = `${encType}.${iv}|${ct}`;
+
+  if (protectedSymKey.mac?.arr) {
+    const mac = btoa(String.fromCharCode(...protectedSymKey.mac.arr));
+    result += `|${mac}`;
+  }
+
   // publicKey.b64
   const generatedPublicKey = new Uint8Array(publicKey.arr);
   const generatedPublicKeyB64 = btoa(
-    String.fromCharCode.apply(null, generatedPublicKey),
+    String.fromCharCode.apply(null, [...generatedPublicKey]),
   );
   // protectedPrivateKey.string
   const protectedPrivateKey = await aesEncrypt(
@@ -385,6 +388,11 @@ async function getValues() {
     stretchedMasterKey.encKey,
     stretchedMasterKey.macKey,
   );
+
+  if (!protectedPrivateKey?.mac) {
+    return;
+  }
+
   const protectedPrivateKeyEncType = protectedPrivateKey.encType;
   const protectedPrivateKeyIv = btoa(
     String.fromCharCode(...protectedPrivateKey.iv.arr),
