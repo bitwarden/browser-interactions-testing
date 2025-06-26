@@ -62,7 +62,7 @@ async function createAccount() {
       typeof preCreationResponseData !== "string" &&
       preCreationResponseData.object === "error"
     ) {
-      const emailIsTaken = !!preCreationResponseData.message.match(
+      const emailIsTaken = !!preCreationResponseData.message?.match(
         /^Email .+@.+ is already taken$/g,
       )?.length;
 

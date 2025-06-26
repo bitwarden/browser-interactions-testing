@@ -58,6 +58,8 @@ The aim of this project is to track and anticipate the compatibility of the Bitw
 - Create an `.env` file in the root directory with values pointing to the vault you want to test against (use `.env.example` as guidance) and populate it with your desired values
 - Run `npm run setup:install` to generate and add installation values to your dotfile
   - Alternatively, you can generate them at `https://bitwarden.com/host` and add them to your dotfile manually as `BW_INSTALLATION_ID` and `BW_INSTALLATION_KEY`
+- Run `npm run setup:crypto` to generate and add crypto values to your dotfile
+  - Alternatively, you can create the required values manually with guidance from `https://bitwarden.com/help/bitwarden-security-white-paper/#hashing-key-derivation-and-encryption` and add them to your dotfile as `KDF_ITERATIONS`, `MASTER_PASSWORD_HASH`, `PROTECTED_SYMMETRIC_KEY`, `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY`, and `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY`
 - Install node (with `nvm install` if `nvm` is installed)
 - Install Bitwarden CLI (with npm: `npm install -g @bitwarden/cli`)
 - Do a clean-install with `npm ci` (this will also fetch and set up the Bitwarden clients repo)

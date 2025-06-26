@@ -6,6 +6,7 @@ Thumbs.db
 .env
 dev-server.local.pem
 tmp-vault-seeder
+vault.json
 ssl.crt
 ssl.key
 

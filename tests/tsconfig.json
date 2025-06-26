@@ -7,5 +7,7 @@
     "outDir": "../tests-out",
     "experimentalDecorators": true,
     "esModuleInterop": true
+    // @TODO turn on and resolve strict typing issues
+    // "strict": true
   }
 }
