@@ -177,7 +177,7 @@ export const testPages: PageTest[] = [
     ],
   },
   {
-    url: `${testSiteHost}/forms/login/multi-step-login`,
+    url: `${testSiteHost}/forms/multi-step/login-no-username`,
     inputs: {
       username: {
         multiStepNextInputKey: "email",
