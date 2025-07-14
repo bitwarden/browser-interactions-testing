@@ -20,6 +20,10 @@ jobs:
   build-and-test:
     name: Build and test
     runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -30,12 +34,29 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
           node-version: "23"
 
+      - name: Log in to Azure
+        uses: bitwarden/gh-actions/azure-login@main
+        with:
+          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          client_id: ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Get Azure Key Vault secrets
+        id: get-kv-secrets
+        uses: bitwarden/gh-actions/get-keyvault-secrets@main
+        with:
+          keyvault: gh-browser-interactions
+          secrets: "ENV-FILE,BW-INSTALLATION-ID,BW-INSTALLATION-KEY"
+
+      - name: Log out from Azure
+        uses: bitwarden/gh-actions/azure-logout@main
+
       - name: Create dotenv file
         run: |
           sudo setcap 'cap_net_bind_service=+ep' `which node`
-          echo "${{ secrets.ENV_FILE }}" | base64 --decode > .env
-          echo "BW_INSTALLATION_ID=${{ secrets.BW_INSTALLATION_ID }}" >> .env
-          echo "BW_INSTALLATION_KEY=${{ secrets.BW_INSTALLATION_KEY }}" >> .env
+          echo "${{ steps.get-kv-secrets.outputs.ENV-FILE }}" | base64 --decode > .env
+          echo "BW_INSTALLATION_ID=${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}" >> .env
+          echo "BW_INSTALLATION_KEY=${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}" >> .env
           echo "REMOTE_VAULT_CONFIG_MATCH=${{ inputs.REMOTE_VAULT_CONFIG_MATCH || vars.BW_REMOTE_VAULT_CONFIG_MATCH }}" >> .env
 
       - name: Download extension artifact
