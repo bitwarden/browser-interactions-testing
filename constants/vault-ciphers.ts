@@ -111,7 +111,7 @@ export const pageCiphers: PageCipher[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${testSiteHost}/forms/login/multi-step-login`,
+    url: `${testSiteHost}/forms/multi-step/email-username-login`,
     uriMatchType: UriMatchType.StartsWith,
     fields: {
       username: {
