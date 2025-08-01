@@ -131,17 +131,17 @@ export const test = base.extend<{
 
     await test.step("Configure the environment", async () => {
       if (vaultHostURL) {
-        const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
-        await testPage.goto(extensionURL, defaultGotoOptions);
-
+        // Dismiss the welcome carousel
+        const introCarouselURL = `chrome-extension://${extensionId}/popup/index.html#/intro-carousel`;
+        await testPage.goto(introCarouselURL, defaultGotoOptions);
         const welcomeCarouselDismissButton = await testPage.getByRole(
           "button",
           { name: "Log in" },
         );
+        await welcomeCarouselDismissButton.click();
 
-        if (welcomeCarouselDismissButton) {
-          welcomeCarouselDismissButton.click();
-        }
+        const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
+        await testPage.goto(extensionURL, defaultGotoOptions);
 
         const environmentSelectorMenuButton = await testPage
           .locator("environment-selector")
