@@ -134,6 +134,15 @@ export const test = base.extend<{
         const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
         await testPage.goto(extensionURL, defaultGotoOptions);
 
+        const welcomeCarouselDismissButton = await testPage.getByRole(
+          "button",
+          { name: "Log in" },
+        );
+
+        if (welcomeCarouselDismissButton) {
+          welcomeCarouselDismissButton.click();
+        }
+
         const environmentSelectorMenuButton = await testPage
           .locator("environment-selector")
           .getByRole("button");
