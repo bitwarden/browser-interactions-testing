@@ -1,0 +1,134 @@
+name: Create Env File
+description: "Creates a .env file with necessary environment variables including secrets for the workflow."
+inputs:
+  AZURE_SUBSCRIPTION_ID:
+    description: "Azure Subscription ID for the service principal."
+    required: true
+  AZURE_TENANT_ID:
+    description: "Azure Tenant ID for the service principal."
+    required: true
+  AZURE_CLIENT_ID:
+    description: "Azure Client ID for the service principal."
+    required: true
+  BW-DB-PORT:
+    description: "Port for the Bitwarden database."
+    required: true
+  BW-DB-PROVIDER:
+    description: "Database provider for Bitwarden."
+    required: true
+  BW-DB-SERVER:
+    description: "Database server for Bitwarden."
+    required: true
+  BW-DOMAIN:
+    description: "Domain for Bitwarden."
+    required: true
+  BW-ENABLE-SSL:
+    description: "Enable SSL for Bitwarden."
+    required: true
+  BW-SSL-CERT:
+    description: "SSL certificate for Bitwarden."
+    required: true
+  BW-SSL-KEY:
+    description: "SSL key for Bitwarden."
+    required: true
+  CI:
+    description: "CI environment variable."
+    required: true
+  CLI-SERVE-HOST:
+    description: "Host for CLI serve."
+    required: true
+  CLI-SERVE-PORT:
+    description: "Port for CLI serve."
+    required: true
+  EXTENSION-BUILD-PATH:
+    description: "Path to extension build."
+    required: true
+  PAGES-HOST:
+    description: "Host for pages."
+    required: true
+  PAGES-HOST-INSECURE-PORT:
+    description: "Insecure port for pages host."
+    required: true
+  PAGES-HOST-PORT:
+    description: "Port for pages host."
+    required: true
+  VAULT-HOST-INSECURE-PORT:
+    description: "Insecure port for vault host."
+    required: true
+  VAULT-HOST-PORT:
+    description: "Port for vault host."
+    required: true
+  VAULT-HOST-URL:
+    description: "URL for vault host."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Log in to Azure
+      uses: bitwarden/gh-actions/azure-login@main
+      with:
+        subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+        client_id: ${{ secrets.AZURE_CLIENT_ID }}
+
+    - name: Get Azure Key Vault secrets
+      id: get-kv-secrets
+      uses: bitwarden/gh-actions/get-keyvault-secrets@main
+      with:
+        keyvault: gh-browser-interactions
+        secrets: "
+          BW-INSTALLATION-ID,
+          BW-INSTALLATION-KEY,
+          GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY,
+          GENERATED-RSA-KEY-PAIR-PUBLIC-KEY,
+          PROTECTED-SYMMETRIC-KEY,
+          MASTER-PASSWORD-HASH,
+          KDF-ITERATIONS,
+          BW-DB-PASSWORD,
+          BW-DB-USERNAME,
+          BW-DB-DATABASE,
+          VAULT-EMAIL,
+          VAULT-PASSWORD,
+          PUBLIC-TEST-EMAIL"
+
+    - name: Log out from Azure
+      uses: bitwarden/gh-actions/azure-logout@main
+
+    - name: Create dotenv file
+      shell: bash
+      run: |
+        sudo setcap 'cap_net_bind_service=+ep' `which node`
+        > .env
+
+        echo "BW_DB_DATABASE=\"${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}\"" >> .env
+        echo "BW_DB_PASSWORD=\"${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}\"" >> .env
+        echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
+        echo "BW_INSTALLATION_ID=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}\"" >> .env
+        echo "BW_INSTALLATION_KEY=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}\"" >> .env
+        echo "GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY }}\"" >> .env
+        echo "GENERATED_RSA_KEY_PAIR_PUBLIC_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PUBLIC-KEY }}\"" >> .env
+        echo "KDF_ITERATIONS=${{ steps.get-kv-secrets.outputs.KDF-ITERATIONS }}" >> .env
+        echo "MASTER_PASSWORD_HASH=\"${{ steps.get-kv-secrets.outputs.MASTER-PASSWORD-HASH }}\"" >> .env
+        echo "PROTECTED_SYMMETRIC_KEY=\"${{ steps.get-kv-secrets.outputs.PROTECTED-SYMMETRIC-KEY }}\"" >> .env
+        echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
+        echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
+        echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
+
+        echo "BW_DB_PORT=${{ inputs.BW-DB-PORT }}" >> .env
+        echo "BW_DB_PROVIDER=\"${{ inputs.BW-DB-PROVIDER }}\"" >> .env
+        echo "BW_DB_SERVER=\"${{ inputs.BW-DB-SERVER }}\"" >> .env
+        echo "BW_DOMAIN=\"${{ inputs.BW-DOMAIN }}\"" >> .env
+        echo "BW_ENABLE_SSL=\"${{ inputs.BW-ENABLE-SSL }}\"" >> .env
+        echo "BW_SSL_CERT=\"${{ inputs.BW-SSL-CERT }}\"" >> .env
+        echo "BW_SSL_KEY=\"${{ inputs.BW-SSL-KEY }}\"" >> .env
+        echo "CI=${{ inputs.CI }}" >> .env
+        echo "CLI_SERVE_HOST=\"${{ inputs.CLI-SERVE-HOST }}\"" >> .env
+        echo "CLI_SERVE_PORT=${{ inputs.CLI-SERVE-PORT }}" >> .env
+        echo "EXTENSION_BUILD_PATH=\"${{ inputs.EXTENSION-BUILD-PATH }}\"" >> .env
+        echo "PAGES_HOST=\"${{ inputs.PAGES-HOST }}\"" >> .env
+        echo "PAGES_HOST_INSECURE_PORT=${{ inputs.PAGES-HOST-INSECURE-PORT }}" >> .env
+        echo "PAGES_HOST_PORT=${{ inputs.PAGES-HOST-PORT }}" >> .env
+        echo "VAULT_HOST_INSECURE_PORT=${{ inputs.VAULT-HOST-INSECURE-PORT }}" >> .env
+        echo "VAULT_HOST_PORT=${{ inputs.VAULT-HOST-PORT }}" >> .env
+        echo "VAULT_HOST_URL=\"${{ inputs.VAULT-HOST-URL }}\"" >> .env
