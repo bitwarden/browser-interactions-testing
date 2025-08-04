@@ -46,7 +46,7 @@ jobs:
         uses: bitwarden/gh-actions/get-keyvault-secrets@main
         with:
           keyvault: gh-browser-interactions
-          secrets: "ENV-FILE,BW-INSTALLATION-ID,BW-INSTALLATION-KEY"
+          secrets: "BW-INSTALLATION-ID,BW-INSTALLATION-KEY,BW-DB-DATABASE,BW-DB-PASSWORD,BW-DB-USERNAME,GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY,GENERATED-RSA-KEY-PAIR-PUBLIC-KEY,KDF-ITERATIONS,MASTER-PASSWORD-HASH,PROTECTED-SYMMETRIC-KEY,PUBLIC-TEST-EMAIL,VAULT-EMAIL,VAULT-PASSWORD"
 
       - name: Log out from Azure
         uses: bitwarden/gh-actions/azure-logout@main
@@ -55,29 +55,29 @@ jobs:
         run: |
           sudo setcap 'cap_net_bind_service=+ep' `which node`
           > .env
-          echo "CI=${{ secrets.CI }}" >> .env
-          echo "PAGES_HOST_PORT=${{ steps.get-kv-secrets.outputs.PAGES-HOST-PORT }}" >> .env
-          echo "PAGES_HOST_INSECURE_PORT=${{ steps.get-kv-secrets.outputs.PAGES-HOST-INSECURE-PORT }}" >> .env
-          echo "PAGES_HOST=\"${{ steps.get-kv-secrets.outputs.PAGES-HOST }}\"" >> .env
+          echo "CI=${{ vars.CI }}" >> .env
+          echo "PAGES_HOST_PORT=${{ vars.PAGES_HOST_PORT }}" >> .env
+          echo "PAGES_HOST_INSECURE_PORT=${{ vars.PAGES_HOST_INSECURE_PORT }}" >> .env
+          echo "PAGES_HOST=\"${{ vars.PAGES_HOST }}\"" >> .env
           echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
           echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
           echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
-          echo "CLI_SERVE_HOST=\"${{ steps.get-kv-secrets.outputs.CLI-SERVE-HOST }}\"" >> .env
-          echo "CLI_SERVE_PORT=${{ steps.get-kv-secrets.outputs.CLI-SERVE-PORT }}" >> .env
-          echo "VAULT_HOST_PORT=${{ steps.get-kv-secrets.outputs.VAULT-HOST-PORT }}" >> .env
-          echo "VAULT_HOST_INSECURE_PORT=${{ steps.get-kv-secrets.outputs.VAULT-HOST-INSECURE-PORT }}" >> .env
-          echo "VAULT_HOST_URL=\"${{ steps.get-kv-secrets.outputs.VAULT-HOST-URL }}\"" >> .env
-          echo "EXTENSION_BUILD_PATH=\"${{ steps.get-kv-secrets.outputs.EXTENSION-BUILD-PATH }}\"" >> .env
-          echo "BW_DOMAIN=\"${{ steps.get-kv-secrets.outputs.BW-DOMAIN }}\"" >> .env
-          echo "BW_DB_PROVIDER=\"${{ steps.get-kv-secrets.outputs.BW-DB-PROVIDER }}\"" >> .env
-          echo "BW_DB_SERVER=\"${{ steps.get-kv-secrets.outputs.BW-DB-SERVER }}\"" >> .env
+          echo "CLI_SERVE_HOST=\"${{ vars.CLI_SERVE_HOST }}\"" >> .env
+          echo "CLI_SERVE_PORT=${{ vars.CLI_SERVE_PORT }}" >> .env
+          echo "VAULT_HOST_PORT=${{ vars.VAULT_HOST_PORT }}" >> .env
+          echo "VAULT_HOST_INSECURE_PORT=${{ vars.VAULT_HOST_INSECURE_PORT }}" >> .env
+          echo "VAULT_HOST_URL=\"${{ vars.VAULT_HOST_URL }}\"" >> .env
+          echo "EXTENSION_BUILD_PATH=\"${{ vars.EXTENSION_BUILD_PATH }}\"" >> .env
+          echo "BW_DOMAIN=\"${{ vars.BW_DOMAIN }}\"" >> .env
+          echo "BW_DB_PROVIDER=\"${{ vars.BW_DB_PROVIDER }}\"" >> .env
+          echo "BW_DB_SERVER=\"${{ vars.BW_DB_SERVER }}\"" >> .env
           echo "BW_DB_DATABASE=\"${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}\"" >> .env
           echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
           echo "BW_DB_PASSWORD=\"${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}\"" >> .env
-          echo "BW_DB_PORT=${{ steps.get-kv-secrets.outputs.BW-DB-PORT }}" >> .env
-          echo "BW_ENABLE_SSL=\"${{ steps.get-kv-secrets.outputs.BW-ENABLE-SSL }}\"" >> .env
-          echo "BW_SSL_CERT=\"${{ steps.get-kv-secrets.outputs.BW-SSL-CERT }}\"" >> .env
-          echo "BW_SSL_KEY=\"${{ steps.get-kv-secrets.outputs.BW-SSL-KEY }}\"" >> .env
+          echo "BW_DB_PORT=${{ vars.BW_DB_PORT }}" >> .env
+          echo "BW_ENABLE_SSL=\"${{ vars.BW_ENABLE_SSL }}\"" >> .env
+          echo "BW_SSL_CERT=\"${{ vars.BW_SSL_CERT }}\"" >> .env
+          echo "BW_SSL_KEY=\"${{ vars.BW_SSL_KEY }}\"" >> .env
           echo "KDF_ITERATIONS=${{ steps.get-kv-secrets.outputs.KDF-ITERATIONS }}" >> .env
           echo "MASTER_PASSWORD_HASH=\"${{ steps.get-kv-secrets.outputs.MASTER-PASSWORD-HASH }}\"" >> .env
           echo "PROTECTED_SYMMETRIC_KEY=\"${{ steps.get-kv-secrets.outputs.PROTECTED-SYMMETRIC-KEY }}\"" >> .env
