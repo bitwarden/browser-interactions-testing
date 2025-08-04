@@ -27,57 +27,29 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
           node-version: "23"
 
-      - name: Log in to Azure
-        uses: bitwarden/gh-actions/azure-login@main
-        with:
-          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-          client_id: ${{ secrets.AZURE_CLIENT_ID }}
-
-      - name: Get Azure Key Vault secrets
-        id: get-kv-secrets
-        uses: bitwarden/gh-actions/get-keyvault-secrets@main
-        with:
-          keyvault: gh-browser-interactions
-          secrets: "ENV-FILE,BW-INSTALLATION-ID,BW-INSTALLATION-KEY"
-
-      - name: Log out from Azure
-        uses: bitwarden/gh-actions/azure-logout@main
-
       - name: Create dotenv file
-        run: |
-          sudo setcap 'cap_net_bind_service=+ep' `which node`
-          > .env
-          echo "CI=${{ secrets.CI }}" >> .env
-          echo "PAGES_HOST_PORT=${{ steps.get-kv-secrets.outputs.PAGES-HOST-PORT }}" >> .env
-          echo "PAGES_HOST_INSECURE_PORT=${{ steps.get-kv-secrets.outputs.PAGES-HOST-INSECURE-PORT }}" >> .env
-          echo "PAGES_HOST=\"${{ steps.get-kv-secrets.outputs.PAGES-HOST }}\"" >> .env
-          echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
-          echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
-          echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
-          echo "CLI_SERVE_HOST=\"${{ steps.get-kv-secrets.outputs.CLI-SERVE-HOST }}\"" >> .env
-          echo "CLI_SERVE_PORT=${{ steps.get-kv-secrets.outputs.CLI-SERVE-PORT }}" >> .env
-          echo "VAULT_HOST_PORT=${{ steps.get-kv-secrets.outputs.VAULT-HOST-PORT }}" >> .env
-          echo "VAULT_HOST_INSECURE_PORT=${{ steps.get-kv-secrets.outputs.VAULT-HOST-INSECURE-PORT }}" >> .env
-          echo "VAULT_HOST_URL=\"${{ steps.get-kv-secrets.outputs.VAULT-HOST-URL }}\"" >> .env
-          echo "EXTENSION_BUILD_PATH=\"${{ steps.get-kv-secrets.outputs.EXTENSION-BUILD-PATH }}\"" >> .env
-          echo "BW_DOMAIN=\"${{ steps.get-kv-secrets.outputs.BW-DOMAIN }}\"" >> .env
-          echo "BW_DB_PROVIDER=\"${{ steps.get-kv-secrets.outputs.BW-DB-PROVIDER }}\"" >> .env
-          echo "BW_DB_SERVER=\"${{ steps.get-kv-secrets.outputs.BW-DB-SERVER }}\"" >> .env
-          echo "BW_DB_DATABASE=\"${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}\"" >> .env
-          echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
-          echo "BW_DB_PASSWORD=\"${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}\"" >> .env
-          echo "BW_DB_PORT=${{ steps.get-kv-secrets.outputs.BW-DB-PORT }}" >> .env
-          echo "BW_ENABLE_SSL=\"${{ steps.get-kv-secrets.outputs.BW-ENABLE-SSL }}\"" >> .env
-          echo "BW_SSL_CERT=\"${{ steps.get-kv-secrets.outputs.BW-SSL-CERT }}\"" >> .env
-          echo "BW_SSL_KEY=\"${{ steps.get-kv-secrets.outputs.BW-SSL-KEY }}\"" >> .env
-          echo "KDF_ITERATIONS=${{ steps.get-kv-secrets.outputs.KDF-ITERATIONS }}" >> .env
-          echo "MASTER_PASSWORD_HASH=\"${{ steps.get-kv-secrets.outputs.MASTER-PASSWORD-HASH }}\"" >> .env
-          echo "PROTECTED_SYMMETRIC_KEY=\"${{ steps.get-kv-secrets.outputs.PROTECTED-SYMMETRIC-KEY }}\"" >> .env
-          echo "BW_INSTALLATION_ID=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}\"" >> .env
-          echo "BW_INSTALLATION_KEY=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}\"" >> .env
-          echo "GENERATED_RSA_KEY_PAIR_PUBLIC_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PUBLIC-KEY }}\"" >> .env
-          echo "GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY }}\"" >> .env
+        uses: ./.github/workflows/actions/setup-env-file
+        with:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          BW_DB_PORT: ${{ vars.BW_DB_PORT }}
+          BW_DB_PROVIDER: ${{ vars.BW_DB_PROVIDER }}
+          BW_DB_SERVER: ${{ vars.BW_DB_SERVER }}
+          BW_DOMAIN: ${{ vars.BW_DOMAIN }}
+          BW_ENABLE_SSL: ${{ vars.BW_ENABLE_SSL }}
+          BW_SSL_CERT: ${{ vars.BW_SSL_CERT }}
+          BW_SSL_KEY: ${{ vars.BW_SSL_KEY }}
+          CI: true
+          CLI_SERVE_HOST: ${{ vars.CLI_SERVE_HOST }}
+          CLI_SERVE_PORT: ${{ vars.CLI_SERVE_PORT }}
+          EXTENSION_BUILD_PATH: ${{ vars.EXTENSION_BUILD_PATH }}
+          PAGES_HOST_INSECURE_PORT: ${{ vars.PAGES_HOST_INSECURE_PORT }}
+          PAGES_HOST_PORT: ${{ vars.PAGES_HOST_PORT }}
+          PAGES_HOST: ${{ vars.PAGES_HOST }}
+          VAULT_HOST_INSECURE_PORT: ${{ vars.VAULT_HOST_INSECURE_PORT }}
+          VAULT_HOST_PORT: ${{ vars.VAULT_HOST_PORT }}
+          VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
       - name: Create feature flags file
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS }}}" > flags.json

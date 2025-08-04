@@ -34,26 +34,26 @@ jobs:
       - name: Create dotenv file
         uses: ./.github/workflows/actions/setup-env-file
         with:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          BW-DB-PORT: ${{ env.BW-DB-PORT }}
-          BW-DB-PROVIDER: ${{ env.BW-DB-PROVIDER }}
-          BW-DB-SERVER: ${{ env.BW-DB-SERVER }}
-          BW-DOMAIN: ${{ env.BW-DOMAIN }}
-          BW-ENABLE-SSL: ${{ env.BW-ENABLE-SSL }}
-          BW-SSL-CERT: ${{ env.BW_SSL_CERT }}
-          BW-SSL-KEY: ${{ env.BW_SSL_KEY }}
+          BW_DB_PORT: ${{ vars.BW_DB_PORT }}
+          BW_DB_PROVIDER: ${{ vars.BW_DB_PROVIDER }}
+          BW_DB_SERVER: ${{ vars.BW_DB_SERVER }}
+          BW_DOMAIN: ${{ vars.BW_DOMAIN }}
+          BW_ENABLE_SSL: ${{ vars.BW_ENABLE_SSL }}
+          BW_SSL_CERT: ${{ vars.BW_SSL_CERT }}
+          BW_SSL_KEY: ${{ vars.BW_SSL_KEY }}
           CI: true
-          CLI-SERVE-HOST: ${{ env.CLI_SERVE_HOST }}
-          CLI-SERVE-PORT: ${{ env.CLI_SERVE_PORT }}
-          EXTENSION-BUILD-PATH: ${{ env.EXTENSION_BUILD_PATH }}
-          PAGES-HOST: ${{ env.PAGES_HOST }}
-          PAGES-HOST-INSECURE-PORT: ${{ env.PAGES_HOST_INSECURE_PORT }}
-          PAGES-HOST-PORT: ${{ env.PAGES_HOST_PORT }}
-          VAULT-HOST-INSECURE-PORT: ${{ env.VAULT_HOST_INSECURE_PORT }}
-          VAULT-HOST-PORT: ${{ env.VAULT_HOST_PORT }}
-          VAULT-HOST-URL: ${{ env.VAULT_HOST_URL }}
+          CLI_SERVE_HOST: ${{ vars.CLI_SERVE_HOST }}
+          CLI_SERVE_PORT: ${{ vars.CLI_SERVE_PORT }}
+          EXTENSION_BUILD_PATH: ${{ vars.EXTENSION_BUILD_PATH }}
+          PAGES_HOST_INSECURE_PORT: ${{ vars.PAGES_HOST_INSECURE_PORT }}
+          PAGES_HOST_PORT: ${{ vars.PAGES_HOST_PORT }}
+          PAGES_HOST: ${{ vars.PAGES_HOST }}
+          VAULT_HOST_INSECURE_PORT: ${{ vars.VAULT_HOST_INSECURE_PORT }}
+          VAULT_HOST_PORT: ${{ vars.VAULT_HOST_PORT }}
+          VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
       - name: Create feature flags file
         run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS }}}" > flags.json

@@ -10,55 +10,55 @@ inputs:
   AZURE_CLIENT_ID:
     description: "Azure Client ID for the service principal."
     required: true
-  BW-DB-PORT:
+  BW_DB_PORT:
     description: "Port for the Bitwarden database."
     required: true
-  BW-DB-PROVIDER:
+  BW_DB_PROVIDER:
     description: "Database provider for Bitwarden."
     required: true
-  BW-DB-SERVER:
+  BW_DB_SERVER:
     description: "Database server for Bitwarden."
     required: true
-  BW-DOMAIN:
+  BW_DOMAIN:
     description: "Domain for Bitwarden."
     required: true
-  BW-ENABLE-SSL:
+  BW_ENABLE_SSL:
     description: "Enable SSL for Bitwarden."
     required: true
-  BW-SSL-CERT:
+  BW_SSL_CERT:
     description: "SSL certificate for Bitwarden."
     required: true
-  BW-SSL-KEY:
+  BW_SSL_KEY:
     description: "SSL key for Bitwarden."
     required: true
   CI:
     description: "CI environment variable."
     required: true
-  CLI-SERVE-HOST:
+  CLI_SERVE_HOST:
     description: "Host for CLI serve."
     required: true
-  CLI-SERVE-PORT:
+  CLI_SERVE_PORT:
     description: "Port for CLI serve."
     required: true
-  EXTENSION-BUILD-PATH:
+  EXTENSION_BUILD_PATH:
     description: "Path to extension build."
     required: true
-  PAGES-HOST:
+  PAGES_HOST:
     description: "Host for pages."
     required: true
-  PAGES-HOST-INSECURE-PORT:
+  PAGES_HOST_INSECURE_PORT:
     description: "Insecure port for pages host."
     required: true
-  PAGES-HOST-PORT:
+  PAGES_HOST_PORT:
     description: "Port for pages host."
     required: true
-  VAULT-HOST-INSECURE-PORT:
+  VAULT_HOST_INSECURE_PORT:
     description: "Insecure port for vault host."
     required: true
-  VAULT-HOST-PORT:
+  VAULT_HOST_PORT:
     description: "Port for vault host."
     required: true
-  VAULT-HOST-URL:
+  VAULT_HOST_URL:
     description: "URL for vault host."
     required: true
 
@@ -68,9 +68,9 @@ runs:
     - name: Log in to Azure
       uses: bitwarden/gh-actions/azure-login@main
       with:
-        subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-        client_id: ${{ secrets.AZURE_CLIENT_ID }}
+        subscription_id: ${{ inputs.AZURE_SUBSCRIPTION_ID }}
+        tenant_id: ${{ inputs.AZURE_TENANT_ID }}
+        client_id: ${{ inputs.AZURE_CLIENT_ID }}
 
     - name: Get Azure Key Vault secrets
       id: get-kv-secrets
@@ -100,7 +100,6 @@ runs:
       run: |
         sudo setcap 'cap_net_bind_service=+ep' `which node`
         > .env
-
         echo "BW_DB_DATABASE=\"${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}\"" >> .env
         echo "BW_DB_PASSWORD=\"${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}\"" >> .env
         echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
@@ -114,21 +113,20 @@ runs:
         echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
         echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
         echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
-
-        echo "BW_DB_PORT=${{ inputs.BW-DB-PORT }}" >> .env
-        echo "BW_DB_PROVIDER=\"${{ inputs.BW-DB-PROVIDER }}\"" >> .env
-        echo "BW_DB_SERVER=\"${{ inputs.BW-DB-SERVER }}\"" >> .env
-        echo "BW_DOMAIN=\"${{ inputs.BW-DOMAIN }}\"" >> .env
-        echo "BW_ENABLE_SSL=\"${{ inputs.BW-ENABLE-SSL }}\"" >> .env
-        echo "BW_SSL_CERT=\"${{ inputs.BW-SSL-CERT }}\"" >> .env
-        echo "BW_SSL_KEY=\"${{ inputs.BW-SSL-KEY }}\"" >> .env
+        echo "BW_DB_PORT=${{ inputs.BW_DB_PORT }}" >> .env
+        echo "BW_DB_PROVIDER=\"${{ inputs.BW_DB_PROVIDER }}\"" >> .env
+        echo "BW_DB_SERVER=\"${{ inputs.BW_DB_SERVER }}\"" >> .env
+        echo "BW_DOMAIN=\"${{ inputs.BW_DOMAIN }}\"" >> .env
+        echo "BW_ENABLE_SSL=\"${{ inputs.BW_ENABLE_SSL }}\"" >> .env
+        echo "BW_SSL_CERT=\"${{ inputs.BW_SSL_CERT }}\"" >> .env
+        echo "BW_SSL_KEY=\"${{ inputs.BW_SSL_KEY }}\"" >> .env
         echo "CI=${{ inputs.CI }}" >> .env
-        echo "CLI_SERVE_HOST=\"${{ inputs.CLI-SERVE-HOST }}\"" >> .env
-        echo "CLI_SERVE_PORT=${{ inputs.CLI-SERVE-PORT }}" >> .env
-        echo "EXTENSION_BUILD_PATH=\"${{ inputs.EXTENSION-BUILD-PATH }}\"" >> .env
-        echo "PAGES_HOST=\"${{ inputs.PAGES-HOST }}\"" >> .env
-        echo "PAGES_HOST_INSECURE_PORT=${{ inputs.PAGES-HOST-INSECURE-PORT }}" >> .env
-        echo "PAGES_HOST_PORT=${{ inputs.PAGES-HOST-PORT }}" >> .env
-        echo "VAULT_HOST_INSECURE_PORT=${{ inputs.VAULT-HOST-INSECURE-PORT }}" >> .env
-        echo "VAULT_HOST_PORT=${{ inputs.VAULT-HOST-PORT }}" >> .env
-        echo "VAULT_HOST_URL=\"${{ inputs.VAULT-HOST-URL }}\"" >> .env
+        echo "CLI_SERVE_HOST=\"${{ inputs.CLI_SERVE_HOST }}\"" >> .env
+        echo "CLI_SERVE_PORT=${{ inputs.CLI_SERVE_PORT }}" >> .env
+        echo "EXTENSION_BUILD_PATH=\"${{ inputs.EXTENSION_BUILD_PATH }}\"" >> .env
+        echo "PAGES_HOST_INSECURE_PORT=${{ inputs.PAGES_HOST_INSECURE_PORT }}" >> .env
+        echo "PAGES_HOST_PORT=${{ inputs.PAGES_HOST_PORT }}" >> .env
+        echo "PAGES_HOST=\"${{ inputs.PAGES_HOST }}\"" >> .env
+        echo "VAULT_HOST_INSECURE_PORT=${{ inputs.VAULT_HOST_INSECURE_PORT }}" >> .env
+        echo "VAULT_HOST_PORT=${{ inputs.VAULT_HOST_PORT }}" >> .env
+        echo "VAULT_HOST_URL=\"${{ inputs.VAULT_HOST_URL }}\"" >> .env
