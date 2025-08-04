@@ -46,8 +46,8 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 ## Limitations
 
 - Extension builds can only be tested with Chromium clients at present.
-- BIT can test the browser client builds against active feature flags, but only those supported by the server utilized by the [self-host image](https://github.com/bitwarden/self-host/releases/tag/v2025.7.2) (aka [Bitwarden Unified](https://bitwarden.com/help/install-and-deploy-unified-beta/)) found in the [Docker compose configuration](./docker-compose.yml). Because of release timings, this can mean some feature-flagged experiences available in the server, will not immediately be available for testing in BIT (until the updated self-host image is released and updated in the Docker compose configuration).
-  - Similarly the Bitwarden web client served and used with BIT is pinned to the self-host image version
+- BIT can test the browser client builds against active feature flags, but only those supported by the server utilized by the [self-host image](https://github.com/bitwarden/self-host/releases/tag/v2025.7.2) (aka [Bitwarden Unified](https://bitwarden.com/help/install-and-deploy-unified-beta/)) found in the [Docker compose configuration](./docker-compose.yml). Because of release timings, this can mean some feature-flagged experiences available in the server will not immediately be available for testing in BIT (until the updated self-host image is released and updated in the Docker compose configuration).
+  - Similarly the Bitwarden web client served and used with BIT is pinned to the self-host image version.
 
 ### Live tests
 
