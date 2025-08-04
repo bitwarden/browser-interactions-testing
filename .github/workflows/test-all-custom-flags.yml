@@ -36,7 +36,7 @@ jobs:
           node-version: "23"
 
       - name: Create dotenv file
-        uses: ./.github/workflows/actions/setup-env-file
+        uses: ./.github/actions/setup-env-file
         with:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
