@@ -68,7 +68,13 @@ class VaultSeeder {
       vaultItems.forEach((item) => (existingVaultItems[item.name] = item));
     }
 
-    const allCiphers = [...localPageCiphers, ...publicPageCiphers];
+    const includePublicPageCiphers =
+      process.env.INCLUDE_PUBLIC_PAGE_CIPHERS === "true";
+
+    const allCiphers = [
+      ...localPageCiphers,
+      ...(includePublicPageCiphers ? publicPageCiphers : []),
+    ];
 
     for (let index = 0; index < allCiphers.length; index++) {
       const pageCipher = allCiphers[index];
