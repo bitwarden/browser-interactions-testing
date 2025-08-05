@@ -206,11 +206,7 @@ Github Action workflows have been created to make running BIT easy for those who
 
 ### Actions Setup
 
-In order to leverage the provided Github Actions testing workflows, you'll need to create an actions secret named `ENV-FILE` along with `BW-INSTALLATION-ID` and `BW-INSTALLATION-KEY` with the values you would otherwise use in your `.env` file at root. These secrets will need to be configured in your project's Azure secrets store.
-
-The value of the `ENV-FILE` secret should be the contents of your `.env` in Base64 format.
-
-> Note: the `ENV-FILE` pattern will be deprecated in the future in favor of independent environment variable secrets (a la `BW-INSTALLATION-ID` and `BW-INSTALLATION-KEY`).
+In order to leverage the provided Github Actions testing workflows, you'll need to create actions secrets and variables for building the `.env` file which will be used to set up the ephemeral test environment (you can find the key names for these in [.github/actions/setup-env-file/action.yml](.github/actions/setup-env-file/action.yml)). The secrets will need to be configured in your project's Azure secrets store, while the variables can be configured in your project's Github Actions Repository variables page (`https://github.com/<your fork owner>/browser-interactions-testing/settings/variables/actions`).
 
 ### Using Github Secrets
 
