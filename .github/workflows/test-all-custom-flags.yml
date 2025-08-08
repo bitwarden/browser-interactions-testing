@@ -1,9 +1,11 @@
 name: Test-all-custom-flags
-run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
+run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH || github.event.client_payload.origin_branch }} by @${{ github.actor }}
 on:
   push:
     branches:
       - "main"
+  repository_dispatch:
+    types: [trigger-bit-tests]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -25,6 +27,7 @@ jobs:
       id-token: write
       contents: read
       packages: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -68,7 +71,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: ""
-          branch: ${{ inputs.CLIENTS_BRANCH || 'main' }}
+          branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
           repo: bitwarden/clients
@@ -128,6 +131,7 @@ jobs:
           npm ci
 
       - name: Run all tests
+        id: playwright-tests
         run: npm run test:static:ci
 
       - name: Update job summary
@@ -144,3 +148,29 @@ jobs:
             ./test-summary
             ./tests-out/videos
             ./tests-out/screenshots
+
+      # Only post back to the PR if there was a failure since test-all has the
+      # typical config case covered for success feedback
+      - name: Communicate BIT failure on originating issue
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        if: failure() && github.event.client_payload.origin_issue
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = 'bitwarden';
+            const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
+
+            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with ${{ inputs.FEATURE_FLAGS === '{}' ? 'all feature flags disabled.': '\n\n<details><summary><div>The following flags enabled:</div></summary>```json\n${{inputs.FEATURE_FLAGS}}```'}
+
+            ❌ Unfortunately, one or more of these BIT tests failed. 😞
+
+            Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you'd like help.
+
+            You can view the detailed results of the tests [here](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}).`;
+
+            github.rest.issues.createComment({
+              issue_number: context.payload.client_payload.origin_issue,
+              owner: owner,
+              repo: 'clients',
+              body: message
+            });
