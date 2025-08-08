@@ -160,11 +160,11 @@ jobs:
             const owner = 'bitwarden';
             const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience.
+            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with the same feature flag configuration used by the `${{ REMOTE_VAULT_CONFIG_MATCH || 'US production'}}` server.
 
             ❌ Unfortunately, one or more of the BIT tests failed. 😞
 
-            Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you need help.
+            Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you'd like help.
 
             You can view the detailed results of the tests [here](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}).`;
 
@@ -184,9 +184,9 @@ jobs:
             const owner = 'bitwarden';
             const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience.
+            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with the same feature flag configuration used by the `${{ REMOTE_VAULT_CONFIG_MATCH || 'US production'}}` server.
 
-            ✅ Fortunately, the BIT tests have passed! 🎉
+            ✅ Fortunately, these BIT tests have passed! 🎉
 
             You can view the detailed results of the tests [here](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}).`;
 
