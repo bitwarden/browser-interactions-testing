@@ -74,7 +74,7 @@ jobs:
           branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
-          repo: bitwarden/clients
+          repo: jprusik/clients
           if_no_artifact_found: fail
           skip_unpack: true
 
@@ -158,15 +158,17 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const owner = 'bitwarden';
+            const featureFlags = ${{ inputs.FEATURE_FLAGS }};
+            const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
             const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with ${{ inputs.FEATURE_FLAGS === '{}' ? 'all feature flags disabled.': '\n\n<details><summary><div>The following flags enabled:</div></summary>```json\n${{inputs.FEATURE_FLAGS}}```'}
+            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with ${ featureFlags === '{}' ? 'all feature flags disabled.': '\n\n<details><summary><div>The following flags enabled:</div></summary>\`\`\`json\n${ featureFlags }\`\`\`'}}
 
             ❌ Unfortunately, one or more of these BIT tests failed. 😞
 
-            Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you'd like help.
+            Please resolve the failure before merging- reach out to \`@bitwarden/team-autofill-dev\` if you'd like help.
 
-            You can view the detailed results of the tests [here](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}).`;
+            You can view the detailed results of the tests [here](${runURL}).`;
 
             github.rest.issues.createComment({
               issue_number: context.payload.client_payload.origin_issue,
