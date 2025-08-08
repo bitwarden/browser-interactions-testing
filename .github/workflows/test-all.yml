@@ -45,6 +45,7 @@ jobs:
           BW_DB_SERVER: ${{ vars.BW_DB_SERVER }}
           BW_DOMAIN: ${{ vars.BW_DOMAIN }}
           BW_ENABLE_SSL: ${{ vars.BW_ENABLE_SSL }}
+          REMOTE_VAULT_CONFIG_MATCH: ${{ inputs.REMOTE_VAULT_CONFIG_MATCH || vars.BW_REMOTE_VAULT_CONFIG_MATCH }}
           BW_SSL_CERT: ${{ vars.BW_SSL_CERT }}
           BW_SSL_KEY: ${{ vars.BW_SSL_KEY }}
           CI: true

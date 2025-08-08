@@ -52,6 +52,9 @@ inputs:
   PAGES_HOST_PORT:
     description: "Port for pages host."
     required: true
+  REMOTE_VAULT_CONFIG_MATCH:
+    description: "Location of server configuration."
+    required: false
   VAULT_HOST_INSECURE_PORT:
     description: "Insecure port for vault host."
     required: true
@@ -127,6 +130,7 @@ runs:
         echo "PAGES_HOST_INSECURE_PORT=${{ inputs.PAGES_HOST_INSECURE_PORT }}" >> .env
         echo "PAGES_HOST_PORT=${{ inputs.PAGES_HOST_PORT }}" >> .env
         echo "PAGES_HOST=\"${{ inputs.PAGES_HOST }}\"" >> .env
+        echo "REMOTE_VAULT_CONFIG_MATCH=\"${{ inputs.REMOTE_VAULT_CONFIG_MATCH }}\"" >> .env
         echo "VAULT_HOST_INSECURE_PORT=${{ inputs.VAULT_HOST_INSECURE_PORT }}" >> .env
         echo "VAULT_HOST_PORT=${{ inputs.VAULT_HOST_PORT }}" >> .env
         echo "VAULT_HOST_URL=\"${{ inputs.VAULT_HOST_URL }}\"" >> .env
