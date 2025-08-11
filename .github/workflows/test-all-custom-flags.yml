@@ -158,15 +158,16 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const owner = 'bitwarden';
-            const featureFlags = ${{ inputs.FEATURE_FLAGS }};
+            const featureFlags = "${{ inputs.FEATURE_FLAGS || '{}' }}";
+            const featureFlagsMessage = featureFlags === '{}' ? 'all feature flags disabled.': `\n\n<details><summary><div>The following flags enabled:</div></summary>\`\`\`json\n${featureFlags}\`\`\``;
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
             const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with ${ featureFlags === '{}' ? 'all feature flags disabled.': '\n\n<details><summary><div>The following flags enabled:</div></summary>\`\`\`json\n${ featureFlags }\`\`\`'}}
+            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with ${featureFlagsMessage}
 
             ❌ Unfortunately, one or more of these BIT tests failed. 😞
 
-            Please resolve the failure before merging- reach out to \`@bitwarden/team-autofill-dev\` if you'd like help.
+            Please resolve the failure before merging; reach out to \`@bitwarden/team-autofill-dev\` if you'd like help.
 
             You can view the detailed results of the tests [here](${runURL}).`;
 
