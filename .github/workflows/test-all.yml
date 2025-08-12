@@ -95,7 +95,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: ""
-          branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
+          branch: "pm-5756-dispatch-test"
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
           repo: bitwarden/clients

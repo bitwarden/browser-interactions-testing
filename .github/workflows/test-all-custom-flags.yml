@@ -179,6 +179,7 @@ jobs:
       # Only post back to the PR if there was a failure since test-all has the
       # typical config case covered for success feedback
       - name: Communicate BIT failure on originating issue
+        if: failure()
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ steps.app-token.outputs.token }}
