@@ -53,7 +53,7 @@ jobs:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
           private-key: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-KEY }}
           owner: bitwarden
-          repositories: browser-interactions-testing
+          repositories: clients
           permission-actions: write
 
       - name: Checkout
