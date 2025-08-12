@@ -215,7 +215,7 @@ jobs:
 
             [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience.
 
-            ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉
+            ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉`;
 
             github.rest.issues.createComment({
               issue_number: 15988,
