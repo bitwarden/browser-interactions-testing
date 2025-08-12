@@ -150,9 +150,9 @@ export const test = base.extend<{
         await environmentSelectorMenuButton.waitFor(defaultWaitForOptions);
         await environmentSelectorMenuButton.click();
 
-        const environmentSelectorMenu = await testPage.getByTestId(
-          "environment-selector-dialog-item-self-hosted",
-        );
+        const environmentSelectorMenu = await testPage.getByRole("menuitem", {
+          name: "self-hosted",
+        });
 
         await environmentSelectorMenu.waitFor(defaultWaitForOptions);
         await environmentSelectorMenu.click();
