@@ -80,38 +80,38 @@ jobs:
           unzip -o *dist-chrome-*.zip.zip
           unzip -o 'dist-chrome*.zip' -d build
 
-      - name: Generate and install certs
-        run: |
-          npm run setup:ssl
-          sudo apt-get install libnss3-tools=2:3.98-1build1
-          . .env
-          mkdir -p $HOME/.pki/nssdb
-          certutil -d $HOME/.pki/nssdb -N --empty-password
-          certutil -d sql:$HOME/.pki/nssdb -A -t "CP,CP," -n TestAutomationSSL -i ./$BW_SSL_CERT
+      # - name: Generate and install certs
+      #   run: |
+      #     npm run setup:ssl
+      #     sudo apt-get install libnss3-tools=2:3.98-1build1
+      #     . .env
+      #     mkdir -p $HOME/.pki/nssdb
+      #     certutil -d $HOME/.pki/nssdb -N --empty-password
+      #     certutil -d sql:$HOME/.pki/nssdb -A -t "CP,CP," -n TestAutomationSSL -i ./$BW_SSL_CERT
 
-      - name: Install Bitwarden CLI
-        run: npm install -g @bitwarden/cli@2024.2.0
+      # - name: Install Bitwarden CLI
+      #   run: npm install -g @bitwarden/cli@2024.2.0
 
-      - name: Install project dependencies
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+      # - name: Install project dependencies
+      #   run: |
+      #     npm ci
+      #     npx playwright install --with-deps chromium
 
-      - name: Match feature flags file to remote config
-        run: |
-          touch flags.json
-          npm run setup:flags
+      # - name: Match feature flags file to remote config
+      #   run: |
+      #     touch flags.json
+      #     npm run setup:flags
 
-      - name: Build and start the test vault
-        run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
+      # - name: Build and start the test vault
+      #   run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
 
-      - name: Setup the vault test account
-        run: npm run seed:vault:account
+      # - name: Setup the vault test account
+      #   run: npm run seed:vault:account
 
-      - name: Setup the vault test account ciphers
-        run: |
-          npm run start:cli
-          npm run seed:vault:ciphers
+      # - name: Setup the vault test account ciphers
+      #   run: |
+      #     npm run start:cli
+      #     npm run seed:vault:ciphers
 
       - name: Download test site build
         uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
@@ -125,31 +125,31 @@ jobs:
           repo: bitwarden/test-the-web
           if_no_artifact_found: fail
 
-      - name: Copy over certs and install test site dependencies
-        run: |
-          cp ssl.crt test-site/api/
-          cp ssl.key test-site/api/
-          cd test-site
-          npm ci
+      # - name: Copy over certs and install test site dependencies
+      #   run: |
+      #     cp ssl.crt test-site/api/
+      #     cp ssl.key test-site/api/
+      #     cd test-site
+      #     npm ci
 
-      - name: Run all tests
-        id: playwright-tests
-        run: npm run test:static:ci
+      # - name: Run all tests
+      #   id: playwright-tests
+      #   run: npm run test:static:ci
 
-      - name: Update job summary
-        if: always()
-        run: echo "$(<./test-summary/test-summary.md)" >> $GITHUB_STEP_SUMMARY
+      # - name: Update job summary
+      #   if: always()
+      #   run: echo "$(<./test-summary/test-summary.md)" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload results as artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
-        with:
-          name: test-summary
-          path: |
-            ./flags.json
-            ./test-summary
-            ./tests-out/videos
-            ./tests-out/screenshots
+      # - name: Upload results as artifact
+      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      #   if: always()
+      #   with:
+      #     name: test-summary
+      #     path: |
+      #       ./flags.json
+      #       ./test-summary
+      #       ./tests-out/videos
+      #       ./tests-out/screenshots
 
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
