@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       CLIENTS_BRANCH:
-        default: "main"
+        default: "pm-5756-dispatch-test"
         description: "clients branch of browser build to use"
         required: true
         type: string
@@ -71,10 +71,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: ""
-          branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
+          branch: "pm-5756-dispatch-test"
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
-          repo: jprusik/clients
+          repo: bitwarden/clients
           if_no_artifact_found: fail
           skip_unpack: true
 
@@ -153,7 +153,7 @@ jobs:
       # typical config case covered for success feedback
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: failure() && github.event.client_payload.origin_issue
+        if: failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -172,7 +172,7 @@ jobs:
             You can view the detailed results of the tests [here](${runURL}).`;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: 15988,
               owner: owner,
               repo: 'clients',
               body: message

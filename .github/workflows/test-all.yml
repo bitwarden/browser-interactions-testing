@@ -153,7 +153,7 @@ jobs:
 
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: failure() && github.event.client_payload.origin_issue
+        if: failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -171,7 +171,7 @@ jobs:
             You can view the detailed results of the tests [here](${runURL}).`;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: 15988,
               owner: owner,
               repo: 'clients',
               body: message
@@ -179,7 +179,7 @@ jobs:
 
       - name: Communicate BIT success on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: success() && github.event.client_payload.origin_issue
+        if: success()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -191,7 +191,7 @@ jobs:
             ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: 15988,
               owner: owner,
               repo: 'clients',
               body: message
