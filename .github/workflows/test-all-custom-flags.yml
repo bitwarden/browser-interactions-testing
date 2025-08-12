@@ -159,7 +159,6 @@ jobs:
           npm ci
 
       - name: Run all tests
-        id: playwright-tests
         run: npm run test:static:ci
 
       - name: Update job summary
