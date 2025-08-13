@@ -33,7 +33,7 @@ jobs:
       - name: Send PR feedback check
         id: set-send-pr-feedback
         run: |
-          echo "send_pr_feedback=github.event.client_payload.origin_issue && vars.ENABLE_PR_FEEDBACK == 'true'" >> "$GITHUB_OUTPUT"
+          echo "send_pr_feedback=${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
