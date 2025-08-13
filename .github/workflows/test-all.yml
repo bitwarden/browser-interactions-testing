@@ -27,9 +27,17 @@ jobs:
       contents: read
       packages: read
       pull-requests: write
+    outputs:
+      send_pr_feedback: false
     steps:
+      - name: Send PR feedback check
+        id: set-send-pr-feedback
+        run: |
+          echo "send_pr_feedback=github.event.client_payload.origin_issue && vars.ENABLE_PR_FEEDBACK == 'true'" >> "$GITHUB_OUTPUT"
+
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
@@ -38,16 +46,19 @@ jobs:
       - name: Get Azure Key Vault secrets
         id: get-kv-secrets
         uses: bitwarden/gh-actions/get-keyvault-secrets@main
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           keyvault: gh-org-bitwarden
           secrets: "BW-GHAPP-ID,BW-GHAPP-KEY"
 
       - name: Log out from Azure
         uses: bitwarden/gh-actions/azure-logout@main
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
 
       - name: Generate GH App token
-        uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
         id: app-token
+        uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
           private-key: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-KEY }}
@@ -180,7 +191,7 @@ jobs:
 
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: failure() && github.event.client_payload.origin_issue && vars.ENABLE_PR_FEEDBACK == 'true'
+        if: failure() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -206,7 +217,7 @@ jobs:
 
       - name: Communicate BIT success on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: success() && github.event.client_payload.origin_issue && vars.ENABLE_PR_FEEDBACK == 'true'
+        if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
