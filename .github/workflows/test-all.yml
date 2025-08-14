@@ -189,6 +189,46 @@ jobs:
             ./tests-out/videos
             ./tests-out/screenshots
 
+      - name: Remove past BIT status comments on originating issue
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            // Note: should match the first line of `message` in the communication steps
+            const workflowCommentTag = '<!-- comment_tag: test-all -->';
+
+            const owner = 'bitwarden';
+
+            const issueComments = await github.rest.issues.listComments({
+              issue_number: context.payload.client_payload.origin_issue,
+              owner: owner,
+              repo: 'clients',
+            });
+
+            for (const comment of issueComments.data || []) {
+              const shouldDeleteComment =
+                // Do not delete comments that were not automated
+                !!comment.performed_via_github_app &&
+
+                // Do not delete user comments
+                comment.user.type === 'Bot' &&
+
+                // Do not delete edited comments
+                comment.created_at === comment.updated_at &&
+
+                // Only delete comments from this workflow
+                comment.body.trim().startsWith(workflowCommentTag);
+
+              if (shouldDeleteComment) {
+                await github.rest.issues.deleteComment({
+                  comment_id: comment.id,
+                  owner: owner,
+                  repo: 'clients',
+                });
+              }
+            }
+
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         if: failure() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
@@ -199,16 +239,17 @@ jobs:
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
             const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
             const message = `
-              #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
+            <!-- comment_tag: test-all -->
+            #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
 
-              [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes and **the feature flag configuration used by \`${configURL.hostname}\`**
+            [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes and **the feature flag configuration used by \`${configURL.hostname}\`**
 
-              > [!CAUTION]
-              > Unfortunately, one or more of these tests failed. 😞
-              >
-              > Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you'd like help.
+            > [!CAUTION]
+            > Unfortunately, one or more of these tests failed. 😞
+            >
+            > Please resolve the failure before merging; reach out to \`@bitwarden/team-autofill-dev\` if you'd like help.
 
-              You can view the detailed results of the tests [here](${runURL}).
+            You can view the detailed results of the tests [here](${runURL}).
             `;
 
             github.rest.issues.createComment({
@@ -225,12 +266,15 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
+            const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
+            const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
             const message = `
-              #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
+            <!-- comment_tag: test-all -->
+            #### Changes in this PR impact the Autofill experience of the browser client
 
-              [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes.
+            [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes and <ins>the feature flag configuration used by \`${configURL.hostname}\`</ins>.
 
-              > ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉
+            ✅ Fortunately, [these BIT tests have passed](${runURL})! 🎉
             `;
 
             github.rest.issues.createComment({
