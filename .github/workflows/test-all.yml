@@ -198,15 +198,18 @@ jobs:
             const owner = 'bitwarden';
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
             const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
-            const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
+            const message = `
+              #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience. The tests ran with the same feature flag configuration used by \`${configURL.hostname}\`
+              [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes and **the feature flag configuration used by \`${configURL.hostname}\`**
 
-            ❌ Unfortunately, one or more of these BIT tests failed. 😞
+              > [!CAUTION]
+              > Unfortunately, one or more of these tests failed. 😞
+              >
+              > Please resolve the failure before merging; reach out to `@bitwarden/team-autofill-dev` if you'd like help.
 
-            Please resolve the failure before merging; reach out to \`@bitwarden/team-autofill-dev\` if you'd like help.
-
-            You can view the detailed results of the tests [here](${runURL}).`;
+              You can view the detailed results of the tests [here](${runURL}).
+            `;
 
             github.rest.issues.createComment({
               issue_number: context.payload.client_payload.origin_issue,
@@ -222,11 +225,13 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
-            const message = `⚠️ **Files have been modified in this PR that impact the Autofill experience** ⚠️
+            const message = `
+              #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
 
-            [BIT](https://github.com/${owner}/browser-interactions-testing) was run to verify no regressions have been introduced to the core Autofill experience.
+              [BIT](https://github.com/${owner}/browser-interactions-testing) has tested the core experience with these changes.
 
-            ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉`;
+              > ✅ Fortunately, [these BIT tests have passed](https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId})! 🎉
+            `;
 
             github.rest.issues.createComment({
               issue_number: context.payload.client_payload.origin_issue,
