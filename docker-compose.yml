@@ -5,7 +5,7 @@ services:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/self-host:2025.7.2-beta # https://github.com/bitwarden/self-host/releases
+    image: ghcr.io/bitwarden/self-host:2025.7.3-beta # https://github.com/bitwarden/self-host/releases
     restart: always
     ports:
       - ${VAULT_HOST_PORT}:8443
