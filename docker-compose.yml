@@ -1,4 +1,4 @@
-name: v2025-07-02
+name: v2025-07-03
 services:
   bitwarden:
     depends_on:
