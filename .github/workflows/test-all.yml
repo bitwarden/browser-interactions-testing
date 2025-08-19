@@ -102,6 +102,7 @@ jobs:
           VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
       - name: Download extension artifact
+        id: get-build-artifact
         uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,6 +114,11 @@ jobs:
           repo: bitwarden/clients
           if_no_artifact_found: fail
           skip_unpack: true
+
+      - name: Set no PR feedback when missing build artifact
+        if: ${{ failure() && steps.get-build-artifact.conclusion == 'failure' }}
+        run: |
+          echo "send_pr_feedback=false" > "$GITHUB_OUTPUT"
 
       - name: Unzip extension artifact
         run: |
