@@ -160,13 +160,13 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = await testPage
+          const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const newCipherNotificationLocator = notificationLocator.getByText(
-            "Should Bitwarden remember this password for you?",
+          const saveNotificationBar = notificationLocator.locator(
+            '[data-testid="save-notification-bar"]',
           );
 
           const notificationCloseButtonLocator = notificationLocator.getByRole(
@@ -179,7 +179,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
-            await expect(newCipherNotificationLocator).toBeVisible();
+            await expect(saveNotificationBar).toBeVisible();
 
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
@@ -287,15 +287,14 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = await testPage
+          const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const updatePasswordNotificationLocator =
-            notificationLocator.getByText(
-              "Do you want to update this password in Bitwarden?",
-            );
+          const updatePasswordNotificationLocator = notificationLocator.locator(
+            '[data-testid="update-notification-bar"]',
+          );
 
           const notificationCloseButtonLocator = notificationLocator.getByRole(
             "button",
