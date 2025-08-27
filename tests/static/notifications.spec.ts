@@ -160,17 +160,19 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationIframeLocator = testPage
+          const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const saveNotificationBar = testPage.locator(
+          const saveNotificationBar = notificationLocator.locator(
             '[data-testid="save-notification-bar"]',
           );
 
-          const notificationCloseButtonLocator =
-            notificationIframeLocator.getByRole("button", { name: "Close" });
+          const notificationCloseButtonLocator = notificationLocator.getByRole(
+            "button",
+            { name: "Close" },
+          );
 
           if (shouldNotTriggerNewNotification) {
             // Target the notification close button since it's present on all notification cases
@@ -290,7 +292,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const updatePasswordNotificationLocator = testPage.locator(
+          const updatePasswordNotificationLocator = notificationLocator.locator(
             '[data-testid="update-notification-bar"]',
           );
 
