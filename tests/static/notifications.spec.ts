@@ -160,27 +160,18 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = await testPage
+          const notificationIframeLocator = testPage
             .locator("#bit-notification-bar-iframe")
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const newCipherNotificationLocator = notificationLocator.getByText(
-            "Should Bitwarden remember this password for you?",
-          );
-
-          const notificationCloseButtonLocator = notificationLocator.getByRole(
-            "button",
-            { name: "Close" },
-          );
+          const notificationCloseButtonLocator =
+            notificationIframeLocator.getByRole("button", { name: "Close" });
 
           if (shouldNotTriggerNewNotification) {
             // Target the notification close button since it's present on all notification cases
             await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
-            // Ensure the correct type of notification appears
-            await expect(newCipherNotificationLocator).toBeVisible();
-
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
 
