@@ -195,7 +195,7 @@ jobs:
 
       - name: Remove past BIT status comments on originating issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: (success() || failure()) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        if: (success() || (failure() && steps.get-build-artifact.conclusion != 'failure')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
