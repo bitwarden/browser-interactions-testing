@@ -20,7 +20,7 @@ import {
   vaultHostURL,
 } from "../constants";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 const pathToExtension = path.join(
   __dirname,

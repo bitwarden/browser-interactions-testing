@@ -2,7 +2,7 @@ import fetch from "cross-fetch";
 import fs from "fs";
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 type VaultConfigurationResponseData = {
   version: string;

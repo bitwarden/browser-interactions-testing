@@ -14,7 +14,7 @@ import {
   vaultHostURL,
 } from "../constants";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 export const test = base.extend<{
   context: BrowserContext;
