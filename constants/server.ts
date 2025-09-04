@@ -1,6 +1,6 @@
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 const testSiteHostPort = process.env.PAGES_HOST_PORT
   ? `:${process.env.PAGES_HOST_PORT}`
