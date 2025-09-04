@@ -1,4 +1,5 @@
 import fetch from "cross-fetch";
+import path from "path";
 import fs from "fs";
 import { configDotenv } from "dotenv";
 
@@ -26,13 +27,19 @@ type VaultConfigurationResponseData = {
 };
 
 async function matchRemoteFeatureFlags() {
-  const { REMOTE_VAULT_CONFIG_MATCH, EXTENSION_BUILD_PATH } = process.env;
+  const { CI, REMOTE_VAULT_CONFIG_MATCH, EXTENSION_BUILD_PATH } = process.env;
+  const pathToExtensionManifest = path.join(
+    __dirname,
+    "../",
+    CI ? "build" : EXTENSION_BUILD_PATH || "",
+    "/manifest.json",
+  );
   let extensionBuildVersion: string | undefined;
 
   if (REMOTE_VAULT_CONFIG_MATCH) {
     try {
       const manifestContent = await fs.promises.readFile(
-        `${EXTENSION_BUILD_PATH}/manifest.json`,
+        pathToExtensionManifest,
         "utf8",
       );
 
