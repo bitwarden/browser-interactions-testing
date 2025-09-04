@@ -29,7 +29,18 @@ async function matchRemoteFeatureFlags() {
   const { REMOTE_VAULT_CONFIG_MATCH } = process.env;
   if (REMOTE_VAULT_CONFIG_MATCH) {
     try {
-      const response = await fetch(REMOTE_VAULT_CONFIG_MATCH);
+      const options = {
+        method: "GET",
+        headers: {
+          // We need to include client headers that are targeted by our external
+          // feature flag service for conditional return values
+          "bitwarden-client-version": "2025.8.2",
+          "device-type": "2",
+          "user-agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+        },
+      };
+      const response = await fetch(REMOTE_VAULT_CONFIG_MATCH, options);
 
       const { featureStates } =
         ((await response.json()) as VaultConfigurationResponseData) || {};
