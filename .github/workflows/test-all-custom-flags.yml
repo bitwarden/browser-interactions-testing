@@ -194,7 +194,7 @@ jobs:
             ./tests-out/screenshots
 
       - name: Remove past BIT status comments on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: (success() || (failure() && steps.get-build-artifact.conclusion != 'failure')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -234,7 +234,7 @@ jobs:
             }
 
       - name: Communicate BIT failure on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: failure() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -267,7 +267,7 @@ jobs:
             });
 
       - name: Communicate BIT success on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
