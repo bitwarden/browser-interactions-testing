@@ -1,7 +1,7 @@
 import fetch from "cross-fetch";
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 type ResponseData = {
   captchaBypassToken?: string;
