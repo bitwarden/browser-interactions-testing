@@ -58,7 +58,7 @@ jobs:
 
       - name: Generate GH App token
         id: app-token
-        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
         if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
