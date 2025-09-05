@@ -57,7 +57,7 @@ jobs:
 
       - name: Generate GH App token
         id: app-token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
         if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
@@ -67,7 +67,7 @@ jobs:
           permission-actions: write
 
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -196,7 +196,7 @@ jobs:
             ./tests-out/screenshots
 
       - name: Remove past BIT status comments on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: (success() || (failure() && steps.get-build-artifact.conclusion != 'failure')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -236,7 +236,7 @@ jobs:
             }
 
       - name: Communicate BIT failure on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: failure() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -266,7 +266,7 @@ jobs:
             });
 
       - name: Communicate BIT success on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
