@@ -71,7 +71,10 @@ async function matchRemoteFeatureFlags() {
           ...(extensionBuildVersion
             ? { "bitwarden-client-version": extensionBuildVersion }
             : {}),
+          // "Chrome Extension"
+          // see: https://github.com/bitwarden/server/blob/main/src/Core/Enums/DeviceType.cs
           "device-type": "2",
+          "bitwarden-client-name": "browser",
         },
       };
 
