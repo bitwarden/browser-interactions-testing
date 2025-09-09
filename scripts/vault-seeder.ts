@@ -20,7 +20,7 @@ import { pageCiphers as publicPageCiphers } from "../constants/public";
 
 const PLAYWRIGHT_CIPHERS_FOLDER = "AutofillPlaywrightTestingItems";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 class VaultSeeder {
   constructor() {

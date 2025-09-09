@@ -1,8 +1,9 @@
 import fetch from "cross-fetch";
+import path from "path";
 import fs from "fs";
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 type VaultConfigurationResponseData = {
   version: string;
@@ -26,36 +27,80 @@ type VaultConfigurationResponseData = {
 };
 
 async function matchRemoteFeatureFlags() {
-  const { REMOTE_VAULT_CONFIG_MATCH } = process.env;
+  const { CI, REMOTE_VAULT_CONFIG_MATCH, EXTENSION_BUILD_PATH } = process.env;
+  const pathToExtensionManifest = path.join(
+    __dirname,
+    "../",
+    CI ? "build" : EXTENSION_BUILD_PATH || "",
+    "/manifest.json",
+  );
+  let extensionBuildVersion: string | undefined;
+
   if (REMOTE_VAULT_CONFIG_MATCH) {
     try {
-      const response = await fetch(REMOTE_VAULT_CONFIG_MATCH);
+      const manifestContent = await fs.promises.readFile(
+        pathToExtensionManifest,
+        "utf8",
+      );
+
+      if (manifestContent) {
+        const parsedFile: { version: string; manifest_version: number } =
+          JSON.parse(manifestContent);
+        extensionBuildVersion = parsedFile.version;
+      }
+
+      if (extensionBuildVersion) {
+        console.log(
+          "\x1b[1m\x1b[32m%s\x1b[0m", // bold, light green foreground
+          `Extension build is v${extensionBuildVersion}\n`,
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "\x1b[1m\x1b[33m%s\x1b[0m", // bold, yellow foreground
+        `Could not find the extension version in the manifest.json! Flags will be fetched without it.\n`,
+      );
+    }
+
+    try {
+      const options = {
+        method: "GET",
+        headers: {
+          // We need to include client headers that are targeted by our external
+          // feature flag service for conditional return values
+          ...(extensionBuildVersion
+            ? { "bitwarden-client-version": extensionBuildVersion }
+            : {}),
+          // "Chrome Extension"
+          // see: https://github.com/bitwarden/server/blob/main/src/Core/Enums/DeviceType.cs
+          "device-type": "2",
+          "bitwarden-client-name": "browser",
+        },
+      };
+
+      const response = await fetch(REMOTE_VAULT_CONFIG_MATCH, options);
 
       const { featureStates } =
         ((await response.json()) as VaultConfigurationResponseData) || {};
 
-      await fs.readFile("flags.json", "utf8", async (error, fileContent) => {
-        if (error) {
-          throw error;
-        }
+      const flagsContent = await fs.promises.readFile("flags.json", "utf8");
 
-        let parsedFile = {};
+      let parsedFile = {};
 
-        if (fileContent) {
-          parsedFile = JSON.parse(fileContent);
-        }
+      if (flagsContent) {
+        parsedFile = JSON.parse(flagsContent);
+      }
 
-        const fileData = { ...parsedFile, flagValues: { ...featureStates } };
+      const fileData = { ...parsedFile, flagValues: { ...featureStates } };
 
-        const newFileContent = JSON.stringify(fileData);
+      const newFileContent = JSON.stringify(fileData);
 
-        await fs.writeFile("flags.json", newFileContent, "utf8", () => {});
+      await fs.promises.writeFile("flags.json", newFileContent, "utf8");
 
-        console.log(
-          "\x1b[1m\x1b[32m%s\x1b[0m", // bold, light green foreground
-          `Feature flag values from ${REMOTE_VAULT_CONFIG_MATCH} have been successfully written to 'flags.json'!\n`,
-        );
-      });
+      console.log(
+        "\x1b[1m\x1b[32m%s\x1b[0m", // bold, light green foreground
+        `Feature flag values from ${REMOTE_VAULT_CONFIG_MATCH} have been successfully written to 'flags.json'!\n`,
+      );
     } catch (error) {
       throw error;
     }
