@@ -165,14 +165,9 @@ test.describe("Extension triggers a notification when a page form is submitted w
             .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
-          const saveNotificationBar = notificationLocator.locator(
+          const newCipherNotificationLocator = notificationLocator.locator(
             '[data-testid="save-notification-bar"]',
           );
-
-          // @TODO feature-flagged code path via `notification-refresh`;
-          // remove dead code path with the removal of flag
-          const newCipherNotificationLocatorAlternate =
-            notificationLocator.getByText("Save login");
 
           const notificationCloseButtonLocator = notificationLocator.getByRole(
             "button",
@@ -184,12 +179,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
-            await expect(
-              newCipherNotificationLocator.or(
-                newCipherNotificationLocatorAlternate,
-              ),
-            ).toBeVisible();
-
+            await expect(newCipherNotificationLocator).toBeVisible();
 
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
@@ -306,11 +296,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
             '[data-testid="update-notification-bar"]',
           );
 
-          // @TODO feature-flagged code path via `notification-refresh`;
-          // remove dead code path with the removal of flag
-          const updatePasswordNotificationLocatorAlternate =
-            notificationLocator.getByText("Update existing login");
-
           const notificationCloseButtonLocator = notificationLocator.getByRole(
             "button",
             { name: "Close" },
@@ -321,11 +306,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             await expect(notificationCloseButtonLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
-            await expect(
-              updatePasswordNotificationLocator.or(
-                updatePasswordNotificationLocatorAlternate,
-              ),
-            ).toBeVisible();
+            await expect(updatePasswordNotificationLocator).toBeVisible();
 
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
