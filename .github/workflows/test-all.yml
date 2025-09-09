@@ -67,7 +67,7 @@ jobs:
           permission-actions: write
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -102,6 +102,7 @@ jobs:
           VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
       - name: Download extension artifact
+        id: get-build-artifact
         uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,6 +114,11 @@ jobs:
           repo: bitwarden/clients
           if_no_artifact_found: fail
           skip_unpack: true
+
+      - name: Set no PR feedback when missing build artifact
+        if: ${{ failure() && steps.get-build-artifact.conclusion == 'failure' }}
+        run: |
+          echo "send_pr_feedback=false" > "$GITHUB_OUTPUT"
 
       - name: Unzip extension artifact
         run: |
@@ -190,8 +196,8 @@ jobs:
             ./tests-out/screenshots
 
       - name: Remove past BIT status comments on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        if: (success() || (failure() && steps.get-build-artifact.conclusion != 'failure')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -230,7 +236,7 @@ jobs:
             }
 
       - name: Communicate BIT failure on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: failure() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -260,7 +266,7 @@ jobs:
             });
 
       - name: Communicate BIT success on originating issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
