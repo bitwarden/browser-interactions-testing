@@ -1,7 +1,7 @@
 import fs from "fs";
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 type InstallationResponseData = {
   id?: string;

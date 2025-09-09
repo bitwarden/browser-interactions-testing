@@ -6,7 +6,7 @@
 import fs from "fs";
 import { configDotenv } from "dotenv";
 
-configDotenv();
+configDotenv({ quiet: true });
 
 const defaultKdfIterations = 600000;
 
