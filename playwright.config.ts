@@ -5,7 +5,7 @@ import { devices } from "@playwright/test";
 import dotenv from "dotenv";
 import { defaultTestTimeout } from "./constants";
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(__dirname, ".env"), quiet: true });
 
 import { testSiteHost } from "./constants";
 
