@@ -313,6 +313,10 @@ export const testPages: PageTest[] = [
         value: "fakeSearchPassword",
       },
     },
+    actions: {
+      submit: async (page) =>
+        await page.getByRole("button", { name: "Go", exact: true }).click(),
+    },
     shouldNotTriggerNewNotification: true,
     shouldNotTriggerUpdateNotification: true,
     skipTests: [],
