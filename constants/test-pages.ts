@@ -148,19 +148,19 @@ export const testPages: PageTest[] = [
       },
       code: {
         selector: "input[name='honeypotCode']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotCode",
       },
       newPassword: {
         selector: "input[name='honeypotPassword']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotPassword",
       },
       email: {
         selector: "input[name='honeypotEmail']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotEmail",
       },
@@ -262,13 +262,13 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/simple-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#search",
         value: "fakeSearchPassword",
       },
@@ -281,13 +281,13 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/inline-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: "fakeSearchPassword",
@@ -301,14 +301,14 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/typeless-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         // Note, we're targeting the search field which should have no inline menu
         selector: "input.typeless-search-input",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "input.typeless-search-input",
         value: "fakeSearchPassword",
       },
@@ -325,7 +325,7 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/update/update-email`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#email",
         value: "new" + testEmail,
       },
@@ -350,12 +350,12 @@ export const testPages: PageTest[] = [
         value: "fakeUpdatePasswordPagePassword",
       },
       newPassword: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#newPassword",
         value: "newFakeUpdatePasswordPagePassword",
       },
       newPasswordRetype: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#newPasswordRetype",
         value: "newFakeUpdatePasswordPagePassword",
       },
