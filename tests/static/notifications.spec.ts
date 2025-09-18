@@ -165,7 +165,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
           const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
           const newCipherNotificationLocator = notificationLocator.locator(
@@ -301,7 +300,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
           const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
           const updatePasswordNotificationLocator = notificationLocator.locator(
