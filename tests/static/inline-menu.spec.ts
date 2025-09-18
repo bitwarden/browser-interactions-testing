@@ -121,7 +121,7 @@ test.describe("Extension presents page input inline menu with options for vault 
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
 
-          const expectedValue = currentInput.shouldNotFill
+          const expectedValue = currentInput.shouldNotAutofill
             ? ""
             : currentInput.value;
 

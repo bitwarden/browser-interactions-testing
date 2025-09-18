@@ -7,9 +7,8 @@ type FillProperties = {
   selector: string | ((page: Page) => Promise<Locator>);
   /** Represents the expectation that the inline menu should not appear on the input */
   shouldNotHaveInlineMenu?: boolean;
-  /* @TODO rename to `shouldNotAutofill` */
   /** Represents the expectation that the input should not be autofilled */
-  shouldNotFill?: boolean;
+  shouldNotAutofill?: boolean;
   /** Skip the (Playwright) action of manually filling an input as a simulated user entry  */
   skipSimulatedUserValueEntry?: boolean;
   value: string;

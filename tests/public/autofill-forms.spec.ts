@@ -80,7 +80,7 @@ test.describe("Extension autofills forms when triggered", () => {
               ? await testPage.locator(currentInputSelector).first()
               : await currentInputSelector(testPage);
 
-          const expectedValue = currentInput.shouldNotFill
+          const expectedValue = currentInput.shouldNotAutofill
             ? ""
             : currentInput.value;
 
