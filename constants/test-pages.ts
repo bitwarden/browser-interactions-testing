@@ -362,7 +362,6 @@ export const testPages: PageTest[] = [
       },
     },
     shouldNotTriggerNewNotification: true,
-    shouldNotTriggerUpdateNotification: false,
     skipTests: [
       TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the current password field)
       TestNames.InlineMenuAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-8701)
