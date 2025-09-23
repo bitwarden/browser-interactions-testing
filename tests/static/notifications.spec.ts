@@ -175,7 +175,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           );
 
           if (shouldNotTriggerNewNotification) {
-            // Ensure the correct type of notification doesn't appear
+            // Ensure the wrong type of notification does not appear
             await expect(newCipherNotificationLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
