@@ -302,7 +302,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           );
 
           if (shouldNotTriggerUpdateNotification) {
-            // Ensure the correct type of notification does not appear
+            // Ensure the wrong type of notification does not appear
             await expect(updatePasswordNotificationLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
