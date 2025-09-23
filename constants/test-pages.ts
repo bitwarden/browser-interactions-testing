@@ -95,10 +95,7 @@ export const testPages: PageTest[] = [
       submit: async (page) =>
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
-    skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8694)
-      TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8694)
-    ],
+    skipTests: [],
   },
   {
     url: `${testSiteHost}/forms/login/hidden-login`,
@@ -126,8 +123,7 @@ export const testPages: PageTest[] = [
     },
     skipTests: [
       TestNames.MessageAutofill, // @TODO known failure - notification appears inappropriately (PM-19376)
-      TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8697)
-      TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8697)
+      TestNames.PasswordUpdateNotification, // @TODO known failure - save prompt appears instead of update prompt
     ],
   },
   {
@@ -152,17 +148,20 @@ export const testPages: PageTest[] = [
       },
       code: {
         selector: "input[name='honeypotCode']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
+        skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotCode",
       },
       newPassword: {
         selector: "input[name='honeypotPassword']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
+        skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotPassword",
       },
       email: {
         selector: "input[name='honeypotEmail']",
-        shouldNotFill: true,
+        shouldNotAutofill: true,
+        skipSimulatedUserValueEntry: true,
         value: "fakeLoginHoneypotEmail",
       },
       password: {
@@ -171,8 +170,6 @@ export const testPages: PageTest[] = [
       },
     },
     skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8696)
-      TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8696)
       TestNames.InlineMenuAutofill, // @TODO known failure - inline menu fills "honeypotPassword" honeypot input (PM-8695)
     ],
   },
@@ -216,10 +213,7 @@ export const testPages: PageTest[] = [
       submit: async (page) =>
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
-    skipTests: [
-      TestNames.NewCredentialsNotification, // @TODO known failure - save prompt does not appear (PM-8698)
-      TestNames.PasswordUpdateNotification, // @TODO known failure - update prompt does not appear (PM-8698)
-    ],
+    skipTests: [],
   },
   // @TODO add test for /forms/create/create-account
   // @TODO add test for /forms/create/create-account-extended/
@@ -268,13 +262,13 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/simple-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#search",
         value: "fakeSearchPassword",
       },
@@ -287,13 +281,13 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/inline-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
         selector: "#search",
         value: "fakeSearchPassword",
@@ -307,16 +301,21 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/search/typeless-search`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         shouldNotHaveInlineMenu: true,
+        // Note, we're targeting the search field which should have no inline menu
         selector: "input.typeless-search-input",
         value: testUserName,
       },
       password: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "input.typeless-search-input",
         value: "fakeSearchPassword",
       },
+    },
+    actions: {
+      submit: async (page) =>
+        await page.getByRole("button", { name: "Go", exact: true }).click(),
     },
     shouldNotTriggerNewNotification: true,
     shouldNotTriggerUpdateNotification: true,
@@ -326,7 +325,7 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/update/update-email`,
     inputs: {
       username: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#email",
         value: "new" + testEmail,
       },
@@ -351,19 +350,18 @@ export const testPages: PageTest[] = [
         value: "fakeUpdatePasswordPagePassword",
       },
       newPassword: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#newPassword",
         value: "newFakeUpdatePasswordPagePassword",
       },
       newPasswordRetype: {
-        shouldNotFill: true,
+        shouldNotAutofill: true,
         selector: "#newPasswordRetype",
         value: "newFakeUpdatePasswordPagePassword",
       },
     },
     shouldNotTriggerNewNotification: true,
     skipTests: [
-      TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the current password field)
       TestNames.InlineMenuAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-8701)
       TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-8701)
     ],
