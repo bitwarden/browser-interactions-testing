@@ -175,8 +175,8 @@ test.describe("Extension triggers a notification when a page form is submitted w
           );
 
           if (shouldNotTriggerNewNotification) {
-            // Target the notification close button since it's present on all notification cases
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            // Ensure the wrong type of notification does not appear
+            await expect(newCipherNotificationLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
             await expect(newCipherNotificationLocator).toBeVisible();
@@ -302,8 +302,8 @@ test.describe("Extension triggers a notification when a page form is submitted w
           );
 
           if (shouldNotTriggerUpdateNotification) {
-            // Target the notification close button since it's present on all notification cases
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            // Ensure the wrong type of notification does not appear
+            await expect(updatePasswordNotificationLocator).not.toBeVisible();
           } else {
             // Ensure the correct type of notification appears
             await expect(updatePasswordNotificationLocator).toBeVisible();

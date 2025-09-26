@@ -1,11 +1,11 @@
-name: v2025-08-02
+name: v2025-09-00
 services:
   bitwarden:
     depends_on:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/self-host:2025.8.2-beta # https://github.com/bitwarden/self-host/releases
+    image: ghcr.io/bitwarden/self-host:2025.9.0-beta
     restart: always
     ports:
       - ${VAULT_HOST_PORT}:8443
