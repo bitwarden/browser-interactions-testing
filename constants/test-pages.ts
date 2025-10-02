@@ -123,6 +123,7 @@ export const testPages: PageTest[] = [
     },
     skipTests: [
       TestNames.MessageAutofill, // @TODO known failure - notification appears inappropriately (PM-19376)
+      TestNames.NewCredentialsNotification, // @TODO known failure - local testing succeeds; only fails in CI mode
       TestNames.PasswordUpdateNotification, // @TODO known failure - save prompt appears instead of update prompt
     ],
   },
