@@ -338,7 +338,7 @@ export const testPages: PageTest[] = [
       TestNames.NewCredentialsNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one (PM-8700)
       TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one (PM-8700)
       TestNames.InlineMenuAutofill, // @TODO known failure - need to update test design to handle this test page case (e.g. existing ciphers should appear for password input, any existing identity ciphers for new email input)
-      TestNames.MessageAutofill, // @TODO known failure - fills new email input with existing email (PM-XXXX)
+      TestNames.MessageAutofill, // @TODO known failure - fills new email input with existing email (PM-26477)
     ],
   },
   {
@@ -361,7 +361,7 @@ export const testPages: PageTest[] = [
     },
     shouldNotTriggerNewNotification: true,
     skipTests: [
-      TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-XXXX)
+      TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-26477)
     ],
   },
 ];
