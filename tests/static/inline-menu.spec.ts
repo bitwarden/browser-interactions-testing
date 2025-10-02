@@ -82,16 +82,9 @@ test.describe("Extension presents page input inline menu with options for vault 
         await testPage.waitForTimeout(inlineMenuAppearanceDelay);
 
         // returns `null` if no match is found
-        let inlineMenu = await testPage.frame({
-          url: `chrome-extension://${extensionId}/overlay/button.html`,
-        });
-
-        if (!inlineMenu) {
-          inlineMenu = await testPage.frame({
-            // If feature flag "inline-menu-positioning-improvements" is active
-            url: `chrome-extension://${extensionId}/overlay/menu.html`,
-          });
-        }
+        const inlineMenu = await testPage.frameLocator(
+          `iframe[src="chrome-extension://${extensionId}/overlay/menu.html"]`,
+        );
 
         // Check if inline menu appears when it should/shouldn't
         if (firstInput.shouldNotHaveInlineMenu) {
@@ -110,8 +103,20 @@ test.describe("Extension presents page input inline menu with options for vault 
         }
 
         // Navigate inline menu for autofill
-        await testPage.keyboard.press("ArrowDown");
-        await testPage.keyboard.press("Space");
+        const menuFrame = inlineMenu.frameLocator(
+          'iframe[title="Bitwarden autofill menu"]',
+        );
+
+        // Wait for menu items to be visible and get the first one
+        const firstLoginItem = menuFrame
+          .locator('button[data-test="login-option"]')
+          .first();
+        await expect(firstLoginItem).toBeVisible();
+
+        // Click the first login option
+        await firstLoginItem.click();
+
+        await testPage.pause();
 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
