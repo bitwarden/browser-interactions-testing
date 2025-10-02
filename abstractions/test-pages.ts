@@ -11,6 +11,7 @@ type FillProperties = {
   shouldNotAutofill?: boolean;
   /** Skip the (Playwright) action of manually filling an input as a simulated user entry  */
   skipSimulatedUserValueEntry?: boolean;
+  /** Used by autofill tests to represent expected values, and by other tests as values to be entered ( @TODO separate these concerns ) */
   value: string;
 };
 
