@@ -50,7 +50,7 @@ export const testPages: PageTest[] = [
           .click(),
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO known failure - inline menu appears, but fails to autofill (PM-8704)
+      TestNames.InlineMenuAutofill, // @TODO known failure - test case works manually; Playwright has difficulty targeting
     ],
   },
   {
@@ -79,7 +79,7 @@ export const testPages: PageTest[] = [
           .click(),
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO known failure - inline menu appears, but fails to autofill (PM-8693)
+      TestNames.InlineMenuAutofill, // @TODO known failure - test case works manually; Playwright has difficulty targeting
       TestNames.MessageAutofill, // @TODO known failure - fails to autofill (PM-8693)
       TestNames.NewCredentialsNotification, // @TODO known failure - regression (PM-19363)
       TestNames.PasswordUpdateNotification, // @TODO known failure - regression (PM-19363)
@@ -170,9 +170,7 @@ export const testPages: PageTest[] = [
         value: "fakeLoginHoneypotPassword",
       },
     },
-    skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO known failure - inline menu fills "honeypotPassword" honeypot input (PM-8695)
-    ],
+    skipTests: [],
   },
   {
     url: `${testSiteHost}/forms/multi-step/email-username-login`,
@@ -234,7 +232,7 @@ export const testPages: PageTest[] = [
       country: { selector: "#country", value: "USA" },
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // No autofill available for this type of cipher
+      TestNames.InlineMenuAutofill, // @TODO known failure - test case works manually; Playwright has difficulty targeting
       TestNames.MessageAutofill, // No autofill available for this type of cipher
       TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
       TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
@@ -244,16 +242,13 @@ export const testPages: PageTest[] = [
     url: `${testSiteHost}/forms/payment/card-payment`,
     inputs: {
       cardholderName: { selector: "#card-name", value: "John Smith" },
-      // @TODO handle cases where there is no input for card brand/type
-      brand: { selector: "#card-number", value: "Visa" },
+      // @TODO test cases where there is input for card brand/type
       number: { selector: "#card-number", value: "4111111111111111" },
-      // @TODO handle inputs that enforce different and/or concatenated date formats
-      expMonth: { selector: "#card-expiration", value: "12" },
-      expYear: { selector: "#card-expiration", value: "2025" },
+      // @TODO handle inputs that enforce different and/or non-concatenated date formats
+      expMonth: { selector: "#card-expiration", value: "12/25" },
       code: { selector: "#card-cvv", value: "123" },
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // No autofill available for this type of cipher
       TestNames.MessageAutofill, // No autofill available for this type of cipher
       TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
       TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
@@ -339,7 +334,7 @@ export const testPages: PageTest[] = [
     skipTests: [
       TestNames.NewCredentialsNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one (PM-8700)
       TestNames.PasswordUpdateNotification, // @TODO need to update test design to handle this test page case (e.g. existing password should be used for the password field) // @TODO known failure - because the email is being updated, the update is seen as a new cipher, rather than an update to an existing one (PM-8700)
-      TestNames.InlineMenuAutofill, // @TODO known failure - fills new email input with attribute `autocomplete="off"` (PM-8701)
+      TestNames.InlineMenuAutofill, // @TODO known failure - need to update test design to handle this test page case (e.g. existing ciphers should appear for password input, any existing identity ciphers for new email input)
       TestNames.MessageAutofill, // @TODO known failure - fills new email input with attribute `autocomplete="off"` (PM-8701)
     ],
   },
@@ -363,7 +358,6 @@ export const testPages: PageTest[] = [
     },
     shouldNotTriggerNewNotification: true,
     skipTests: [
-      TestNames.InlineMenuAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-8701)
       TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-8701)
     ],
   },
