@@ -106,7 +106,7 @@ jobs:
 
       - name: Download extension artifact
         id: get-build-artifact
-        uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
+        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
@@ -125,17 +125,17 @@ jobs:
 
       - name: Unzip extension artifact
         run: |
-          unzip -o *dist-chrome-*.zip.zip
-          unzip -o 'dist-chrome*.zip' -d build
+          unzip -o "*dist-chrome-*.zip.zip"
+          unzip -o "dist-chrome*.zip" -d build
 
       - name: Generate and install certs
         run: |
           npm run setup:ssl
           sudo apt-get install libnss3-tools=2:3.98-1build1
           . .env
-          mkdir -p $HOME/.pki/nssdb
-          certutil -d $HOME/.pki/nssdb -N --empty-password
-          certutil -d sql:$HOME/.pki/nssdb -A -t "CP,CP," -n TestAutomationSSL -i ./$BW_SSL_CERT
+          mkdir -p "$HOME/.pki/nssdb"
+          certutil -d "$HOME/.pki/nssdb" -N --empty-password
+          certutil -d "sql:$HOME/.pki/nssdb" -A -t "CP,CP," -n TestAutomationSSL -i "./$BW_SSL_CERT"
 
       - name: Install Bitwarden CLI
         run: npm install -g @bitwarden/cli@2024.2.0
@@ -157,7 +157,7 @@ jobs:
           npm run seed:vault:ciphers
 
       - name: Download test site build
-        uses: dawidd6/action-download-artifact@09f2f74827fd3a8607589e5ad7f9398816f540fe # v3.1.4
+        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build.yml
@@ -180,7 +180,7 @@ jobs:
 
       - name: Update job summary
         if: always()
-        run: echo "$(<./test-summary/test-summary.md)" >> $GITHUB_STEP_SUMMARY
+        run: echo "$(<./test-summary/test-summary.md)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload results as artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
