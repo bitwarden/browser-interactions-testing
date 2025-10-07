@@ -93,6 +93,10 @@ test.describe("Extension triggers a notification when a page form is submitted w
             }
           }
 
+          if (currentInput.skipSimulatedUserValueEntry) {
+            continue;
+          }
+
           const currentInputSelector = currentInput.selector;
           const currentInputElement =
             typeof currentInputSelector === "string"
@@ -102,7 +106,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
           // Use new input values to trigger the notification prompt
           let expectedValue = `new+${currentInput.value}`;
 
-          // Only use new input password values to trigger the notification update prompt
           if (inputKey === "password") {
             // Only rearrange value to ensure value will fit length constraints
             expectedValue = currentInput.value.split("").reverse().join("");
@@ -162,7 +165,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
           const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
           const newCipherNotificationLocator = notificationLocator.locator(
@@ -206,6 +208,11 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
         const inputKeys = Object.keys(inputs);
 
+        // The test is expecting to fill with a newPassword value
+        const inputsHaveNewPassword =
+          inputs.newPassword?.value?.length &&
+          !inputs.newPassword.skipSimulatedUserValueEntry;
+
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
 
@@ -221,6 +228,10 @@ test.describe("Extension triggers a notification when a page form is submitted w
             }
           }
 
+          if (currentInput.skipSimulatedUserValueEntry) {
+            continue;
+          }
+
           const currentInputSelector = currentInput.selector;
           const currentInputElement =
             typeof currentInputSelector === "string"
@@ -230,7 +241,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           let expectedValue = currentInput.value;
 
           // Only use new input password values to trigger the notification update prompt
-          if (inputKey === "password") {
+          if (inputKey === "password" && !inputsHaveNewPassword) {
             // Only rearrange value to ensure value will fit length constraints
             expectedValue = currentInput.value.split("").reverse().join("");
           }
@@ -289,7 +300,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
           const notificationLocator = testPage
             .locator("#bit-notification-bar-iframe")
-            .last() // @TODO `last` here shouldn't be needed; revisit after notification revisions
             .contentFrame();
 
           const updatePasswordNotificationLocator = notificationLocator.locator(

@@ -5,8 +5,13 @@ type FillProperties = {
   multiStepNextInputKey?: string;
   preFillActions?: (page: Page) => void;
   selector: string | ((page: Page) => Promise<Locator>);
+  /** Represents the expectation that the inline menu should not appear on the input */
   shouldNotHaveInlineMenu?: boolean;
-  shouldNotFill?: boolean;
+  /** Represents the expectation that the input should not be autofilled */
+  shouldNotAutofill?: boolean;
+  /** Skip the (Playwright) action of manually filling an input as a simulated user entry  */
+  skipSimulatedUserValueEntry?: boolean;
+  /** Used by autofill tests to represent expected values, and by other tests as values to be entered ( @TODO separate these concerns ) */
   value: string;
 };
 
@@ -48,11 +53,14 @@ type PageTest = {
     licenseNumber?: FillProperties;
   };
   onlyTest?: boolean;
+  /** Tests that should not be run against the page pattern because they are known failures or are not applicable */
   skipTests?: TestNameKeys[];
   actions?: {
     submit?: (page: Page) => void;
   };
+  /** Represents the expectation that the new item notification should not appear upon form submission */
   shouldNotTriggerNewNotification?: boolean;
+  /** Represents the expectation that the update item notification should not appear upon form submission */
   shouldNotTriggerUpdateNotification?: boolean;
 };
 
