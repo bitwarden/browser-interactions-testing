@@ -8,7 +8,11 @@ import {
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
 import { FillProperties } from "../../abstractions";
-import { getPagesToTest, formatUrlToFilename } from "../utils";
+import {
+  getPagesToTest,
+  formatUrlToFilename,
+  getNotificationFrame,
+} from "../utils";
 
 const testOutputPath = "notifications";
 let testRetryCount = 0;
@@ -163,12 +167,13 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .contentFrame();
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
+          );
 
-          const newCipherNotificationLocator = notificationLocator.locator(
-            '[data-testid="save-notification-bar"]',
+          const newCipherNotificationLocator = notificationLocator.getByTestId(
+            "save-notification-bar",
           );
 
           const notificationCloseButtonLocator = notificationLocator.getByRole(
@@ -298,13 +303,13 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .contentFrame();
-
-          const updatePasswordNotificationLocator = notificationLocator.locator(
-            '[data-testid="update-notification-bar"]',
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
           );
+
+          const updatePasswordNotificationLocator =
+            notificationLocator.getByTestId("update-notification-bar");
 
           const notificationCloseButtonLocator = notificationLocator.getByRole(
             "button",

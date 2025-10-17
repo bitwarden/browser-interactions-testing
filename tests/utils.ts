@@ -53,6 +53,27 @@ export function formatUrlToFilename(urlString: string) {
   return urlString.replace(/[^a-z\d]/gi, "-");
 }
 
+export async function getNotificationFrame(
+  page: import("@playwright/test").Page,
+  extensionId: string,
+) {
+  const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+
+  let notificationFrame = page
+    .frames()
+    .find((frame) => frame.url().startsWith(expectedAddressStart));
+
+  if (!notificationFrame) {
+    notificationFrame = await page.waitForEvent("frameattached", {
+      timeout: 5_000,
+      predicate: (frame) => frame.url().startsWith(expectedAddressStart),
+    });
+  }
+
+  await notificationFrame.waitForLoadState("domcontentloaded");
+  return notificationFrame;
+}
+
 export async function a11yTestView({
   testInfo,
   testPage,
