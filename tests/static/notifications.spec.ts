@@ -191,7 +191,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
 
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            await notificationCloseButtonLocator.waitFor({ state: "hidden" });
           }
         });
       });
@@ -326,7 +326,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             // Close the notification for the next triggering case
             await notificationCloseButtonLocator.click();
 
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            await notificationCloseButtonLocator.waitFor({ state: "hidden" });
           }
         });
       });
