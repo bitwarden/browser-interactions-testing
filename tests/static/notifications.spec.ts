@@ -40,6 +40,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
     let testPage = await extensionSetup;
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
+    const extensionURL = `chrome-extension://${extensionId}/notification/bar.html`;
 
     // Needed to allow the background reload further down
     await test.step("Set vault to never timeout", async () => {
@@ -168,11 +169,10 @@ test.describe("Extension triggers a notification when a page form is submitted w
           });
 
           if (shouldNotTriggerNewNotification) {
-            // check that no notification frame exists
-            const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+            // Check that no notification frame exists
             const existingFrame = testPage
               .frames()
-              .find((frame) => frame.url().startsWith(expectedAddressStart));
+              .find((frame) => frame.url().startsWith(extensionURL));
 
             if (existingFrame) {
               const newCipherNotificationLocator = existingFrame.getByTestId(
@@ -315,11 +315,10 @@ test.describe("Extension triggers a notification when a page form is submitted w
           });
 
           if (shouldNotTriggerUpdateNotification) {
-            // check that no notification frame exists
-            const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+            // Check that no notification frame exists
             const existingFrame = testPage
               .frames()
-              .find((frame) => frame.url().startsWith(expectedAddressStart));
+              .find((frame) => frame.url().startsWith(extensionURL));
 
             if (existingFrame) {
               const updatePasswordNotificationLocator =
