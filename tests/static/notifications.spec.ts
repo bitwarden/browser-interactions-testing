@@ -167,24 +167,33 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = await getNotificationFrame(
-            testPage,
-            extensionId,
-          );
-
-          const newCipherNotificationLocator = notificationLocator.getByTestId(
-            "save-notification-bar",
-          );
-
-          const notificationCloseButtonLocator = notificationLocator.getByRole(
-            "button",
-            { name: "Close" },
-          );
-
           if (shouldNotTriggerNewNotification) {
-            // Ensure the wrong type of notification does not appear
-            await expect(newCipherNotificationLocator).not.toBeVisible();
+            // check that no notification frame exists
+            const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+            const existingFrame = testPage
+              .frames()
+              .find((frame) => frame.url().startsWith(expectedAddressStart));
+
+            if (existingFrame) {
+              const newCipherNotificationLocator = existingFrame.getByTestId(
+                "save-notification-bar",
+              );
+              // Ensure the wrong type of notification does not appear
+              await expect(newCipherNotificationLocator).not.toBeVisible();
+            }
+            // If no frame exists, no assertion needed
           } else {
+            const notificationLocator = await getNotificationFrame(
+              testPage,
+              extensionId,
+            );
+
+            const newCipherNotificationLocator =
+              notificationLocator.getByTestId("save-notification-bar");
+
+            const notificationCloseButtonLocator =
+              notificationLocator.getByRole("button", { name: "Close" });
+
             // Ensure the correct type of notification appears
             await expect(newCipherNotificationLocator).toBeVisible();
 
@@ -305,23 +314,32 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = await getNotificationFrame(
-            testPage,
-            extensionId,
-          );
-
-          const updatePasswordNotificationLocator =
-            notificationLocator.getByTestId("update-notification-bar");
-
-          const notificationCloseButtonLocator = notificationLocator.getByRole(
-            "button",
-            { name: "Close" },
-          );
-
           if (shouldNotTriggerUpdateNotification) {
-            // Ensure the wrong type of notification does not appear
-            await expect(updatePasswordNotificationLocator).not.toBeVisible();
+            // check that no notification frame exists
+            const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+            const existingFrame = testPage
+              .frames()
+              .find((frame) => frame.url().startsWith(expectedAddressStart));
+
+            if (existingFrame) {
+              const updatePasswordNotificationLocator =
+                existingFrame.getByTestId("update-notification-bar");
+              // Ensure the wrong type of notification does not appear
+              await expect(updatePasswordNotificationLocator).not.toBeVisible();
+            }
+            // If no frame exists, no assertion needed
           } else {
+            const notificationLocator = await getNotificationFrame(
+              testPage,
+              extensionId,
+            );
+
+            const updatePasswordNotificationLocator =
+              notificationLocator.getByTestId("update-notification-bar");
+
+            const notificationCloseButtonLocator =
+              notificationLocator.getByRole("button", { name: "Close" });
+
             // Ensure the correct type of notification appears
             await expect(updatePasswordNotificationLocator).toBeVisible();
 
