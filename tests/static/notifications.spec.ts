@@ -189,9 +189,11 @@ test.describe("Extension triggers a notification when a page form is submitted w
             await expect(newCipherNotificationLocator).toBeVisible();
 
             // Close the notification for the next triggering case
+            const frameDetached = testPage.waitForEvent("framedetached", {
+              predicate: (frame) => frame === notificationLocator,
+            });
             await notificationCloseButtonLocator.click();
-
-            await notificationCloseButtonLocator.waitFor({ state: "hidden" });
+            await frameDetached;
           }
         });
       });
@@ -324,9 +326,11 @@ test.describe("Extension triggers a notification when a page form is submitted w
             await expect(updatePasswordNotificationLocator).toBeVisible();
 
             // Close the notification for the next triggering case
+            const frameDetached = testPage.waitForEvent("framedetached", {
+              predicate: (frame) => frame === notificationLocator,
+            });
             await notificationCloseButtonLocator.click();
-
-            await notificationCloseButtonLocator.waitFor({ state: "hidden" });
+            await frameDetached;
           }
         });
       });
