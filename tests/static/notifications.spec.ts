@@ -11,7 +11,7 @@ import { FillProperties } from "../../abstractions";
 import {
   getPagesToTest,
   formatUrlToFilename,
-  getNotificationFrame,
+  getNotificationElements,
 } from "../utils";
 
 const testOutputPath = "notifications";
@@ -183,26 +183,22 @@ test.describe("Extension triggers a notification when a page form is submitted w
             }
             // If no frame exists, no assertion needed
           } else {
-            const notificationLocator = await getNotificationFrame(
-              testPage,
-              extensionId,
-            );
-
-            const newCipherNotificationLocator =
-              notificationLocator.getByTestId("save-notification-bar");
-
-            const notificationCloseButtonLocator =
-              notificationLocator.getByRole("button", { name: "Close" });
+            const { notificationLocator, notificationElement, closeButton } =
+              await getNotificationElements(
+                testPage,
+                extensionId,
+                "save-notification-bar",
+              );
 
             // Ensure the correct type of notification appears
-            await expect(newCipherNotificationLocator).toBeVisible();
+            await expect(notificationElement).toBeVisible();
 
-            // Close the notification for the next triggering case
+            // Close the notification and verify it was detached
             const frameDetached = testPage.waitForEvent("framedetached", {
               predicate: (frame) => frame === notificationLocator,
             });
-            await notificationCloseButtonLocator.click();
-            await frameDetached;
+            await closeButton.click();
+            await expect(frameDetached).resolves.toBeDefined();
           }
         });
       });
@@ -328,26 +324,22 @@ test.describe("Extension triggers a notification when a page form is submitted w
             }
             // If no frame exists, no assertion needed
           } else {
-            const notificationLocator = await getNotificationFrame(
-              testPage,
-              extensionId,
-            );
-
-            const updatePasswordNotificationLocator =
-              notificationLocator.getByTestId("update-notification-bar");
-
-            const notificationCloseButtonLocator =
-              notificationLocator.getByRole("button", { name: "Close" });
+            const { notificationLocator, notificationElement, closeButton } =
+              await getNotificationElements(
+                testPage,
+                extensionId,
+                "update-notification-bar",
+              );
 
             // Ensure the correct type of notification appears
-            await expect(updatePasswordNotificationLocator).toBeVisible();
+            await expect(notificationElement).toBeVisible();
 
-            // Close the notification for the next triggering case
+            // Close the notification and verify it was detached
             const frameDetached = testPage.waitForEvent("framedetached", {
               predicate: (frame) => frame === notificationLocator,
             });
-            await notificationCloseButtonLocator.click();
-            await frameDetached;
+            await closeButton.click();
+            await expect(frameDetached).resolves.toBeDefined();
           }
         });
       });

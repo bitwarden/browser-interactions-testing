@@ -74,6 +74,20 @@ export async function getNotificationFrame(
   return notificationFrame;
 }
 
+export async function getNotificationElements(
+  page: import("@playwright/test").Page,
+  extensionId: string,
+  testId: string,
+) {
+  const notificationLocator = await getNotificationFrame(page, extensionId);
+  const notificationElement = notificationLocator.getByTestId(testId);
+  const closeButton = notificationLocator.getByRole("button", {
+    name: "Close",
+  });
+
+  return { notificationLocator, notificationElement, closeButton };
+}
+
 export async function a11yTestView({
   testInfo,
   testPage,
