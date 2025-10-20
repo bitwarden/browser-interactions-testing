@@ -116,7 +116,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             expectedValue = currentInput.value.split("").reverse().join("");
           }
 
-          currentInputElement.fill(expectedValue);
+          await currentInputElement.fill(expectedValue);
 
           await expect(currentInputElement).toHaveValue(expectedValue);
 
@@ -258,7 +258,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             expectedValue = currentInput.value.split("").reverse().join("");
           }
 
-          currentInputElement.fill(expectedValue);
+          await currentInputElement.fill(expectedValue);
 
           await expect(currentInputElement).toHaveValue(expectedValue);
 
