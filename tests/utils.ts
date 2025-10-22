@@ -75,7 +75,7 @@ export async function getNotificationFrame(
 }
 
 export async function getNotificationElements(
-  page: import("@playwright/test").Page,
+  page: Page,
   extensionId: string,
   testId: string,
 ) {
