@@ -54,7 +54,7 @@ export function formatUrlToFilename(urlString: string) {
 }
 
 export async function getNotificationFrame(
-  page: import("@playwright/test").Page,
+  page: Page,
   extensionId: string,
 ) {
   const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
