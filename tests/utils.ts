@@ -53,10 +53,7 @@ export function formatUrlToFilename(urlString: string) {
   return urlString.replace(/[^a-z\d]/gi, "-");
 }
 
-export async function getNotificationFrame(
-  page: Page,
-  extensionId: string,
-) {
+export async function getNotificationFrame(page: Page, extensionId: string) {
   const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
 
   let notificationFrame = page
@@ -81,11 +78,19 @@ export async function getNotificationElements(
 ) {
   const notificationLocator = await getNotificationFrame(page, extensionId);
   const notificationElement = notificationLocator.getByTestId(testId);
-  const closeButton = notificationLocator.getByRole("button", {
-    name: "Close",
-  });
+  const notificationCloseButtonLocator = notificationLocator.getByRole(
+    "button",
+    {
+      name: "Close",
+    },
+  );
 
-  return { notificationLocator, notificationElement, closeButton };
+  return {
+    notificationLocator,
+    newCipherNotificationLocator: notificationElement,
+    updatePasswordNotificationLocator: notificationElement,
+    notificationCloseButtonLocator,
+  };
 }
 
 export async function a11yTestView({

@@ -168,37 +168,30 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
+          const {
+            notificationLocator,
+            newCipherNotificationLocator,
+            notificationCloseButtonLocator,
+          } = await getNotificationElements(
+            testPage,
+            extensionId,
+            "save-notification-bar",
+          );
+
           if (shouldNotTriggerNewNotification) {
-            // Check that no notification frame exists
-            const existingFrame = testPage
-              .frames()
-              .find((frame) => frame.url().startsWith(extensionURL));
-
-            if (existingFrame) {
-              const newCipherNotificationLocator = existingFrame.getByTestId(
-                "save-notification-bar",
-              );
-              // Ensure the wrong type of notification does not appear
-              await expect(newCipherNotificationLocator).not.toBeVisible();
-            }
-            // If no frame exists, no assertion needed
+            // Ensure the wrong type of notification does not appear
+            await expect(newCipherNotificationLocator).not.toBeVisible();
           } else {
-            const { notificationLocator, notificationElement, closeButton } =
-              await getNotificationElements(
-                testPage,
-                extensionId,
-                "save-notification-bar",
-              );
-
             // Ensure the correct type of notification appears
-            await expect(notificationElement).toBeVisible();
+            await expect(newCipherNotificationLocator).toBeVisible();
 
             // Close the notification and verify it was detached
             const frameDetached = testPage.waitForEvent("framedetached", {
               predicate: (frame) => frame === notificationLocator,
             });
-            await closeButton.click();
-            await expect(frameDetached).resolves.toBeDefined();
+
+            await notificationCloseButtonLocator.click();
+            await frameDetached;
           }
         });
       });
@@ -310,36 +303,30 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
+          const {
+            notificationLocator,
+            updatePasswordNotificationLocator,
+            notificationCloseButtonLocator,
+          } = await getNotificationElements(
+            testPage,
+            extensionId,
+            "update-notification-bar",
+          );
+
           if (shouldNotTriggerUpdateNotification) {
-            // Check that no notification frame exists
-            const existingFrame = testPage
-              .frames()
-              .find((frame) => frame.url().startsWith(extensionURL));
-
-            if (existingFrame) {
-              const updatePasswordNotificationLocator =
-                existingFrame.getByTestId("update-notification-bar");
-              // Ensure the wrong type of notification does not appear
-              await expect(updatePasswordNotificationLocator).not.toBeVisible();
-            }
-            // If no frame exists, no assertion needed
+            // Ensure the wrong type of notification does not appear
+            await expect(updatePasswordNotificationLocator).not.toBeVisible();
           } else {
-            const { notificationLocator, notificationElement, closeButton } =
-              await getNotificationElements(
-                testPage,
-                extensionId,
-                "update-notification-bar",
-              );
-
             // Ensure the correct type of notification appears
-            await expect(notificationElement).toBeVisible();
+            await expect(updatePasswordNotificationLocator).toBeVisible();
 
             // Close the notification and verify it was detached
             const frameDetached = testPage.waitForEvent("framedetached", {
               predicate: (frame) => frame === notificationLocator,
             });
-            await closeButton.click();
-            await expect(frameDetached).resolves.toBeDefined();
+
+            await notificationCloseButtonLocator.click();
+            await frameDetached;
           }
         });
       });
