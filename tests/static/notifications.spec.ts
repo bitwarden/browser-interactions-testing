@@ -12,6 +12,7 @@ import {
   getPagesToTest,
   formatUrlToFilename,
   getNotificationElements,
+  getNotificationFrame,
 } from "../utils";
 
 const testOutputPath = "notifications";
@@ -168,13 +169,17 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
+            shouldNotTriggerNewNotification,
+          );
+
           const {
-            notificationLocator,
             newCipherNotificationLocator,
             notificationCloseButtonLocator,
           } = await getNotificationElements(
-            testPage,
-            extensionId,
+            notificationLocator,
             "save-notification-bar",
           );
 
@@ -303,13 +308,17 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
+            shouldNotTriggerUpdateNotification,
+          );
+
           const {
-            notificationLocator,
             updatePasswordNotificationLocator,
             notificationCloseButtonLocator,
           } = await getNotificationElements(
-            testPage,
-            extensionId,
+            notificationLocator,
             "update-notification-bar",
           );
 
