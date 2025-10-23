@@ -62,7 +62,6 @@ export async function getNotificationFrame(page: Page, extensionId: string) {
 
   if (!notificationFrame) {
     notificationFrame = await page.waitForEvent("frameattached", {
-      timeout: 5_000,
       predicate: (frame) => frame.url().startsWith(expectedAddressStart),
     });
   }
