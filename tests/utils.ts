@@ -79,13 +79,16 @@ export async function getNotificationFrame(
 export async function getNotificationElements(
   notificationLocator: Frame | null,
   testId: string,
+  page: Page,
 ) {
   if (!notificationLocator) {
     return {
       notificationLocator: null,
-      newCipherNotificationLocator: null,
-      updatePasswordNotificationLocator: null,
-      notificationCloseButtonLocator: null,
+      newCipherNotificationLocator: page.getByTestId(testId),
+      updatePasswordNotificationLocator: page.getByTestId(testId),
+      notificationCloseButtonLocator: page.getByRole("button", {
+        name: "Close",
+      }),
     };
   }
 

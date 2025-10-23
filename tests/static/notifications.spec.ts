@@ -181,6 +181,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           } = await getNotificationElements(
             notificationLocator,
             "save-notification-bar",
+            testPage,
           );
 
           if (shouldNotTriggerNewNotification) {
@@ -320,6 +321,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           } = await getNotificationElements(
             notificationLocator,
             "update-notification-bar",
+            testPage,
           );
 
           if (shouldNotTriggerUpdateNotification) {
