@@ -8,7 +8,12 @@ import {
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
 import { FillProperties } from "../../abstractions";
-import { getPagesToTest, formatUrlToFilename } from "../utils";
+import {
+  getPagesToTest,
+  formatUrlToFilename,
+  getNotificationElements,
+  getNotificationFrame,
+} from "../utils";
 
 const testOutputPath = "notifications";
 let testRetryCount = 0;
@@ -36,6 +41,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
 
     let testPage = await extensionSetup;
     testPage.setDefaultNavigationTimeout(defaultNavigationTimeout);
+    const extensionURL = `chrome-extension://${extensionId}/notification/bar.html`;
 
     // Needed to allow the background reload further down
     await test.step("Set vault to never timeout", async () => {
@@ -111,7 +117,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             expectedValue = currentInput.value.split("").reverse().join("");
           }
 
-          currentInputElement.fill(expectedValue);
+          await currentInputElement.fill(expectedValue);
 
           await expect(currentInputElement).toHaveValue(expectedValue);
 
@@ -163,17 +169,19 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .contentFrame();
-
-          const newCipherNotificationLocator = notificationLocator.locator(
-            '[data-testid="save-notification-bar"]',
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
+            shouldNotTriggerNewNotification,
           );
 
-          const notificationCloseButtonLocator = notificationLocator.getByRole(
-            "button",
-            { name: "Close" },
+          const {
+            newCipherNotificationLocator,
+            notificationCloseButtonLocator,
+          } = await getNotificationElements(
+            notificationLocator,
+            "save-notification-bar",
+            testPage,
           );
 
           if (shouldNotTriggerNewNotification) {
@@ -183,10 +191,13 @@ test.describe("Extension triggers a notification when a page form is submitted w
             // Ensure the correct type of notification appears
             await expect(newCipherNotificationLocator).toBeVisible();
 
-            // Close the notification for the next triggering case
-            await notificationCloseButtonLocator.click();
+            // Close the notification and verify it was detached
+            const frameDetached = testPage.waitForEvent("framedetached", {
+              predicate: (frame) => frame === notificationLocator,
+            });
 
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            await notificationCloseButtonLocator.click();
+            await frameDetached;
           }
         });
       });
@@ -246,7 +257,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             expectedValue = currentInput.value.split("").reverse().join("");
           }
 
-          currentInputElement.fill(expectedValue);
+          await currentInputElement.fill(expectedValue);
 
           await expect(currentInputElement).toHaveValue(expectedValue);
 
@@ -298,17 +309,19 @@ test.describe("Extension triggers a notification when a page form is submitted w
             ),
           });
 
-          const notificationLocator = testPage
-            .locator("#bit-notification-bar-iframe")
-            .contentFrame();
-
-          const updatePasswordNotificationLocator = notificationLocator.locator(
-            '[data-testid="update-notification-bar"]',
+          const notificationLocator = await getNotificationFrame(
+            testPage,
+            extensionId,
+            shouldNotTriggerUpdateNotification,
           );
 
-          const notificationCloseButtonLocator = notificationLocator.getByRole(
-            "button",
-            { name: "Close" },
+          const {
+            updatePasswordNotificationLocator,
+            notificationCloseButtonLocator,
+          } = await getNotificationElements(
+            notificationLocator,
+            "update-notification-bar",
+            testPage,
           );
 
           if (shouldNotTriggerUpdateNotification) {
@@ -318,10 +331,13 @@ test.describe("Extension triggers a notification when a page form is submitted w
             // Ensure the correct type of notification appears
             await expect(updatePasswordNotificationLocator).toBeVisible();
 
-            // Close the notification for the next triggering case
-            await notificationCloseButtonLocator.click();
+            // Close the notification and verify it was detached
+            const frameDetached = testPage.waitForEvent("framedetached", {
+              predicate: (frame) => frame === notificationLocator,
+            });
 
-            await expect(notificationCloseButtonLocator).not.toBeVisible();
+            await notificationCloseButtonLocator.click();
+            await frameDetached;
           }
         });
       });

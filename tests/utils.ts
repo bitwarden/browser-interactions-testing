@@ -1,4 +1,4 @@
-import { Page, TestInfo, Worker } from "@playwright/test";
+import { Page, TestInfo, Worker, Frame } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import {
   debugIsActive,
@@ -51,6 +51,61 @@ export async function doAutofill(background: Page | Worker) {
 
 export function formatUrlToFilename(urlString: string) {
   return urlString.replace(/[^a-z\d]/gi, "-");
+}
+
+export async function getNotificationFrame(
+  page: Page,
+  extensionId: string,
+  shouldNotTrigger: boolean = false,
+) {
+  const expectedAddressStart = `chrome-extension://${extensionId}/notification/bar.html`;
+
+  let notificationFrame = page
+    .frames()
+    .find((frame) => frame.url().startsWith(expectedAddressStart));
+
+  if (!notificationFrame && !shouldNotTrigger) {
+    return await page.waitForEvent("frameattached", {
+      predicate: (frame) => frame.url().startsWith(expectedAddressStart),
+    });
+  }
+
+  if (notificationFrame) {
+    await notificationFrame.waitForLoadState("domcontentloaded");
+  }
+  return notificationFrame;
+}
+
+export async function getNotificationElements(
+  notificationLocator: Frame | null,
+  testId: string,
+  page: Page,
+) {
+  if (!notificationLocator) {
+    return {
+      notificationLocator: null,
+      newCipherNotificationLocator: page.getByTestId(testId),
+      updatePasswordNotificationLocator: page.getByTestId(testId),
+      notificationCloseButtonLocator: page.getByRole("button", {
+        name: "Close",
+      }),
+    };
+  }
+
+  const notificationElement = notificationLocator.getByTestId(testId);
+  const notificationCloseButtonLocator = notificationLocator.getByRole(
+    "button",
+    {
+      name: "Close",
+    },
+  );
+
+  return {
+    notificationLocator,
+    newCipherNotificationLocator: notificationElement,
+    updatePasswordNotificationLocator: notificationElement,
+    notificationCloseButtonLocator,
+  };
 }
 
 export async function a11yTestView({
