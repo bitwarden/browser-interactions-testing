@@ -15,7 +15,7 @@
   "homepage": "https://bitwarden.com",
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
-    "@playwright/test": "1.56.0",
+    "@playwright/test": "1.56.1",
     "@types/chrome": "0.1.24",
     "@types/node": "22.18.1",
     "cross-env": "10.1.0",
