@@ -24,6 +24,8 @@ export const startFromTestUrl = process.env.START_FROM_TEST_URL || null;
 
 export const vaultEmail = process.env.VAULT_EMAIL || "";
 
+export const emptyVaultEmail = process.env.EMPTY_VAULT_EMAIL || "";
+
 export const vaultHostURL = `${process.env.VAULT_HOST_URL}:${process.env.VAULT_HOST_PORT}`;
 
 export const vaultPassword = process.env.VAULT_PASSWORD || "";

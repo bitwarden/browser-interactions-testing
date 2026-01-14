@@ -3,6 +3,8 @@ import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 
 export const TestNames = {
+  /** Tests an password generation action from an appropriate inline menu selection. */
+  InlineMenuPasswordGen: "inlineMenuPasswordGen",
   /** Tests an autofill action from an appropriate inline menu selection. */
   InlineMenuAutofill: "inlineMenuAutofill",
   /** Tests a "blind", or contextless autofill action; extension logic determines which cipher to use. */

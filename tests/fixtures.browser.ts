@@ -14,6 +14,7 @@ import {
   debugIsActive,
   defaultGotoOptions,
   defaultWaitForOptions,
+  emptyVaultEmail,
   screenshotsOutput,
   vaultEmail,
   vaultPassword,
@@ -180,7 +181,14 @@ export const test = base.extend<{
     await test.step("Log in to the extension vault", async () => {
       const emailInput = await testPage.getByLabel("Email address");
       await emailInput.waitFor(defaultWaitForOptions);
-      await emailInput.fill(vaultEmail);
+
+      // Login with the empty vault account when testing new cipher creation flows
+      if (testOutputPath === "inline-menu-password-gen") {
+        await emailInput.fill(emptyVaultEmail);
+      } else {
+        await emailInput.fill(vaultEmail);
+      }
+
       const emailSubmitInput = await testPage.getByRole("button", {
         name: "Continue",
       });
@@ -198,17 +206,14 @@ export const test = base.extend<{
 
       const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/tabs/vault`;
       await testPage.waitForURL(extensionURL, defaultGotoOptions);
-      // Legacy UI
-      const vaultFilterBox = await testPage
-        .locator("app-vault-filter main .box.list")
-        .first();
 
-      // New UI refresh
+      const emptyVaultMessage = await testPage.getByText("Your vault is empty");
+
       const vaultListItems = await testPage
         .locator("app-vault-list-items-container#allItems")
         .first();
 
-      await vaultFilterBox.or(vaultListItems).waitFor(defaultWaitForOptions);
+      await emptyVaultMessage.or(vaultListItems).waitFor(defaultWaitForOptions);
     });
 
     await use(testPage);

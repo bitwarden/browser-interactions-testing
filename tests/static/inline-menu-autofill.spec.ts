@@ -12,7 +12,7 @@ import { FillProperties } from "../../abstractions";
 import { getPagesToTest, formatUrlToFilename } from "../utils";
 
 const inlineMenuAppearanceDelay = 800;
-const testOutputPath = "inline-menu";
+const testOutputPath = "inline-menu-autofill";
 let testRetryCount = 0;
 
 test.describe("Extension presents page input inline menu with options for vault interaction", () => {
