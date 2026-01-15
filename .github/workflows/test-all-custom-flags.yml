@@ -29,13 +29,19 @@ jobs:
       packages: read
       pull-requests: write
     outputs:
-      send_pr_feedback: false
+      send_pr_feedback: ${{ steps.set-send-pr-feedback.outputs.send_pr_feedback }}
     steps:
       - name: Send PR feedback check
         id: set-send-pr-feedback
+        env:
+          HAS_ORIGIN_ISSUE: ${{ github.event.client_payload.origin_issue || false }}
+          ENABLE_PR_FEEDBACK: ${{ vars.ENABLE_PR_FEEDBACK || false }}
         run: |
-          echo "send_pr_feedback=${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}" >> "$GITHUB_OUTPUT"
-
+          if [[ "$HAS_ORIGIN_ISSUE" == "true" && "$ENABLE_PR_FEEDBACK" == "true" ]]; then
+            echo "send_pr_feedback=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "send_pr_feedback=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
         if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
@@ -69,7 +75,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
+        with:
+          persist-credentials: false
       - name: Setup Node
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
@@ -102,7 +109,9 @@ jobs:
           VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
       - name: Create feature flags file
-        run: echo "{\"flagValues\":${{ inputs.FEATURE_FLAGS || '{}' }}}" > flags.json
+        env:
+          FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS || '{}' }}
+        run: echo "{\"flagValues\":$FEATURE_FLAGS}" > flags.json
 
       - name: Download extension artifact
         id: get-build-artifact
@@ -236,11 +245,13 @@ jobs:
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: failure() && steps.get-build-artifact.conclusion == 'success' && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        env:
+          FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS || '{}' }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
-            const featureFlags = "${{ inputs.FEATURE_FLAGS || '{}' }}";
+            const featureFlags = process.env.FEATURE_FLAGS;
             const featureFlagsMessage = featureFlags === '{}' ?
               '<ins>all feature flags disabled</ins>.' :
               `**the following flags enabled**:<br/><details><summary>Show/Hide Flags</summary><pre><code>${featureFlags}</code></pre></details>`;
@@ -269,11 +280,13 @@ jobs:
       - name: Communicate BIT success on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        env:
+          FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS || '{}' }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
-            const featureFlags = "${{ inputs.FEATURE_FLAGS || '{}' }}";
+            const featureFlags = process.env.FEATURE_FLAGS;
             const featureFlagsMessage = featureFlags === '{}' ?
               '<ins>all feature flags disabled</ins>.' :
               `**the following flags enabled**:<br/><details><summary>Show/Hide Flags</summary><pre><code>${featureFlags}</code></pre></details>`;
