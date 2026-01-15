@@ -75,6 +75,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
@@ -245,12 +247,14 @@ jobs:
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: failure() && steps.get-build-artifact.conclusion == 'success' && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
+        env:
+          BW_REMOTE_VAULT_CONFIG_MATCH: ${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
-            const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
+            const configURL = new URL(process.env.BW_REMOTE_VAULT_CONFIG_MATCH);
             const message = `
             <!-- comment_tag: test-all -->
             #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
