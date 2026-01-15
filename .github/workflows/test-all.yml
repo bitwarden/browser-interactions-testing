@@ -32,8 +32,15 @@ jobs:
     steps:
       - name: Send PR feedback check
         id: set-send-pr-feedback
+        env:
+          HAS_ORIGIN_ISSUE: ${{ github.event.client_payload.origin_issue || false }}
+          ENABLE_PR_FEEDBACK: ${{ vars.ENABLE_PR_FEEDBACK || false }}
         run: |
-          echo "send_pr_feedback=${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}" >> "$GITHUB_OUTPUT"
+          if [[ "$HAS_ORIGIN_ISSUE" == "true" && "$ENABLE_PR_FEEDBACK" == "true" ]]; then
+            echo "send_pr_feedback=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "send_pr_feedback=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
