@@ -28,7 +28,7 @@ jobs:
       packages: read
       pull-requests: write
     outputs:
-      send_pr_feedback: false
+      send_pr_feedback: ${{ steps.set-send-pr-feedback.outputs.send_pr_feedback }}
     steps:
       - name: Send PR feedback check
         id: set-send-pr-feedback
