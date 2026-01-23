@@ -28,19 +28,12 @@ jobs:
       packages: read
       pull-requests: write
     outputs:
-      send_pr_feedback: ${{ steps.set-send-pr-feedback.outputs.send_pr_feedback }}
+      send_pr_feedback: false
     steps:
       - name: Send PR feedback check
         id: set-send-pr-feedback
-        env:
-          HAS_ORIGIN_ISSUE: ${{ github.event.client_payload.origin_issue || false }}
-          ENABLE_PR_FEEDBACK: ${{ vars.ENABLE_PR_FEEDBACK || false }}
         run: |
-          if [[ "$HAS_ORIGIN_ISSUE" == "true" && "$ENABLE_PR_FEEDBACK" == "true" ]]; then
-            echo "send_pr_feedback=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "send_pr_feedback=false" >> "$GITHUB_OUTPUT"
-          fi
+          echo "send_pr_feedback=${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
@@ -247,14 +240,12 @@ jobs:
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: failure() && steps.get-build-artifact.conclusion == 'success' && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
-        env:
-          BW_REMOTE_VAULT_CONFIG_MATCH: ${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
-            const configURL = new URL(process.env.BW_REMOTE_VAULT_CONFIG_MATCH);
+            const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
             const message = `
             <!-- comment_tag: test-all -->
             #### ⚠️ Changes in this PR impact the Autofill experience of the browser client ⚠️
@@ -279,14 +270,12 @@ jobs:
       - name: Communicate BIT success on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
-        env:
-          BW_REMOTE_VAULT_CONFIG_MATCH: ${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const owner = 'bitwarden';
             const runURL = `https://github.com/${owner}/browser-interactions-testing/actions/runs/${context.runId}`;
-            const configURL = new URL(process.env.BW_REMOTE_VAULT_CONFIG_MATCH);
+            const configURL = new URL('${{ vars.BW_REMOTE_VAULT_CONFIG_MATCH }}');
             const message = `
             <!-- comment_tag: test-all -->
             #### Changes in this PR impact the Autofill experience of the browser client
