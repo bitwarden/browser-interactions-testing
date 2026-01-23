@@ -59,7 +59,7 @@ jobs:
 
       - name: Generate GH App token
         id: app-token
-        uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
@@ -69,12 +69,12 @@ jobs:
           permission-issues: write
 
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
