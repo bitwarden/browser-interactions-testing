@@ -40,7 +40,7 @@ jobs:
 
       - name: Log in to Azure
         uses: bitwarden/gh-actions/azure-login@main
-        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.AZURE_TENANT_ID }}
@@ -49,19 +49,19 @@ jobs:
       - name: Get Azure Key Vault secrets
         id: get-kv-secrets
         uses: bitwarden/gh-actions/get-keyvault-secrets@main
-        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           keyvault: gh-org-bitwarden
           secrets: "BW-GHAPP-ID,BW-GHAPP-KEY"
 
       - name: Log out from Azure
         uses: bitwarden/gh-actions/azure-logout@main
-        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
 
       - name: Generate GH App token
         id: app-token
         uses: actions/create-github-app-token@30bf6253fa41bdc8d1501d202ad15287582246b4 # v2.0.3
-        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
           private-key: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-KEY }}
@@ -200,7 +200,7 @@ jobs:
 
       - name: Remove past BIT status comments on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        if: (success() || (failure() && steps.get-build-artifact.conclusion == 'success')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: (success() || (failure() && steps.get-build-artifact.conclusion == 'success')) && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -240,7 +240,7 @@ jobs:
 
       - name: Communicate BIT failure on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        if: failure() && steps.get-build-artifact.conclusion == 'success' && steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: failure() && steps.get-build-artifact.conclusion == 'success' && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         env:
           FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS || '{}' }}
         with:
@@ -275,7 +275,7 @@ jobs:
 
       - name: Communicate BIT success on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == true
+        if: success() && steps.set-send-pr-feedback.outputs.send_pr_feedback == 'true'
         env:
           FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS || '{}' }}
         with:
