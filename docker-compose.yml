@@ -1,11 +1,11 @@
-name: v2026-01-01
+name: v2026-02-00
 services:
   bitwarden:
     depends_on:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/lite:2026.1.1
+    image: ghcr.io/bitwarden/lite:2026.2.0
     restart: always
     ports:
       - ${VAULT_HOST_PORT}:8443
