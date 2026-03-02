@@ -46,15 +46,6 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 ## Running Tests
 
 ```bash
-# First-time setup (requires Docker)
-cp .env.example .env          # then populate values
-nvm install                   # or manually use node 23.11.x
-npm run setup:all             # clones clients, generates certs, creates account, seeds vault
-
-# Build the extension under test
-npm run build:extension       # MV3 dev build
-npm run build:extension:prod  # MV3 prod build
-
 # All static tests
 npm run test:static           # headed
 npm run test:static:debug     # with Playwright inspector
@@ -82,21 +73,10 @@ npm run setup:vault           # create account + seed vault
 npm run seed:vault:ciphers    # seed vault only (account must exist)
 ```
 
-## Test Environment
-
-- **Docker Compose**: Runs `ghcr.io/bitwarden/lite` (self-hosted unified) + MariaDB 12
-- **SSL**: Self-signed certs generated via `npm run setup:ssl`, must be trusted in system keychain. `NODE_EXTRA_CA_CERTS=ssl.crt` is required for all test commands (baked into npm scripts).
-- **Feature flags**: `flags.json` at project root, synced from remote vault config via `npm run setup:flags`
-- **Test site**: Cloned from `bitwarden/test-the-web`, served locally via `npm run start:test-site`
-- **Bitwarden CLI**: `@bitwarden/cli` installed globally, used for vault seeding via `bw serve`
-
 ## Debug Helpers
 
 - Set `onlyTest: true` on a `testPages` entry to run only that page (debug mode only)
 - Set `START_FROM_TEST_URL=<url>` env var to skip pages before the specified URL
-- Use `npm run test:static:debug` for Playwright inspector
-- Screenshots saved to `screenshots/` per input fill attempt
-- Videos saved to `tests-out/videos/` (disable with `DISABLE_VIDEO=true`)
 
 ## Security Rules
 
