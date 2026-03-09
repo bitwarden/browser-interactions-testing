@@ -2,7 +2,7 @@
 
 npm run setup:ssl
 
-npm install -g @bitwarden/cli@2025.12.1
+npm install -g @bitwarden/cli@2026.2.0
 npm ci
 npx playwright install --with-deps chromium
 
