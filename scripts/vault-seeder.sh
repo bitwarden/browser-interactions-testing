@@ -18,27 +18,12 @@ BW_COMMAND() {
   bw "$@"
 }
 
-if [[ -z "${VAULT_IMPORT_FILE}" ]]; then
-    printf "No vault import file was specified. Skipping vault import...\n\n"
-
-    exit 0
-fi
-
-chmod +r $VAULT_IMPORT_FILE
-
 export VAULT_HOST=$VAULT_HOST_URL:$VAULT_HOST_PORT
 
 if [[ -z "${VAULT_HOST_URL:-}" ]]; then
     echo "VAULT_HOST_URL is not set, using local dev values"
     export VAULT_HOST='--api http://localhost:4000 --identity http://localhost:33656 --web-vault https://localhost:8080 --events http://localhost:46273'
 fi
-
-# Ensure cleanup on exit
-cleanup() {
-    echo "Logging out of vault..."
-    BW_COMMAND logout --quiet
-}
-trap cleanup EXIT
 
 # Ensure data file is created
 export BITWARDENCLI_APPDATA_DIR=$HOME
@@ -52,10 +37,21 @@ BW_COMMAND config server $VAULT_HOST || true # no error if already configured
 BW_COMMAND login "$VAULT_EMAIL" "$VAULT_PASSWORD" --nointeraction --quiet || true # no error if already logged in
 BW_COMMAND sync || true # no error if already synced
 
-# Unlock and set session token
-export BW_SESSION=$(
-    BW_COMMAND unlock --passwordenv VAULT_PASSWORD --raw --nointeraction
-)
+# Start Vault Management API
+BW_COMMAND serve --hostname $CLI_SERVE_HOST --port $CLI_SERVE_PORT &
+BW_SERVE_PID=$!
 
-printf "Importing...\n"
-BW_COMMAND import bitwardenjson "${VAULT_IMPORT_FILE}"
+# Ensure cleanup on exit
+cleanup() {
+    if kill -0 $BW_SERVE_PID 2>/dev/null; then
+        echo "Stopping Vault Management API..."
+        kill $BW_SERVE_PID
+    fi
+}
+trap cleanup EXIT
+
+# Wait briefly for serve to be ready
+sleep 2
+
+# Run the vault seeder
+ts-node ./scripts/vault-seeder.ts
