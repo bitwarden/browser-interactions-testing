@@ -28,11 +28,14 @@ const pathToExtension = path.join(
   process.env.CI ? "build" : process.env.EXTENSION_BUILD_PATH,
 );
 
+type FeatureFlags = { [key: string]: boolean };
+
 export const test = base.extend<{
   background: Page | Worker;
   context: BrowserContext;
   extensionId: string;
   extensionSetup: Page;
+  featureFlags: FeatureFlags;
   manifestVersion: number;
   recordVideoConfig: BrowserContextOptions["recordVideo"];
   testOutputPath?: string;
@@ -212,6 +215,34 @@ export const test = base.extend<{
     });
 
     await use(testPage);
+  },
+  featureFlags: async ({}, use) => {
+    let flags: FeatureFlags = {};
+
+    try {
+      /**
+       * We deliberately fetch the configuration from the vault server instead of
+       * just pulling in the local `flags.json` because the server may or may not
+       * support (and therefore return) the flags in the `flags.json` file.
+       */
+      const configUrl = `${vaultHostURL}/api/config`;
+      const response = await fetch(configUrl, {
+        method: "GET",
+        headers: {
+          "device-type": "2",
+          "bitwarden-client-name": "browser",
+        },
+      });
+      const data = await response.json();
+      flags = data?.featureStates ?? {};
+    } catch {
+      console.warn(
+        "\x1b[1m\x1b[33m%s\x1b[0m",
+        "\tCould not fetch feature flags from server config",
+      );
+    }
+
+    await use(flags);
   },
   manifestVersion: async ({}, use) => {
     const manifest = JSON.parse(
