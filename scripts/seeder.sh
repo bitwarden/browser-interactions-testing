@@ -50,8 +50,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Wait briefly for serve to be ready
-sleep 2
+# Wait for serve to be ready
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null "http://$CLI_SERVE_HOST:$CLI_SERVE_PORT/status" 2>/dev/null; then
+        break
+    fi
+    if [ "$i" -eq 30 ]; then
+        echo "ERROR: Vault Management API did not become ready in time"
+        exit 1
+    fi
+    sleep 1
+done
 
 # Run the vault seeder
 ts-node ./scripts/vault-seeder.ts
