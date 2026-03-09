@@ -92,7 +92,7 @@ const encTypes = {
 // Helpers
 
 function fromUtf8(str: string) {
-  const strUtf8 = decodeURIComponent(encodeURIComponent(str));
+  const strUtf8 = unescape(encodeURIComponent(str));
   const bytes = new Uint8Array(strUtf8.length);
   for (let i = 0; i < strUtf8.length; i++) {
     bytes[i] = strUtf8.charCodeAt(i);
@@ -106,7 +106,7 @@ function toB64(buf: ArrayBuffer | Uint8Array<ArrayBuffer> | Buffer) {
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return buf.toString("base64");
+  return btoa(binary);
 }
 
 // Crypto
@@ -385,8 +385,8 @@ async function getValues() {
   // protectedPrivateKey.string
   const protectedPrivateKey = await aesEncrypt(
     privateKey.arr.buffer,
-    stretchedMasterKey.encKey,
-    stretchedMasterKey.macKey,
+    symKey.encKey,
+    symKey.macKey,
   );
 
   if (!protectedPrivateKey?.mac) {
