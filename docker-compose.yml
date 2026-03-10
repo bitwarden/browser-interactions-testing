@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     image: ghcr.io/bitwarden/lite:2026.2.1
-    restart: always
+    restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
       - ${VAULT_HOST_INSECURE_PORT}:8080
@@ -22,7 +22,7 @@ services:
       MARIADB_DATABASE: ${BW_DB_DATABASE}
       MARIADB_RANDOM_ROOT_PASSWORD: "true"
     image: mariadb:12
-    restart: always
+    restart: "no"
     volumes:
       - data:/var/lib/mysql
     ports:
