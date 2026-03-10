@@ -65,7 +65,7 @@ class ByteData {
 }
 
 async function generateKeys() {
-  let symKey = new Uint8Array(512 / 8);
+  const symKey = new Uint8Array(512 / 8);
   crypto.getRandomValues(symKey);
 
   const { publicKey, privateKey } = (await generateRsaKeyPair()) || {};
@@ -81,32 +81,22 @@ async function generateKeys() {
 
 const encTypes = {
   AesCbc256_B64: 0,
-  AesCbc128_HmacSha256_B64: 1,
   AesCbc256_HmacSha256_B64: 2,
-  Rsa2048_OaepSha256_B64: 3,
-  Rsa2048_OaepSha1_B64: 4,
-  Rsa2048_OaepSha256_HmacSha256_B64: 5,
-  Rsa2048_OaepSha1_HmacSha256_B64: 6,
 };
 
 // Helpers
 
 function fromUtf8(str: string) {
-  const strUtf8 = decodeURIComponent(encodeURIComponent(str));
-  const bytes = new Uint8Array(strUtf8.length);
-  for (let i = 0; i < strUtf8.length; i++) {
-    bytes[i] = strUtf8.charCodeAt(i);
-  }
-  return bytes.buffer;
+  return new TextEncoder().encode(str).buffer;
 }
 
-function toB64(buf: ArrayBuffer | Uint8Array<ArrayBuffer> | Buffer) {
+function toB64(buf: ArrayBuffer | Uint8Array<ArrayBuffer>) {
   let binary = "";
   const bytes = new Uint8Array(buf);
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return buf.toString("base64");
+  return btoa(binary);
 }
 
 // Crypto
@@ -364,55 +354,24 @@ async function getValues() {
     return;
   }
 
-  const masterKeyHashBytes = new Uint8Array(masterKeyHash.arr);
-  const masterKeyHashString = btoa(String.fromCharCode(...masterKeyHashBytes));
-  // protectedSymKey.string
-  const encType = protectedSymKey.encType;
-  const iv = btoa(String.fromCharCode(...protectedSymKey.iv.arr));
-  const ct = btoa(String.fromCharCode(...protectedSymKey.ct.arr));
-  let result = `${encType}.${iv}|${ct}`;
-
-  if (protectedSymKey.mac?.arr) {
-    const mac = btoa(String.fromCharCode(...protectedSymKey.mac.arr));
-    result += `|${mac}`;
-  }
-
-  // publicKey.b64
-  const generatedPublicKey = new Uint8Array(publicKey.arr);
-  const generatedPublicKeyB64 = btoa(
-    String.fromCharCode.apply(null, [...generatedPublicKey]),
-  );
-  // protectedPrivateKey.string
   const protectedPrivateKey = await aesEncrypt(
     privateKey.arr.buffer,
-    stretchedMasterKey.encKey,
-    stretchedMasterKey.macKey,
+    symKey.encKey,
+    symKey.macKey,
   );
 
-  if (!protectedPrivateKey?.mac) {
+  if (!protectedPrivateKey) {
     return;
   }
-
-  const protectedPrivateKeyEncType = protectedPrivateKey.encType;
-  const protectedPrivateKeyIv = btoa(
-    String.fromCharCode(...protectedPrivateKey.iv.arr),
-  );
-  const protectedPrivateKeyCt = btoa(
-    String.fromCharCode(...protectedPrivateKey.ct.arr),
-  );
-  const protectedPrivateKeyMac = btoa(
-    String.fromCharCode(...protectedPrivateKey.mac.arr),
-  );
-  const protectedPrivateKeyResult = `${protectedPrivateKeyEncType}.${protectedPrivateKeyIv}|${protectedPrivateKeyCt}|${protectedPrivateKeyMac}`;
 
   const environmentVariables = [
     `\n`,
     `# Generated crypto values`,
     `KDF_ITERATIONS=${defaultKdfIterations}`,
-    `MASTER_PASSWORD_HASH="${masterKeyHashString}"`,
-    `PROTECTED_SYMMETRIC_KEY="${result}"`,
-    `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY="${generatedPublicKeyB64}"`,
-    `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY="${protectedPrivateKeyResult}"`,
+    `MASTER_PASSWORD_HASH="${masterKeyHash.b64}"`,
+    `PROTECTED_SYMMETRIC_KEY="${protectedSymKey.string}"`,
+    `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY="${publicKey.b64}"`,
+    `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY="${protectedPrivateKey.string}"`,
     `\n`,
   ];
 
