@@ -10,7 +10,7 @@ set +o allexport
 export NODE_EXTRA_CA_CERTS=$ROOT_DIR/$BW_SSL_CERT
 
 # BITWARDENCLI_APPDATA_DIR is a special var. See:
-# https://github.com/bitwarden/clients/blob/1a6573ba96613ebcfd19c1c90ee5523452b8903a/apps/cli/src/bw.ts#L149
+# https://github.com/bitwarden/clients/blob/main/apps/cli/src/service-container/service-container.ts#L356
 export BITWARDENCLI_APPDATA_DIR="$ROOT_DIR/scripts/tmp-vault-seeder"
 mkdir -p "$BITWARDENCLI_APPDATA_DIR"
 
@@ -33,8 +33,34 @@ BW_COMMAND status
 # shellcheck disable=SC2086 # we want to pass the server host url as a single argument
 BW_COMMAND logout --quiet # In case there's an active outdated session (e.g. docker container was rebuilt)
 BW_COMMAND config server $VAULT_HOST || true # no error if already configured
+
 BW_COMMAND login "$VAULT_EMAIL" "$VAULT_PASSWORD" --nointeraction --quiet || true # no error if already logged in
 BW_COMMAND sync || true # no error if already synced
 
 # Start Vault Management API
 BW_COMMAND serve --hostname $CLI_SERVE_HOST --port $CLI_SERVE_PORT &
+BW_SERVE_PID=$!
+
+# Ensure cleanup on exit
+cleanup() {
+    if kill -0 $BW_SERVE_PID 2>/dev/null; then
+        echo "Stopping Vault Management API..."
+        kill $BW_SERVE_PID
+    fi
+}
+trap cleanup EXIT
+
+# Wait for serve to be ready
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null "http://$CLI_SERVE_HOST:$CLI_SERVE_PORT/status" 2>/dev/null; then
+        break
+    fi
+    if [ "$i" -eq 30 ]; then
+        echo "ERROR: Vault Management API did not become ready in time"
+        exit 1
+    fi
+    sleep 1
+done
+
+# Run the vault seeder
+ts-node ./scripts/vault-seeder.ts

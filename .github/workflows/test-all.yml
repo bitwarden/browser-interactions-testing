@@ -158,9 +158,7 @@ jobs:
         run: npm run seed:vault:account
 
       - name: Setup the vault test account ciphers
-        run: |
-          npm run start:cli
-          npm run seed:vault:ciphers
+        run: npm run seed:vault:ciphers
 
       - name: Download test site build
         uses: dawidd6/action-download-artifact@fe9d59ce33ce92db8a6ac90b2c8be6b6d90417c8 # v15

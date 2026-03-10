@@ -117,7 +117,7 @@ Create and start the containers and volumes with `docker compose up -d --build -
 
 > If using Docker Compose to host the server environment (as described in the previous section), you may need to wait for the services within the `bitwarden` container to enter a running state before running any seeding scripts.
 
-- Ensure that the [Bitwarden CLI](https://bitwarden.com/help/cli/) is installed and configured on your host machine. You will need to be running the [CLI Vault Management API](https://bitwarden.com/help/cli/#serve) server in order to seed the vault. You can start the server with `npm run start:cli` and stop it with `npm run stop:cli`
+- Ensure that the [Bitwarden CLI](https://bitwarden.com/help/cli/) is installed and configured on your host machine.
   - Use `npm run setup:vault` to set up your running, targeted vault (e.g. Docker container)
     - This command will handle creating a test account, logging in, setting up the CLI, running the Vault Management Server, seeding the vault with any new test credentials, and updating values that have changed. It will place those test credentials within a folder named `AutofillPlaywrightTestItems` in your vault.
   - If you have already created the test account in the vault, use `npm run seed:vault:ciphers` to only seed the vault with the test credentials.

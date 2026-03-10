@@ -9,6 +9,11 @@ set +o allexport
 
 export NODE_EXTRA_CA_CERTS=$ROOT_DIR/$BW_SSL_CERT
 
+# BITWARDENCLI_APPDATA_DIR is a special var. See:
+# https://github.com/bitwarden/clients/blob/main/apps/cli/src/service-container/service-container.ts#L356
+export BITWARDENCLI_APPDATA_DIR="$ROOT_DIR/scripts/tmp-vault-seeder"
+mkdir -p "$BITWARDENCLI_APPDATA_DIR"
+
 BW_COMMAND() {
   bw "$@"
 }
@@ -28,6 +33,15 @@ if [[ -z "${VAULT_HOST_URL:-}" ]]; then
     export VAULT_HOST='--api http://localhost:4000 --identity http://localhost:33656 --web-vault https://localhost:8080 --events http://localhost:46273'
 fi
 
+# Ensure cleanup on exit
+cleanup() {
+    echo "Logging out of vault..."
+    BW_COMMAND logout --quiet
+}
+trap cleanup EXIT
+
+# Ensure data file is created
+export BITWARDENCLI_APPDATA_DIR=$HOME
 BW_COMMAND status
 
 # Login to the vault
@@ -45,5 +59,3 @@ export BW_SESSION=$(
 
 printf "Importing...\n"
 BW_COMMAND import bitwardenjson "${VAULT_IMPORT_FILE}"
-
-BW_COMMAND logout --quiet
