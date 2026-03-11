@@ -34,7 +34,7 @@ BW_COMMAND status
 BW_COMMAND logout --quiet # In case there's an active outdated session (e.g. docker container was rebuilt)
 BW_COMMAND config server $VAULT_HOST || true # no error if already configured
 
-BW_COMMAND login "$VAULT_EMAIL" "$VAULT_PASSWORD" --nointeraction --quiet || true # no error if already logged in
+BW_COMMAND login "$VAULT_EMAIL" "$VAULT_PASSWORD" --nointeraction || true # no error if already logged in
 BW_COMMAND sync || true # no error if already synced
 
 # Start Vault Management API
@@ -52,6 +52,10 @@ trap cleanup EXIT
 
 # Wait for serve to be ready
 for i in $(seq 1 30); do
+    if ! kill -0 $BW_SERVE_PID 2>/dev/null; then
+        echo "ERROR: Vault Management API process exited unexpectedly"
+        exit 1
+    fi
     if curl -s -o /dev/null "http://$CLI_SERVE_HOST:$CLI_SERVE_PORT/status" 2>/dev/null; then
         break
     fi

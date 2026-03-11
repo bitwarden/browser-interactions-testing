@@ -73,15 +73,29 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 - Next run `npm run setup:all`, entering your system password when prompted.
 - Run static tests with `npm run test:static`.
 
+## Returning Workflow
+
+Run `npm run status` to check which prerequisites are satisfied and get specific commands for anything that needs attention. Typically all that's needed is:
+
+```bash
+docker compose up -d --wait   # start the vault server
+npm run start:test-site
+npm run test:static:debug
+```
+
 ## Setup
 
 - Create an `.env` file in the root directory with values pointing to the vault you want to test against (use `.env.example` as guidance) and populate it with your desired values
 
 > Important! Once you've generated installation and crypto values for your `.env` file, DO NOT CHANGE the seeding values (`VAULT_EMAIL`, `VAULT_PASSWORD`, `KDF_ITERATIONS`). Doing so requires regenerating your installation and crypto secret values and rebuilding/updating server.
 
+> `VAULT_EMAIL` must be a standard email address format. Plus-addressed emails (e.g. `user+tag@example.com`) are not accepted by the default Bitwarden server validator.
+
+> If you do need to change `VAULT_EMAIL` or `VAULT_PASSWORD`, run `npm run setup:crypto:reset` to clear and regenerate the derived crypto values, then `docker compose down -v && docker compose up -d --wait` for a fresh database, then `npm run setup:vault`.
+
 - Run `npm run setup:install` to generate and add installation values to your dotfile
   - Alternatively, you can generate them at `https://bitwarden.com/host` and add them to your dotfile manually as `BW_INSTALLATION_ID` and `BW_INSTALLATION_KEY`
-- Run `npm run setup:crypto` to generate and add crypto values to your dotfile
+- Run `npm run setup:crypto` to generate and add crypto values to your dotfile (run `npm run setup:crypto:reset` if you need to regenerate them)
   - Alternatively, you can create the required values manually with guidance from `https://bitwarden.com/help/bitwarden-security-white-paper/#hashing-key-derivation-and-encryption` and add them to your dotfile as `KDF_ITERATIONS`, `MASTER_PASSWORD_HASH`, `PROTECTED_SYMMETRIC_KEY`, `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY`, and `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY`
 - Install node (with `nvm install` if `nvm` is installed)
 - Install Bitwarden CLI (with npm: `npm install -g @bitwarden/cli`)
@@ -112,6 +126,12 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 Using Docker Compose will set up all the services required by the extension for testing. In order to use Docker Compose, you'll need to first:
 
 Create and start the containers and volumes with `docker compose up -d --build --remove-orphans`, and teardown with `docker compose down -v`
+
+> If the image pull fails with a network error (e.g. `unexpected EOF`), re-run `docker compose pull` and then retry. If it continues to fail, try increasing the timeout: `COMPOSE_HTTP_TIMEOUT=120 docker compose pull`.
+
+> If startup fails with `port is already allocated`, a previous container session is holding the port — often a prior BIT stack (e.g. after updating the image version). Run `npm run status` to identify which project owns the port and get the exact teardown command.
+
+> Each compose project uses its own database volume. Switching to a different vault image version means a fresh database — re-run `npm run setup:vault` after bringing the new stack up. Old project volumes are not removed automatically; `npm run status` will list any orphaned BIT volumes and show the `docker volume rm` commands to clean them up.
 
 ### Seeding Your Vault
 
