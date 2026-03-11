@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
-      contents: read
+      contents: write
       packages: read
       pull-requests: write
     outputs:
@@ -184,6 +184,65 @@ jobs:
       - name: Run all tests
         run: npm run test:static:ci
 
+      - name: Upload test videos and update summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VIDEOS_DIR="./tests-out/videos"
+
+          # Skip if no videos directory or no video files
+          if [ ! -d "$VIDEOS_DIR" ] || [ -z "$(find "$VIDEOS_DIR" -name '*.webm' 2>/dev/null)" ]; then
+            echo "No video files found, skipping video summary"
+            exit 0
+          fi
+
+          RELEASE_TAG="test-videos-${{ github.run_id }}-${{ github.run_attempt }}"
+
+          # Create a prerelease tagged with this run
+          gh release create "$RELEASE_TAG" \
+            --title "Test Videos - Run ${{ github.run_id }}" \
+            --notes "Auto-generated test videos. Safe to delete." \
+            --prerelease
+
+          # Upload all .webm files and build the video markdown
+          VIDEO_MD=$'\n---\n\n## Videos\n'
+          STAGING_DIR=$(mktemp -d)
+
+          for suite_dir in "$VIDEOS_DIR"/*/; do
+            [ -d "$suite_dir" ] || continue
+            suite_name=$(basename "$suite_dir")
+            videos_found=false
+
+            SUITE_MD=""
+            for video in "$suite_dir"*.webm; do
+              [ -f "$video" ] || continue
+              videos_found=true
+              filename=$(basename "$video")
+
+              # Copy with a namespaced name so the release asset name includes the suite
+              asset_name="${suite_name}--${filename}"
+              cp "$video" "${STAGING_DIR}/${asset_name}"
+              gh release upload "$RELEASE_TAG" "${STAGING_DIR}/${asset_name}"
+
+              asset_url="https://github.com/&#98;itwarden/browser-interactions-testing/releases/download/${RELEASE_TAG}/${asset_name}"
+
+              SUITE_MD+=$'\n<video src="'"${asset_url}"'" controls width="800"></video>
+            '
+            done
+
+            if [ "$videos_found" = true ]; then
+              VIDEO_MD+=$'\n<details><summary><strong>'"${suite_name}"$'</strong></summary>\n'
+              VIDEO_MD+="${SUITE_MD}"
+              VIDEO_MD+=$'\n</details>\n'
+            fi
+          done
+
+          rm -rf "$STAGING_DIR"
+
+          # Append video section to the test summary
+          echo "$VIDEO_MD" >> ./test-summary/test-summary.md
+
       - name: Update job summary
         if: always()
         run: echo "$(<./test-summary/test-summary.md)" >> "$GITHUB_STEP_SUMMARY"
@@ -198,6 +257,23 @@ jobs:
             ./test-summary
             ./tests-out/videos
             ./tests-out/screenshots
+
+      - name: Clean up old test video releases
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Delete test video releases older than 7 days
+          gh release list --limit 100 --json tagName,createdAt,isPrerelease \
+            --jq '.[] | select(.isPrerelease and (.tagName | startswith("test-videos-")))' \
+          | while IFS= read -r release; do
+              tag=$(echo "$release" | jq -r '.tagName')
+              created=$(echo "$release" | jq -r '.createdAt')
+              age_days=$(( ($(date +%s) - $(date -d "$created" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$created" +%s 2>/dev/null || echo 0)) / 86400 ))
+              if [ "$age_days" -gt 7 ]; then
+                gh release delete "$tag" --yes --cleanup-tag || true
+              fi
+            done
 
       - name: Remove past BIT status comments on originating issue
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
