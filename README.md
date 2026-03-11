@@ -89,8 +89,6 @@ npm run test:static:debug
 
 > Important! Once you've generated installation and crypto values for your `.env` file, DO NOT CHANGE the seeding values (`VAULT_EMAIL`, `VAULT_PASSWORD`, `KDF_ITERATIONS`). Doing so requires regenerating your installation and crypto secret values and rebuilding/updating server.
 
-> `VAULT_EMAIL` must be a standard email address format. Plus-addressed emails (e.g. `user+tag@example.com`) are not accepted by the default Bitwarden server validator.
-
 > If you do need to change `VAULT_EMAIL` or `VAULT_PASSWORD`, run `npm run setup:crypto:reset` to clear and regenerate the derived crypto values, then `docker compose down -v && docker compose up -d --wait` for a fresh database, then `npm run setup:vault`.
 
 - Run `npm run setup:install` to generate and add installation values to your dotfile
