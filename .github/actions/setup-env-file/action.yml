@@ -83,11 +83,6 @@ runs:
         secrets: "
           BW-INSTALLATION-ID,
           BW-INSTALLATION-KEY,
-          GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY,
-          GENERATED-RSA-KEY-PAIR-PUBLIC-KEY,
-          PROTECTED-SYMMETRIC-KEY,
-          MASTER-PASSWORD-HASH,
-          KDF-ITERATIONS,
           BW-DB-PASSWORD,
           BW-DB-USERNAME,
           BW-DB-DATABASE,
@@ -108,11 +103,6 @@ runs:
         echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
         echo "BW_INSTALLATION_ID=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}\"" >> .env
         echo "BW_INSTALLATION_KEY=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}\"" >> .env
-        echo "GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PROTECTED-PRIVATE-KEY }}\"" >> .env
-        echo "GENERATED_RSA_KEY_PAIR_PUBLIC_KEY=\"${{ steps.get-kv-secrets.outputs.GENERATED-RSA-KEY-PAIR-PUBLIC-KEY }}\"" >> .env
-        echo "KDF_ITERATIONS=${{ steps.get-kv-secrets.outputs.KDF-ITERATIONS }}" >> .env
-        echo "MASTER_PASSWORD_HASH=\"${{ steps.get-kv-secrets.outputs.MASTER-PASSWORD-HASH }}\"" >> .env
-        echo "PROTECTED_SYMMETRIC_KEY=\"${{ steps.get-kv-secrets.outputs.PROTECTED-SYMMETRIC-KEY }}\"" >> .env
         echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
         echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
         echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
