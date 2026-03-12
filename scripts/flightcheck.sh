@@ -317,8 +317,8 @@ echo "────────────────────────�
 if [ $errors -eq 0 ] && [ $warnings -eq 0 ]; then
   printf "  ${GREEN}${BOLD}Ready to run tests.${RESET}\n"
 elif [ $errors -eq 0 ]; then
-  printf "  ${YELLOW}${BOLD}Start the above service(s) before running tests.${RESET}\n"
+  printf "  ${YELLOW}${BOLD}Some optional items need attention — tests may still run.${RESET}\n"
 else
-  printf "  ${RED}${BOLD}Fix the above before running tests.${RESET}\n"
+  printf "  ${RED}${BOLD}Some required items are missing — resolve them before running tests.${RESET}\n"
 fi
 printf "\n"
