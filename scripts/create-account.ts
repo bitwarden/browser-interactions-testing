@@ -72,6 +72,15 @@ async function createAccount() {
       }
 
       console.log(`Retrying account creation at ${vaultHost}...`);
+      if (preCreationResponseData.message) {
+        console.log(`\x1b[2m  ${preCreationResponseData.message}\x1b[0m`);
+      }
+      if (preCreationResponseData.validationErrors) {
+        Object.entries(preCreationResponseData.validationErrors).forEach(
+          ([field, msgs]) =>
+            console.log(`\x1b[2m    ${field}: ${msgs.join(", ")}\x1b[0m`),
+        );
+      }
       failedAttemptsCount++;
       setTimeout(createAccount, 3000);
       return;
