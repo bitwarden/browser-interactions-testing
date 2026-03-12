@@ -83,15 +83,6 @@ else
   errors=$((errors + 1))
 fi
 
-# ── node_modules ──────────────────────────────────────────────────────────────
-if [ -d "$ROOT_DIR/node_modules/.bin" ]; then
-  row "$OK" "node_modules" "installed"
-else
-  row "$ERR" "node_modules" "missing"
-  hint "npm ci"
-  errors=$((errors + 1))
-fi
-
 # ── Extension build ───────────────────────────────────────────────────────────
 BUILD_PATH="${EXTENSION_BUILD_PATH:-clients/apps/browser/build}"
 MANIFEST="$ROOT_DIR/$BUILD_PATH/manifest.json"
