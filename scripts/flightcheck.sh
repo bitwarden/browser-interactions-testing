@@ -38,7 +38,15 @@ else
   set -o allexport; source "$ROOT_DIR/.env"; set +o allexport
 
   missing=()
-  for var in VAULT_EMAIL VAULT_PASSWORD PAGES_HOST VAULT_HOST_URL VAULT_HOST_PORT; do
+  for var in \
+    VAULT_EMAIL VAULT_PASSWORD \
+    PAGES_HOST VAULT_HOST_URL VAULT_HOST_PORT \
+    CLI_SERVE_HOST CLI_SERVE_PORT \
+    EXTENSION_BUILD_PATH \
+    BW_DOMAIN \
+    BW_DB_PROVIDER BW_DB_SERVER BW_DB_DATABASE \
+    BW_DB_USERNAME BW_DB_PASSWORD BW_DB_PORT \
+    BW_ENABLE_SSL BW_SSL_CERT BW_SSL_KEY; do
     val=$(eval "echo \"\${${var}:-}\"")
     if [ -z "$val" ] || [[ "$val" == *"<"* ]]; then
       missing+=("$var")
@@ -51,6 +59,19 @@ else
   else
     row "$OK" ".env" "configured"
   fi
+fi
+
+# ── Vault import file (optional) ──────────────────────────────────────────────
+if [ -n "${VAULT_IMPORT_FILE:-}" ]; then
+  if [ -f "$ROOT_DIR/$VAULT_IMPORT_FILE" ]; then
+    row "$OK" "Vault import file" "$VAULT_IMPORT_FILE"
+  else
+    row "$ERR" "Vault import file" "not found  ($VAULT_IMPORT_FILE)"
+    errors=$((errors + 1))
+  fi
+else
+  row "$WARN" "Vault import file" "not set  (optional)"
+  warnings=$((warnings + 1))
 fi
 
 # ── SSL certificates ──────────────────────────────────────────────────────────
@@ -119,20 +140,34 @@ else
   if [ -n "$BW_ID" ]; then
     BW_HEALTH=$(docker inspect --format "{{.State.Health.Status}}" "$BW_ID" 2>/dev/null || true)
     ACTUAL_IMAGE=$(docker inspect --format "{{.Config.Image}}" "$BW_ID" 2>/dev/null || true)
+    BW_PROJECT=$(docker inspect --format \
+      "{{index .Config.Labels \"com.docker.compose.project\"}}" "$BW_ID" 2>/dev/null || true)
+    BW_NAME=$(docker inspect --format "{{.Name}}" "$BW_ID" 2>/dev/null | sed 's|^/||' || true)
+    BW_PORTS=$(docker ps --filter "id=$BW_ID" --format "{{.Ports}}" 2>/dev/null || true)
+    DB_IMAGE=$(docker ps \
+      --filter "label=com.docker.compose.project=${BW_PROJECT}" \
+      --filter "label=com.docker.compose.service=db" \
+      --format "{{.Image}}" 2>/dev/null | head -1 || true)
+
+    show_container_details() {
+      hint "name: ${BW_NAME}${DB_IMAGE:+  |  db: ${DB_IMAGE}}${BW_PORTS:+  |  ports: ${BW_PORTS}}"
+    }
 
     if [ "$BW_HEALTH" = "unhealthy" ]; then
       row "$ERR" "Docker" "bitwarden unhealthy  (${ACTUAL_IMAGE})"
+      show_container_details
       hint "docker compose logs bitwarden"
       errors=$((errors + 1))
     elif [ "$BW_HEALTH" = "starting" ]; then
       row "$WARN" "Docker" "bitwarden still starting up...  (${ACTUAL_IMAGE})"
+      show_container_details
       warnings=$((warnings + 1))
     elif [ "$ACTUAL_IMAGE" = "$EXPECTED_IMAGE" ]; then
       row "$OK" "Docker" "running  (${ACTUAL_IMAGE})"
+      show_container_details
     else
-      BW_PROJECT=$(docker inspect --format \
-        "{{index .Config.Labels \"com.docker.compose.project\"}}" "$BW_ID" 2>/dev/null || true)
       row "$WARN" "Docker" "running wrong version  (got: ${ACTUAL_IMAGE}, want: ${EXPECTED_IMAGE})"
+      show_container_details
       if [ -n "$BW_PROJECT" ]; then
         hint "docker compose -p ${BW_PROJECT} down && docker compose up -d --build --wait"
       else
@@ -208,24 +243,82 @@ if curl -sf $CACERT_OPT --max-time 3 "${VAULT_URL}/alive" > /dev/null 2>&1; then
     hint "npm run setup:vault"
     errors=$((errors + 1))
   fi
+
+  # Check feature flags
+  if [ -n "${REMOTE_VAULT_CONFIG_MATCH:-}" ]; then
+    row "$OK" "Feature flags" "synced from remote  (${REMOTE_VAULT_CONFIG_MATCH})"
+  else
+    CONFIG_JSON=$(curl -s $CACERT_OPT --max-time 5 "${VAULT_URL}/api/config" 2>/dev/null || true)
+    FLAG_COUNT=$(python3 -c "
+import json, sys
+try:
+    d = json.loads(sys.argv[1])
+    print(len(d.get('featureStates', {})))
+except:
+    print(-1)
+" "$CONFIG_JSON" 2>/dev/null || echo -1)
+
+    if [ "$FLAG_COUNT" -gt 0 ] 2>/dev/null; then
+      row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
+    elif [ "$FLAG_COUNT" -eq 0 ] 2>/dev/null; then
+      row "$WARN" "Feature flags" "featureStates is empty — flags may not be configured"
+      hint "npm run setup:flags  # sync from a remote config source"
+      warnings=$((warnings + 1))
+    else
+      row "$WARN" "Feature flags" "could not read /api/config"
+      warnings=$((warnings + 1))
+    fi
+  fi
 else
   row "$WARN" "Vault" "not reachable  (${VAULT_URL})"
   warnings=$((warnings + 1))
 fi
 
 # ── Test site ─────────────────────────────────────────────────────────────────
+# Playwright's webServer starts/stops the test site automatically.
+# Probe that it's serveable: start in background, hit the endpoint, then stop.
 PAGES_URL="${PAGES_HOST:-https://127.0.0.1}${PAGES_HOST_PORT:+:${PAGES_HOST_PORT}}"
-PID_FILE="$ROOT_DIR/.test-site.pid"
 
-if curl -sf $CACERT_OPT --max-time 3 "${PAGES_URL}" > /dev/null 2>&1; then
-  row "$OK" "Test site" "running  (${PAGES_URL})"
-elif [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  row "$WARN" "Test site" "process alive but not yet responding"
-  warnings=$((warnings + 1))
+_probe_test_site() {
+  local pid log i ok=0
+  log=$(mktemp)
+
+  # If something is already serving on this port, the server is clearly up
+  if curl -sf $CACERT_OPT --max-time 2 "${PAGES_URL}" > /dev/null 2>&1; then
+    rm -f "$log"; return 0
+  fi
+
+  # exec replaces the subshell with node directly, so $pid == node PID
+  (
+    export SSL_CERT=${BW_SSL_CERT:-ssl.crt}
+    export SSL_KEY=${BW_SSL_KEY:-ssl.key}
+    export SERVE_PORT=$PAGES_HOST_PORT
+    export SERVE_INSECURE_PORT=$PAGES_HOST_INSECURE_PORT
+    cd "$ROOT_DIR/test-site/api"
+    exec node build/app.js
+  ) > "$log" 2>&1 &
+  pid=$!
+
+  for i in $(seq 1 15); do
+    sleep 0.5
+    if ! kill -0 "$pid" 2>/dev/null; then break; fi
+    if curl -sf $CACERT_OPT --max-time 2 "${PAGES_URL}" > /dev/null 2>&1; then
+      ok=1; break
+    fi
+  done
+
+  kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
+  rm -f "$log"
+  return $((1 - ok))
+}
+
+if _probe_test_site; then
+  row "$OK" "Test site" "serveable  (${PAGES_URL})"
 else
-  row "$WARN" "Test site" "not running  (${PAGES_URL})"
-  hint "npm run start:test-site"
-  warnings=$((warnings + 1))
+  row "$ERR" "Test site" "failed to serve"
+  hint "cd test-site && npm run build:client  # rebuild if not yet built"
+  hint "cd test-site/api && npm run build     # rebuild API if needed"
+  errors=$((errors + 1))
 fi
 
 # ── Summary ───────────────────────────────────────────────────────────────────
