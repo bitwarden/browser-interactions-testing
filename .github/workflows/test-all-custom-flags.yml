@@ -205,7 +205,9 @@ jobs:
             --prerelease
 
           # Upload all .webm files and build the video markdown
-          VIDEO_MD=$'\n---\n\n## Videos\n'
+          # Use HTML entity encoding for the org name to prevent secret masking
+          RELEASE_URL="https://github.com/&#98;itwarden/browser-interactions-testing/releases/tag/${RELEASE_TAG}"
+          VIDEO_MD=$'\n---\n\n## Videos\n\n[View release]('"${RELEASE_URL}"$')\n'
           STAGING_DIR=$(mktemp -d)
 
           for suite_dir in "$VIDEOS_DIR"/*/; do
@@ -224,10 +226,8 @@ jobs:
               cp "$video" "${STAGING_DIR}/${asset_name}"
               gh release upload "$RELEASE_TAG" "${STAGING_DIR}/${asset_name}"
 
-              asset_url="https://github.com/&#98;itwarden/browser-interactions-testing/releases/download/${RELEASE_TAG}/${asset_name}"
-
-              SUITE_MD+=$'\n<video src="'"${asset_url}"'" controls width="800"></video>
-            '
+              asset_url="${RELEASE_URL/\/tag\//\/download\/}/${asset_name}"
+              SUITE_MD+=$'\n- ['"${asset_name}"$']('"${asset_url}"$')\n'
             done
 
             if [ "$videos_found" = true ]; then
