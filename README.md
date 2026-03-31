@@ -88,7 +88,7 @@ npm run test:static:debug
 
 > Important! Once you've generated installation and crypto values for your `.env` file, DO NOT CHANGE the seeding values (`VAULT_EMAIL`, `VAULT_PASSWORD`, `KDF_ITERATIONS`). Doing so requires regenerating your installation and crypto secret values and rebuilding/updating server.
 
-> If you do need to change `VAULT_EMAIL` or `VAULT_PASSWORD`, manually remove the generated crypto vars (`KDF_ITERATIONS`, `MASTER_PASSWORD_HASH`, `PROTECTED_SYMMETRIC_KEY`, `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY`, `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY`) from your `.env`, run `npm run setup:crypto`, then `docker compose down -v && docker compose up -d --wait` for a fresh database, then `npm run setup:vault`. Note that changing `VAULT_EMAIL` may also require regenerating install keys (`npm run setup:install`) and rebuilding the vault, depending on what you're trying to do.
+> If you do need to change `VAULT_EMAIL` or `VAULT_PASSWORD`, manually remove the generated crypto vars (`KDF_ITERATIONS`, `MASTER_PASSWORD_HASH`, `PROTECTED_SYMMETRIC_KEY`, `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY`, `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY`) from your `.env`, run `npm run setup:crypto`, then `npm run setup:vault`. Note that changing `VAULT_EMAIL` may also require regenerating install keys (`npm run setup:install`) and rebuilding the vault, depending on what you're trying to do.
 
 - Run `npm run setup:install` to generate and add installation values to your dotfile
   - Alternatively, you can generate them at `https://bitwarden.com/host` and add them to your dotfile manually as `BW_INSTALLATION_ID` and `BW_INSTALLATION_KEY`
