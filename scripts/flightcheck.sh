@@ -168,14 +168,21 @@ else
       warnings=$((warnings + 1))
     fi
   else
-    # No bitwarden container running — check what's blocking the ports
+    # No bitwarden container running
     DB_PORT="${BW_DB_PORT:-3306}"
     BW_PORT="${VAULT_HOST_PORT:-8443}"
 
+    # Check if the current project's containers exist but are stopped
+    STOPPED_BW=$(docker ps -a \
+      --filter "label=com.docker.compose.project=${CURRENT_PROJECT}" \
+      --filter "label=com.docker.compose.service=bitwarden" \
+      --format "{{.ID}}" 2>/dev/null | head -1)
+
+    # Only check running containers for port conflicts (stopped containers don't hold ports)
     port_owner() {
       local port="$1"
       local cid
-      cid=$(docker ps -a --format "{{.ID}}\t{{.Ports}}" 2>/dev/null \
+      cid=$(docker ps --format "{{.ID}}\t{{.Ports}}" 2>/dev/null \
         | grep ":${port}->" | awk '{print $1}' | head -1)
       if [ -n "$cid" ]; then
         local proj
@@ -191,22 +198,26 @@ else
     conflict_db=$(port_owner "$DB_PORT")
     conflict_bw=$(port_owner "$BW_PORT")
 
-    if [ -n "$conflict_db" ]; then
+    if [ -n "$STOPPED_BW" ]; then
+      row "$ERR" "Docker" "not running  (${CURRENT_PROJECT} containers are stopped)"
+      hint "docker compose up -d --wait"
+    elif [ -n "$conflict_db" ]; then
       row "$ERR" "Docker" "not running  (port ${DB_PORT} blocked by: ${conflict_db})"
       if [[ "$conflict_db" == "docker project: "* ]]; then
         blocking="${conflict_db#docker project: }"
-        hint "docker compose -p ${blocking} down"
+        hint "docker compose -p ${blocking} down && docker compose up -d --wait"
       else
         hint "stop the conflicting process, then: docker compose up -d --wait"
       fi
+      show_orphaned_volumes
     elif [ -n "$conflict_bw" ]; then
       row "$ERR" "Docker" "not running  (port ${BW_PORT} blocked by: ${conflict_bw})"
       hint "stop the conflicting process, then: docker compose up -d --wait"
+      show_orphaned_volumes
     else
       row "$ERR" "Docker" "not running"
       hint "docker compose up -d --wait"
     fi
-    show_orphaned_volumes
     errors=$((errors + 1))
   fi
 fi
@@ -235,31 +246,28 @@ if curl -sf $CACERT_OPT --max-time 3 "${VAULT_URL}/alive" > /dev/null 2>&1; then
     errors=$((errors + 1))
   fi
 
-  # Check feature flags
-  if [ -n "${REMOTE_VAULT_CONFIG_MATCH:-}" ]; then
-    row "$OK" "Feature flags" "synced from remote  (${REMOTE_VAULT_CONFIG_MATCH})"
-  else
-    CONFIG_JSON=$(curl -s $CACERT_OPT --max-time 5 "${VAULT_URL}/api/config" 2>/dev/null || true)
-    FLAG_COUNT=$(python3 -c "
+  # Check feature flags — source vs. loaded state are separate concerns
+  FLAG_SOURCE="${REMOTE_VAULT_CONFIG_MATCH:-not configured}"
+  FLAG_COUNT=$(python3 -c "
 import json, sys
 try:
-    d = json.loads(sys.argv[1])
-    print(len(d.get('featureStates', {})))
+    d = json.load(open(sys.argv[1]))
+    print(len(d.get('flagValues', {})))
 except:
     print(-1)
-" "$CONFIG_JSON" 2>/dev/null || echo -1)
+" "$ROOT_DIR/flags.json" 2>/dev/null || echo -1)
 
-    if [ "$FLAG_COUNT" -gt 0 ] 2>/dev/null; then
-      row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
-    elif [ "$FLAG_COUNT" -eq 0 ] 2>/dev/null; then
-      row "$WARN" "Feature flags" "featureStates is empty — flags may not be configured"
-      hint "npm run setup:flags  # sync from a remote config source"
-      warnings=$((warnings + 1))
-    else
-      row "$WARN" "Feature flags" "could not read /api/config"
-      warnings=$((warnings + 1))
-    fi
+  if [ "$FLAG_COUNT" -gt 0 ] 2>/dev/null; then
+    row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
+  elif [ "$FLAG_COUNT" -eq 0 ] 2>/dev/null; then
+    row "$WARN" "Feature flags" "empty  (flags.json has no flagValues)"
+    hint "npm run setup:flags"
+    warnings=$((warnings + 1))
+  else
+    row "$WARN" "Feature flags" "could not read flags.json"
+    warnings=$((warnings + 1))
   fi
+  hint "source: ${FLAG_SOURCE}"
 else
   row "$WARN" "Vault" "not reachable  (${VAULT_URL})"
   warnings=$((warnings + 1))
