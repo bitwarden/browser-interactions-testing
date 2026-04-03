@@ -43,6 +43,7 @@
     "seed:vault:ciphers": "./scripts/seeder.sh",
     "seed:vault:ciphers:refresh": "REFRESH=true ./scripts/seeder.sh",
     "seed:vault:import": "./scripts/vault-import.sh",
+    "flightcheck": "./scripts/flightcheck.sh",
     "setup:all": "./scripts/first-time-setup.sh",
     "setup:extension": "rimraf clients && git clone https://github.com/bitwarden/clients.git clients && cd clients && npm ci",
     "setup:install": "ts-node ./scripts/generate-installation.ts",

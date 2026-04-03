@@ -22,7 +22,7 @@ type AccountCreationResponseData = ResponseData;
 let failedAttemptsCount = 0;
 
 async function createAccount() {
-  if (failedAttemptsCount > 60) {
+  if (failedAttemptsCount > 25) {
     throw new Error("The account was unable to be created.");
   }
 
@@ -72,6 +72,16 @@ async function createAccount() {
       }
 
       console.log(`Retrying account creation at ${vaultHost}...`);
+      if (preCreationResponseData.validationErrors) {
+        // Validation errors indicate a real misconfiguration — always surface them
+        if (preCreationResponseData.message) {
+          console.log(`\x1b[2m  ${preCreationResponseData.message}\x1b[0m`);
+        }
+        Object.entries(preCreationResponseData.validationErrors).forEach(
+          ([field, msgs]) =>
+            console.log(`\x1b[2m    ${field}: ${msgs.join(", ")}\x1b[0m`),
+        );
+      }
       failedAttemptsCount++;
       setTimeout(createAccount, 3000);
       return;

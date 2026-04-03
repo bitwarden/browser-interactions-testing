@@ -73,11 +73,22 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 - Next run `npm run setup:all`, entering your system password when prompted.
 - Run static tests with `npm run test:static`.
 
+## Returning Workflow
+
+Run `npm run flightcheck` to check which prerequisites are satisfied and get specific commands for anything that needs attention. Typically you only need to do the initial set up once; after that all that's needed is:
+
+```bash
+docker compose up -d --wait   # start the vault server
+npm run test:static:debug
+```
+
 ## Setup
 
 - Create an `.env` file in the root directory with values pointing to the vault you want to test against (use `.env.example` as guidance) and populate it with your desired values
 
 > Important! Once you've generated installation and crypto values for your `.env` file, DO NOT CHANGE the seeding values (`VAULT_EMAIL`, `VAULT_PASSWORD`, `KDF_ITERATIONS`). Doing so requires regenerating your installation and crypto secret values and rebuilding/updating server.
+
+> If you do need to change `VAULT_EMAIL` or `VAULT_PASSWORD`, manually remove the generated crypto vars (`KDF_ITERATIONS`, `MASTER_PASSWORD_HASH`, `PROTECTED_SYMMETRIC_KEY`, `GENERATED_RSA_KEY_PAIR_PUBLIC_KEY`, `GENERATED_RSA_KEY_PAIR_PROTECTED_PRIVATE_KEY`) from your `.env`, run `npm run setup:crypto`, then `npm run setup:vault`. Note that changing `VAULT_EMAIL` may also require regenerating install keys (`npm run setup:install`) and rebuilding the vault, depending on what you're trying to do.
 
 - Run `npm run setup:install` to generate and add installation values to your dotfile
   - Alternatively, you can generate them at `https://bitwarden.com/host` and add them to your dotfile manually as `BW_INSTALLATION_ID` and `BW_INSTALLATION_KEY`
@@ -112,6 +123,14 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 Using Docker Compose will set up all the services required by the extension for testing. In order to use Docker Compose, you'll need to first:
 
 Create and start the containers and volumes with `docker compose up -d --build --remove-orphans`, and teardown with `docker compose down -v`
+
+> If the image pull fails with a network error (e.g. `unexpected EOF`), re-run `docker compose pull` and then retry. If it continues to fail, try increasing the timeout: `COMPOSE_HTTP_TIMEOUT=120 docker compose pull`. A common underlying cause is endpoint protection or firewall rules blocking the pull.
+
+> If startup fails with `port is already allocated`, a previous container session is holding the port — often a prior BIT stack (e.g. after updating the image version). Run `npm run flightcheck` to identify which project owns the port and get the exact teardown command.
+
+> Each compose project uses its own database volume. Switching to a different vault image version means a fresh database — re-run `npm run setup:vault` after bringing the new stack up. Old project volumes are not removed automatically. If `npm run flightcheck` detects a wrong-version or missing stack, it will list any BIT volumes from other projects and show the `docker volume rm` commands to clean them up.
+
+> If you have previously seeded a vault, you don't need to run setup again — just start it. This is especially relevant when switching between several environments (for example, different server images or feature flag configurations): each has its own volume, so bringing one back up restores its prior state as-is.
 
 ### Seeding Your Vault
 
