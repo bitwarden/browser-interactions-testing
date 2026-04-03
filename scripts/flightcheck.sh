@@ -105,7 +105,7 @@ else
   EXPECTED_IMAGE=$(grep "image:.*bitwarden" "$ROOT_DIR/docker-compose.yml" | awk '{print $2}')
   CURRENT_PROJECT=$(grep "^name:" "$ROOT_DIR/docker-compose.yml" | awk '{print $2}')
 
-  # List orphaned BIT volumes from other compose projects (pattern: v20YY-MM-DD_*)
+  # List inactive BIT volumes from other compose projects (pattern: v20YY-MM-DD_*)
   orphaned_volumes() {
     docker volume ls --format "{{.Name}}" 2>/dev/null \
       | grep -E '^v20[0-9]{2}-[0-9]{2}-[0-9]{2}_' \
@@ -113,11 +113,11 @@ else
       || true
   }
 
-  show_orphaned_volumes() {
+  show_inactive_volumes() {
     local vols
     vols=$(orphaned_volumes)
     if [ -n "$vols" ]; then
-      printf "         %-22s ${DIM}Orphaned BIT volumes from old stacks:${RESET}\n" ""
+      printf "         %-22s ${DIM}Inactive BIT volumes from other stacks:${RESET}\n" ""
       while IFS= read -r vol; do
         printf "         %-22s ${DIM}  docker volume rm %s${RESET}\n" "" "$vol"
       done <<< "$vols"
@@ -157,14 +157,14 @@ else
       row "$OK" "Docker" "running  (${ACTUAL_IMAGE})"
       show_container_details
     else
-      row "$WARN" "Docker" "running wrong version  (got: ${ACTUAL_IMAGE}, want: ${EXPECTED_IMAGE})"
+      row "$WARN" "Docker" "running unexpected version  (got: ${ACTUAL_IMAGE}, want: ${EXPECTED_IMAGE})"
       show_container_details
       if [ -n "$BW_PROJECT" ]; then
         hint "docker compose -p ${BW_PROJECT} down && docker compose up -d --build --wait"
       else
         hint "docker stop ${BW_ID:0:12} && docker compose up -d --build --wait"
       fi
-      show_orphaned_volumes
+      show_inactive_volumes
       warnings=$((warnings + 1))
     fi
   else
@@ -209,11 +209,11 @@ else
       else
         hint "stop the conflicting process, then: docker compose up -d --wait"
       fi
-      show_orphaned_volumes
+      show_inactive_volumes
     elif [ -n "$conflict_bw" ]; then
       row "$ERR" "Docker" "not running  (port ${BW_PORT} blocked by: ${conflict_bw})"
       hint "stop the conflicting process, then: docker compose up -d --wait"
-      show_orphaned_volumes
+      show_inactive_volumes
     else
       row "$ERR" "Docker" "not running"
       hint "docker compose up -d --wait"
