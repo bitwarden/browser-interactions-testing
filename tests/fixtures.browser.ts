@@ -19,6 +19,8 @@ import {
   vaultPassword,
   vaultHostURL,
 } from "../constants";
+import { PerfCapture } from "../abstractions";
+import { PERF_MEASURE_NAMES, extractMeasures, writePerfResults } from "./utils";
 
 configDotenv({ quiet: true });
 
@@ -37,6 +39,7 @@ export const test = base.extend<{
   extensionSetup: Page;
   featureFlags: FeatureFlags;
   manifestVersion: number;
+  perfCapture: void;
   recordVideoConfig: BrowserContextOptions["recordVideo"];
   testOutputPath?: string;
 }>({
@@ -81,6 +84,15 @@ export const test = base.extend<{
       context.setDefaultTimeout(20000),
       context.setDefaultNavigationTimeout(120000),
     ]);
+
+    if (process.env.BITWARDEN_ENABLE_INSTRUMENTATION === "true") {
+      await context.addInitScript(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__BITWARDEN_ENABLE_INSTRUMENTATION__ = true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (globalThis as any).__BITWARDEN_USE_TIMEOUT_FLUSH__ = true;
+      });
+    }
 
     await use(context);
   },
@@ -257,6 +269,70 @@ export const test = base.extend<{
 
     use(manifestVersion);
   },
+  // FIXME: this fixture depends on `extensionSetup`, forcing every test that
+  // imports from `fixtures.browser.ts` through vault login even when the env
+  // var is unset. All current consumers use `extensionSetup` already, so this
+  // is not active today. Revisit if a test is added that does not need login.
+  // FIXME: dedupe-by-URL collapses repeat visits to the same URL into a
+  // single capture. Intentional for the 1-nav-1-page case; revisit if a test
+  // visits → leaves → returns to the same URL and wants separate records.
+  perfCapture: [
+    async ({ context, extensionSetup }, use, testInfo) => {
+      if (process.env.BITWARDEN_ENABLE_INSTRUMENTATION !== "true") {
+        await use();
+        return;
+      }
+
+      const captures: PerfCapture[] = [];
+      const seenUrls = new Set<string>();
+
+      const captureUrl = async (url: string) => {
+        if (
+          !url ||
+          url === "about:blank" ||
+          url.startsWith("chrome-extension://") ||
+          seenUrls.has(url)
+        ) {
+          return;
+        }
+        seenUrls.add(url);
+        try {
+          const results = await extractMeasures(
+            extensionSetup,
+            PERF_MEASURE_NAMES,
+          );
+          captures.push({
+            url,
+            timestamp: new Date().toISOString(),
+            results,
+          });
+        } catch (e) {
+          // Page may be torn down mid-extract; surface via annotation so a
+          // mysteriously-empty CSV has a breadcrumb.
+          testInfo.annotations.push({
+            type: "perf-capture-failed",
+            description: `extractMeasures failed for ${url}: ${(e as Error)?.message ?? String(e)}`,
+          });
+        }
+      };
+
+      await context.route("**/*", async (route, request) => {
+        if (
+          request.isNavigationRequest() &&
+          request.frame() === extensionSetup.mainFrame()
+        ) {
+          await captureUrl(extensionSetup.url());
+        }
+        await route.continue();
+      });
+
+      await use();
+
+      await captureUrl(extensionSetup.url());
+      await writePerfResults(testInfo, captures);
+    },
+    { auto: true },
+  ],
   recordVideoConfig:
     process.env.DISABLE_VIDEO === "true"
       ? undefined

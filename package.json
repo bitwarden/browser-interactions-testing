@@ -69,6 +69,7 @@
     "test:static:debug": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static --debug",
     "test:static:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static",
     "test:static:autofill": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/autofill-forms.spec.ts",
+    "test:perf": "npm run pretest && BITWARDEN_ENABLE_INSTRUMENTATION=true NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/autofill-forms.spec.ts",
     "test:static:autofill:ci": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt xvfb-run playwright test tests/static/autofill-forms.spec.ts",
     "test:static:autofill:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/autofill-forms.spec.ts",
     "test:static:inline-menu": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/inline-menu.spec.ts",

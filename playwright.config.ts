@@ -39,6 +39,7 @@ const config: PlaywrightTestConfig = {
     ["html", { open: "never", outputFolder: "test-summary" }],
     ["json", { outputFile: "test-summary/test-results.json" }],
     ["./markdown-reporter", { outputFolder: "test-summary" }],
+    ["./perf-summary-reporter", { inputFolder: "test-summary/perf" }],
   ],
   // Do not report slow tests as threshold are expected to be large and varying
   reportSlowTests: null,
