@@ -45,7 +45,7 @@
     "seed:vault:import": "./scripts/vault-import.sh",
     "flightcheck": "./scripts/flightcheck.sh",
     "setup:all": "./scripts/first-time-setup.sh",
-    "setup:extension": "rimraf clients && git clone https://github.com/bitwarden/clients.git clients && cd clients && npm ci",
+    "setup:extension": "./scripts/setup-extension.sh",
     "setup:install": "ts-node ./scripts/generate-installation.ts",
     "setup:flags": "ts-node ./scripts/match-server-config.ts",
     "setup:ssl": "./scripts/generate-certs.sh",
