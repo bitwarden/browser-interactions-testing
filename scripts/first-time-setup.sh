@@ -26,7 +26,19 @@ fi
 
 npm run setup:ssl
 
+# Install/use the Node version pinned in .nvmrc, if nvm is installed
+if [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  # shellcheck disable=SC1091
+  . "${NVM_DIR}/nvm.sh"
+  cd "${projectRoot}"
+  nvm install || echo "Warning: 'nvm install' command failed; continuing with the currently active Node version."
+else
+  echo "nvm not detected; skipping 'nvm install'. Ensure your active Node version matches ${projectRoot}/.nvmrc."
+fi
+
 npm install -g @bitwarden/cli@2026.2.0
+
 npm ci
 npx playwright install --with-deps chromium
 
