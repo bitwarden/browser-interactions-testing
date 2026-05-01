@@ -1,11 +1,9 @@
 name: Test-all
-run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH || github.event.client_payload.origin_branch }} by @${{ github.actor }}
+run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
   push:
     branches:
       - "main"
-  repository_dispatch:
-    types: [trigger-bit-tests]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -16,6 +14,10 @@ on:
         type: string
       REMOTE_VAULT_CONFIG_MATCH:
         description: "URL to an endpoint returning a vault configuration (will default to US prod configuration)"
+        required: false
+        type: string
+      origin_issue:
+        description: "PR number in bitwarden/clients to post feedback to"
         required: false
         type: string
 jobs:
@@ -33,7 +35,7 @@ jobs:
       - name: Send PR feedback check
         id: set-send-pr-feedback
         env:
-          _SEND_PR_FEEDBACK: ${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}
+          _SEND_PR_FEEDBACK: ${{ (inputs.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}
         run: |
           echo "send_pr_feedback=$_SEND_PR_FEEDBACK" >> "$GITHUB_OUTPUT"
 
@@ -111,7 +113,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: ""
-          branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
+          branch: ${{ inputs.CLIENTS_BRANCH || 'main' }}
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
           repo: bitwarden/clients
@@ -211,7 +213,7 @@ jobs:
             const owner = 'bitwarden';
 
             const issueComments = await github.rest.issues.listComments({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
             });
@@ -265,7 +267,7 @@ jobs:
             `;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
               body: message
@@ -292,7 +294,7 @@ jobs:
             `;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
               body: message
