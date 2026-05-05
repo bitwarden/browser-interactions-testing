@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "outDir": "../benchmarks-out",
+    "experimentalDecorators": true,
+    "esModuleInterop": true
+    // @TODO turn on and resolve strict typing issues
+    // "strict": true
+  }
+}

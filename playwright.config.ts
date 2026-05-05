@@ -11,6 +11,7 @@ import { testSiteHost } from "./constants";
 
 const config: PlaywrightTestConfig = {
   testDir: "./tests-out",
+  testIgnore: "**/benchmarks/**",
   /* Maximum time one test can run for. */
   timeout: defaultTestTimeout,
   expect: {
@@ -39,7 +40,6 @@ const config: PlaywrightTestConfig = {
     ["html", { open: "never", outputFolder: "test-summary" }],
     ["json", { outputFile: "test-summary/test-results.json" }],
     ["./markdown-reporter", { outputFolder: "test-summary" }],
-    ["./perf-summary-reporter", { inputFolder: "test-summary/perf" }],
   ],
   // Do not report slow tests as threshold are expected to be large and varying
   reportSlowTests: null,

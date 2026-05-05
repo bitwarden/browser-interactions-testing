@@ -8,21 +8,20 @@ cannot do. Read this when you need to extend the framework itself.
 
 ## How it works
 
-### Opt-in gating
+### Suite isolation
 
-The harness is completely inert unless
-`BITWARDEN_ENABLE_INSTRUMENTATION=true` is set. With the env var unset: no
-init script is injected, no route handler is installed, the content-script
-wrappers remain inert, and no artifacts are written. The single env-var
-gate means adding, disabling, or toggling the harness never requires a
-rebuild.
+The harness lives entirely under `benchmarks/`, separate from `tests/`.
+The benchmark fixture (`benchmarks/fixtures.benchmark.ts`) is the only
+place that injects the instrumentation init script and registers the
+capture hook. Regular tests never load it, so adding, disabling, or
+extending the harness has no effect on the rest of the suite.
 
 ### Content-script enablement
 
-Playwright's `context.addInitScript` sets a pair of `globalThis` flags
-(`__BITWARDEN_ENABLE_INSTRUMENTATION__` and
-`__BITWARDEN_USE_TIMEOUT_FLUSH__`) at document start for every page in the
-context. The autofill bootstrap scripts (`bootstrap-autofill.ts` and
+The benchmark fixture's `context.addInitScript` sets a pair of
+`globalThis` flags (`__BITWARDEN_ENABLE_INSTRUMENTATION__` and
+`__BITWARDEN_USE_TIMEOUT_FLUSH__`) at document start for every page in
+the context. The autofill bootstrap scripts (`bootstrap-autofill.ts` and
 `bootstrap-autofill-overlay.ts` in the clients repo) read those flags
 inside their IIFE guard and call `enableInstrumentation()` /
 `useTimeoutForFlush()` before constructing autofill services. Wrappers
@@ -62,9 +61,10 @@ before/after comparison where untrustworthy numbers must not be included.
 
 ### Output pipeline
 
-`tests/utils.ts` owns the per-test writer (`writePerfResults`), which
-writes a single JSON document per test into `test-summary/perf/`. The
-per-test payload uses the `PerfPayload` shape in
+`benchmarks/utils.ts` owns the per-test writer (`writePerfResults`),
+which writes one JSON document per repeat into `test-summary/perf/`. The
+filename suffix `__run<n>` separates the iterations of a repeated
+benchmark. The per-test payload uses the `PerfPayload` shape in
 `abstractions/perf-types.ts`, which is shared by both the fixture-side
 writer and the reporter-side reader.
 
@@ -72,17 +72,18 @@ writer and the reporter-side reader.
 reporter implementing `onEnd`. It reads every JSON in the perf output
 directory, flattens to one CSV row per `(test, url, measure)` tuple,
 drops rows where the source result is poisoned, and writes
-`test-summary/perf/summary.csv`. The reporter is always registered in
-`playwright.config.ts`; when the perf directory is missing or empty (no
-env var set), it is a no-op.
+`test-summary/perf/summary.csv`. It is registered only in
+`playwright.benchmark.config.ts`; the regular test config does not load
+it.
 
 ## Extending the harness
 
 ### Adding a new measure point
 
 Covered in the operator's guide ([`performance.md`](performance.md)) — in
-short, add the `stopwatch`/`measure` call clients-side, then append the
-name to `PERF_MEASURE_NAMES` in `tests/utils.ts`.
+short, add the `stopwatch`/`measure` call clients-side, then either
+append the name to `DEFAULT_MEASURES` in `benchmarks/utils.ts` or
+pass a custom list to `createBenchmarkTest` in the spec that needs it.
 
 ### Iframe-scoped measures
 
@@ -133,10 +134,10 @@ remediation sketch.
 Registering the main-frame navigation hook uses `context.route("**/*")`,
 which forwards every request through a JavaScript handler. This is
 negligible for the small test pages exercised by BIT but is not free;
-the handler is only installed when `BITWARDEN_ENABLE_INSTRUMENTATION=true`,
-so baseline runs are unaffected. If a test's own timing measurements are
-sensitive (e.g. page load time), be aware that instrumented runs perturb
-those numbers.
+the handler is only installed by the benchmark fixture, so the regular
+test suite is unaffected. Within a benchmark, the route hook is part of
+what is being measured — keep this in mind when comparing benchmark
+numbers to ad-hoc timing data captured outside the harness.
 
 ### Main-frame only
 

@@ -39,6 +39,7 @@ test-site
 
 # Playwright
 tests-out
+benchmarks-out
 test-results
 test-summary
 /playwright/.cache/

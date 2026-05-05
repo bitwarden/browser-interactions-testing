@@ -69,7 +69,7 @@
     "test:static:debug": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static --debug",
     "test:static:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static",
     "test:static:autofill": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/autofill-forms.spec.ts",
-    "test:perf": "npm run pretest && BITWARDEN_ENABLE_INSTRUMENTATION=true NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/autofill-forms.spec.ts",
+    "benchmark:static": "rimraf benchmarks-out test-summary/perf && tsc --incremental -p benchmarks/tsconfig.json && NODE_EXTRA_CA_CERTS=ssl.crt playwright test --config=playwright.benchmark.config.ts",
     "test:static:autofill:ci": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt xvfb-run playwright test tests/static/autofill-forms.spec.ts",
     "test:static:autofill:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/autofill-forms.spec.ts",
     "test:static:inline-menu": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt playwright test tests/static/inline-menu.spec.ts",
@@ -80,7 +80,7 @@
     "test:static:notification:headless": "npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt HEADLESS=true playwright test tests/static/notifications.spec.ts",
     "test:webserve": "cd clients/apps/web && npm run build:bit:watch",
     "test:webserve:bitwarden": "cd clients/apps/web && ENV=cloud npm run build:oss:watch",
-    "typecheck": "npx tsc -p ./scripts/tsconfig.json && npx tsc -p ./tests/tsconfig.json"
+    "typecheck": "npx tsc -p ./scripts/tsconfig.json && npx tsc -p ./tests/tsconfig.json && npx tsc -p ./benchmarks/tsconfig.json"
   },
   "engines": {
     "node": "23.11.x",

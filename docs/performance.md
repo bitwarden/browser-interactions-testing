@@ -6,16 +6,22 @@ companion doc at `apps/browser/src/autofill/content/performance.md` in the
 clients repo. For how the harness is wired internally, extensibility, and
 its limitations, see [`performance.design.md`](performance.design.md).
 
-## Running a measured test
+## Running a measured benchmark
 
-Set `BITWARDEN_ENABLE_INSTRUMENTATION=true` and run tests:
+Run the benchmark suite:
 
 ```
-npm run test:perf
+npm run benchmark:static
 ```
 
-To disable measurement, unset the env var — no rebuild is needed, and no
-perf artifacts will be written on the next run.
+The benchmark fixture enables instrumentation.
+By default each benchmark runs 10 times; override with
+`BENCHMARK_RUNS=<n>`. To run a different set of measures, see "Adding a
+new measure" below.
+
+Benchmarks are isolated from the regular test suite (`tests/`); they live
+in `benchmarks/`, are compiled separately, and run only via
+`benchmark:static`.
 
 ## Adding a new measure
 
@@ -42,14 +48,21 @@ const result = measure("criticalCheck", () => {
 
 ### 2. Register the measure name in BIT
 
-Append the name from your instrumentation call to `PERF_MEASURE_NAMES` in
-`browser-interactions-testing/tests/utils.ts`:
+Either append the name to the default list in
+`browser-interactions-testing/benchmarks/utils.ts`:
 
 ```ts
-export const PERF_MEASURE_NAMES: readonly string[] = [
+export const DEFAULT_MEASURES: readonly string[] = [
     "getShadowRoot",
     "criticalCheck",
 ];
+```
+
+…or pass a custom list to `createBenchmarkTest` in the spec that needs
+it:
+
+```ts
+const { test } = createBenchmarkTest(["criticalCheck"]);
 ```
 
 No fixture, reporter, or config changes are needed beyond that — new
@@ -60,11 +73,11 @@ outputs.
 
 BIT runs against a real MV3 build of the extension (see `build:extension`
 in `package.json`). After editing code in `clients/apps/browser/`, rebuild
-before re-running tests:
+before re-running benchmarks:
 
 ```
 npm run build:extension
-npm run test:perf
+npm run benchmark:static
 ```
 
 ## Before/after comparison workflow
@@ -73,38 +86,48 @@ A typical use is to measure the same scenario on `main` and on a feature
 branch, then compare. The suggested flow:
 
 1. Check out the baseline branch; `npm run build:extension`;
-   `npm run test:perf`; copy `test-summary/perf/summary.csv` aside as
+   `npm run benchmark:static`; copy `test-summary/perf/summary.csv` aside as
    `baseline.csv`.
 2. Check out the candidate branch; rebuild; run again; copy `summary.csv`
    as `candidate.csv`.
 3. Diff the two CSVs on the natural key `(test_name, url, measure_name)`
    and inspect `count`, `avg_ms`, and `stddev_ms` deltas.
 
-The raw-entries JSON under `test-summary/perf/<test>.json` is available if
-a finer-grained analysis is wanted (e.g. histograms or percentiles).
+The raw-entries JSON under `test-summary/perf/<safe-title-path>__run<n>.json`
+is available if a finer-grained analysis is wanted (e.g. histograms or
+percentiles). One JSON file is written per repeat iteration.
 
-A measure name registered in `PERF_MEASURE_NAMES` but never fired during a
+Note that `npm run benchmark:static` wipes `test-summary/perf/` at the
+start of every run, so copy `summary.csv` (and the per-test JSON if you
+want it) out of that directory before running again.
+
+A measure name registered in `DEFAULT_MEASURES` but never fired during a
 test is still written with `count: 0` and zeroed aggregates (and is not
 flagged poisoned).
 
 ## Output
 
 Both outputs are written to `test-summary/perf/` and are cleared on each
-run by the existing `pretest` `rimraf test-summary` step. The directory
-path itself is defined in `tests/utils.ts` (for the per-test writer) and
-as the default `inputFolder` option of `perf-summary-reporter.ts` (for the
+run by the `benchmark:static` script. The directory path itself is
+defined in `benchmarks/utils.ts` (for the per-test writer) and as
+the default `inputFolder` option of `perf-summary-reporter.ts` (for the
 CSV aggregator).
 
 ### Per-test JSON
 
-One file per test at `test-summary/perf/<safe-title-path>.json`. The
-filename is derived from the test's title path with any non-`[a-zA-Z0-9_-]`
-character replaced by `_`. Schema:
+One file per repeat at `test-summary/perf/<safe-title-path>__run<n>.json`,
+where `<n>` is the zero-indexed repeat counter. The filename is derived
+from the test's title path with any non-`[a-zA-Z0-9_-]` character replaced
+by `_`. Schema:
 
 ```json
 {
     "test": "autofills form on <url>",
-    "titlePath": ["", "autofill-forms.spec.ts", "autofills form on <url>"],
+    "titlePath": [
+        "chromium",
+        "autofill-forms.spec.ts",
+        "autofills form on <url>"
+    ],
     "captures": [
         {
             "url": "https://test-the-web.example/forms/login/shadow-root-inputs",

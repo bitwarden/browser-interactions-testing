@@ -1,5 +1,4 @@
 import path from "path";
-import fs from "fs";
 import {
   test as base,
   chromium,
@@ -12,15 +11,21 @@ import { configDotenv } from "dotenv";
 
 import {
   debugIsActive,
-  defaultGotoOptions,
-  defaultWaitForOptions,
   screenshotsOutput,
   vaultEmail,
   vaultPassword,
   vaultHostURL,
 } from "../constants";
-import { PerfCapture } from "../abstractions";
-import { PERF_MEASURE_NAMES, extractMeasures, writePerfResults } from "./utils";
+import {
+  closeWelcomePage,
+  fetchFeatureFlags,
+  type FeatureFlags,
+  getBackgroundPage,
+  loginToVault,
+  prepareEnvironment,
+  readManifestVersion,
+  submitEnvironment,
+} from "../fixtures/extension-setup";
 
 configDotenv({ quiet: true });
 
@@ -30,8 +35,6 @@ const pathToExtension = path.join(
   process.env.CI ? "build" : process.env.EXTENSION_BUILD_PATH,
 );
 
-type FeatureFlags = { [key: string]: boolean };
-
 export const test = base.extend<{
   background: Page | Worker;
   context: BrowserContext;
@@ -39,7 +42,6 @@ export const test = base.extend<{
   extensionSetup: Page;
   featureFlags: FeatureFlags;
   manifestVersion: number;
-  perfCapture: void;
   recordVideoConfig: BrowserContextOptions["recordVideo"];
   testOutputPath?: string;
 }>({
@@ -85,36 +87,10 @@ export const test = base.extend<{
       context.setDefaultNavigationTimeout(120000),
     ]);
 
-    if (process.env.BITWARDEN_ENABLE_INSTRUMENTATION === "true") {
-      await context.addInitScript(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).__BITWARDEN_ENABLE_INSTRUMENTATION__ = true;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).__BITWARDEN_USE_TIMEOUT_FLUSH__ = true;
-      });
-    }
-
     await use(context);
   },
   background: async ({ context, manifestVersion }, use) => {
-    let background;
-
-    if (manifestVersion === 3) {
-      background = context.serviceWorkers()[0];
-
-      if (!background) {
-        background = await context.waitForEvent("serviceworker");
-      }
-    } else {
-      // for manifest v2:
-      background = context.backgroundPages()[0];
-
-      if (!background) {
-        background = await context.waitForEvent("backgroundpage");
-      }
-    }
-
-    use(background);
+    await use(await getBackgroundPage(context, manifestVersion));
   },
   extensionId: async ({ background }, use) => {
     const extensionId = background.url().split("/")[2];
@@ -124,60 +100,17 @@ export const test = base.extend<{
     let testPage: Page;
 
     await test.step("Close the extension welcome page when it pops up", async () => {
-      // Wait for the extension to open the welcome page before continuing
-      // (only relevant when using prod or build artifacts in CI)
-      if (
+      testPage = await closeWelcomePage(
+        context,
         !debugIsActive &&
-        process.env.HEADLESS !== "true" &&
-        process.env.CI === "true"
-      ) {
-        await context.waitForEvent("page");
-      }
-
-      let contextPages = await context.pages();
-
-      // close all but the first tab
-      await Promise.all(
-        contextPages.slice(1).map((contextPage) => contextPage.close()),
+          process.env.HEADLESS !== "true" &&
+          process.env.CI === "true",
       );
-
-      testPage = contextPages[0];
     });
 
     await test.step("Configure the environment", async () => {
       if (vaultHostURL) {
-        // Dismiss the welcome carousel
-        const introCarouselURL = `chrome-extension://${extensionId}/popup/index.html#/intro-carousel`;
-        await testPage.goto(introCarouselURL, defaultGotoOptions);
-        const welcomeCarouselDismissButton = await testPage.getByRole(
-          "button",
-          { name: "Log in" },
-        );
-        await welcomeCarouselDismissButton.click();
-
-        const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
-        await testPage.goto(extensionURL, defaultGotoOptions);
-
-        const environmentSelectorMenuButton = await testPage
-          .locator("environment-selector")
-          .getByRole("button");
-
-        await environmentSelectorMenuButton.waitFor(defaultWaitForOptions);
-        await environmentSelectorMenuButton.click();
-
-        const environmentSelectorMenu = await testPage.getByRole("menuitem", {
-          name: "self-hosted",
-        });
-
-        await environmentSelectorMenu.waitFor(defaultWaitForOptions);
-        await environmentSelectorMenu.click();
-
-        const baseUrlInput = await testPage.locator(
-          "input#self_hosted_env_settings_form_input_base_url",
-        );
-        await baseUrlInput.waitFor(defaultWaitForOptions);
-
-        await baseUrlInput.fill(vaultHostURL);
+        await prepareEnvironment(testPage, extensionId, vaultHostURL);
 
         await testPage.screenshot({
           fullPage: true,
@@ -188,151 +121,27 @@ export const test = base.extend<{
           ),
         });
 
-        await testPage.click("bit-dialog button[type='submit']");
+        await submitEnvironment(testPage);
       }
     });
 
     await test.step("Log in to the extension vault", async () => {
-      const emailInput = await testPage.getByLabel("Email address");
-      await emailInput.waitFor(defaultWaitForOptions);
-      await emailInput.fill(vaultEmail);
-      const emailSubmitInput = await testPage.getByRole("button", {
-        name: "Continue",
-      });
-      await emailSubmitInput.click();
-
-      const masterPasswordInput = await testPage.getByLabel("Master password");
-      await masterPasswordInput.waitFor(defaultWaitForOptions);
-      await masterPasswordInput.fill(vaultPassword);
-
-      const loginButton = await testPage.getByRole("button", {
-        name: "Log in with master password",
-      });
-      await loginButton.waitFor(defaultWaitForOptions);
-      await loginButton.click();
-
-      const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/tabs/vault`;
-      await testPage.waitForURL(extensionURL, defaultGotoOptions);
-      // Legacy UI
-      const vaultFilterBox = await testPage
-        .locator("app-vault-filter main .box.list")
-        .first();
-
-      // New UI refresh
-      const vaultListItems = await testPage
-        .locator("app-vault-list-items-container#allItems")
-        .first();
-
-      await vaultFilterBox.or(vaultListItems).waitFor(defaultWaitForOptions);
+      await loginToVault(testPage, extensionId, vaultEmail, vaultPassword);
     });
 
     await use(testPage);
   },
   featureFlags: async ({}, use) => {
-    let flags: FeatureFlags = {};
-
-    try {
-      /**
-       * We deliberately fetch the configuration from the vault server instead of
-       * just pulling in the local `flags.json` because the server may or may not
-       * support (and therefore return) the flags in the `flags.json` file.
-       */
-      const configUrl = `${vaultHostURL}/api/config`;
-      const response = await fetch(configUrl, {
-        method: "GET",
-        headers: {
-          "device-type": "2",
-          "bitwarden-client-name": "browser",
-        },
-      });
-      const data = await response.json();
-      flags = data?.featureStates ?? {};
-    } catch {
-      console.warn(
-        "\x1b[1m\x1b[33m%s\x1b[0m",
-        "\tCould not fetch feature flags from server config",
-      );
-    }
-
-    await use(flags);
+    await use(await fetchFeatureFlags(vaultHostURL));
   },
   manifestVersion: async ({}, use) => {
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(pathToExtension, "manifest.json"), "utf8"),
-    );
-
-    const manifestVersion = manifest?.manifest_version;
+    const manifestVersion = readManifestVersion(pathToExtension);
     console.log(
       "\x1b[1m\x1b[36m%s\x1b[0m", // cyan foreground
       `\textension manifest version ${manifestVersion}`,
     );
-
-    use(manifestVersion);
+    await use(manifestVersion);
   },
-  // FIXME: this fixture depends on `extensionSetup`, forcing every test that
-  // imports from `fixtures.browser.ts` through vault login even when the env
-  // var is unset. All current consumers use `extensionSetup` already, so this
-  // is not active today. Revisit if a test is added that does not need login.
-  // FIXME: dedupe-by-URL collapses repeat visits to the same URL into a
-  // single capture. Intentional for the 1-nav-1-page case; revisit if a test
-  // visits → leaves → returns to the same URL and wants separate records.
-  perfCapture: [
-    async ({ context, extensionSetup }, use, testInfo) => {
-      if (process.env.BITWARDEN_ENABLE_INSTRUMENTATION !== "true") {
-        await use();
-        return;
-      }
-
-      const captures: PerfCapture[] = [];
-      const seenUrls = new Set<string>();
-
-      const captureUrl = async (url: string) => {
-        if (
-          !url ||
-          url === "about:blank" ||
-          url.startsWith("chrome-extension://") ||
-          seenUrls.has(url)
-        ) {
-          return;
-        }
-        seenUrls.add(url);
-        try {
-          const results = await extractMeasures(
-            extensionSetup,
-            PERF_MEASURE_NAMES,
-          );
-          captures.push({
-            url,
-            timestamp: new Date().toISOString(),
-            results,
-          });
-        } catch (e) {
-          // Page may be torn down mid-extract; surface via annotation so a
-          // mysteriously-empty CSV has a breadcrumb.
-          testInfo.annotations.push({
-            type: "perf-capture-failed",
-            description: `extractMeasures failed for ${url}: ${(e as Error)?.message ?? String(e)}`,
-          });
-        }
-      };
-
-      await context.route("**/*", async (route, request) => {
-        if (
-          request.isNavigationRequest() &&
-          request.frame() === extensionSetup.mainFrame()
-        ) {
-          await captureUrl(extensionSetup.url());
-        }
-        await route.continue();
-      });
-
-      await use();
-
-      await captureUrl(extensionSetup.url());
-      await writePerfResults(testInfo, captures);
-    },
-    { auto: true },
-  ],
   recordVideoConfig:
     process.env.DISABLE_VIDEO === "true"
       ? undefined
