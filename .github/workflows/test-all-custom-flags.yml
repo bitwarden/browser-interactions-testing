@@ -1,11 +1,9 @@
 name: Test-all-custom-flags
-run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH || github.event.client_payload.origin_branch }} by @${{ github.actor }}
+run-name: All tests with extension build ${{ inputs.CLIENTS_BRANCH }} by @${{ github.actor }}
 on:
   push:
     branches:
       - "main"
-  repository_dispatch:
-    types: [trigger-bit-tests]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -18,6 +16,10 @@ on:
         default: "{}"
         description: 'JSON key-value pairs representing feature flag states. (e.g. {"autofill-v2": true, "autofill-overlay": false})'
         required: true
+        type: string
+      origin_issue:
+        description: "PR number in bitwarden/clients to post feedback to"
+        required: false
         type: string
 jobs:
   build-and-test:
@@ -34,7 +36,7 @@ jobs:
       - name: Send PR feedback check
         id: set-send-pr-feedback
         env:
-          _SEND_PR_FEEDBACK: ${{ (github.event.client_payload.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}
+          _SEND_PR_FEEDBACK: ${{ (inputs.origin_issue || false) && (vars.ENABLE_PR_FEEDBACK || false) }}
         run: |
           echo "send_pr_feedback=$_SEND_PR_FEEDBACK" >> "$GITHUB_OUTPUT"
 
@@ -110,12 +112,12 @@ jobs:
 
       - name: Download extension artifact
         id: get-build-artifact
-        uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
+        uses: dawidd6/action-download-artifact@8305c0f1062bb0d184d09ef4493ecb9288447732 # v20
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-browser.yml
           workflow_conclusion: ""
-          branch: ${{ github.event.client_payload.origin_branch || inputs.CLIENTS_BRANCH || 'main' }}
+          branch: ${{ inputs.CLIENTS_BRANCH || 'main' }}
           name: ^dist-chrome-MV3-\w{7}\.zip$
           name_is_regexp: true
           repo: bitwarden/clients
@@ -162,7 +164,7 @@ jobs:
         run: npm run seed:vault:ciphers
 
       - name: Download test site build
-        uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
+        uses: dawidd6/action-download-artifact@8305c0f1062bb0d184d09ef4493ecb9288447732 # v20
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build.yml
@@ -210,7 +212,7 @@ jobs:
             const owner = 'bitwarden';
 
             const issueComments = await github.rest.issues.listComments({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
             });
@@ -267,7 +269,7 @@ jobs:
             `;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
               body: message
@@ -297,7 +299,7 @@ jobs:
             `;
 
             github.rest.issues.createComment({
-              issue_number: context.payload.client_payload.origin_issue,
+              issue_number: Number(context.payload.inputs?.origin_issue),
               owner: owner,
               repo: 'clients',
               body: message
