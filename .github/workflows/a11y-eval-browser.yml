@@ -31,7 +31,7 @@ jobs:
         with:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-          node-version: "23"
+          node-version: "24"
 
       - name: Create dotenv file
         uses: ./.github/actions/setup-env-file
@@ -90,7 +90,7 @@ jobs:
           certutil -d "sql:$HOME/.pki/nssdb" -A -t "CP,CP," -n TestAutomationSSL -i "./$BW_SSL_CERT"
 
       - name: Install Bitwarden CLI
-        run: npm install -g @bitwarden/cli@2026.2.0
+        run: npm install -g @bitwarden/cli@2026.4.1
 
       - name: Install project dependencies
         run: |
