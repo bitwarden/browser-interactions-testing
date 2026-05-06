@@ -11,6 +11,7 @@ import { testSiteHost } from "./constants";
 
 const config: PlaywrightTestConfig = {
   testDir: "./tests-out",
+  testIgnore: "**/benchmarks/**",
   /* Maximum time one test can run for. */
   timeout: defaultTestTimeout,
   expect: {

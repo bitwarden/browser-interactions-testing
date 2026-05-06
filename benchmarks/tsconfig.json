@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "outDir": "../benchmarks-out",
+    "experimentalDecorators": true,
+    "esModuleInterop": true
+    // FIXME turn on and resolve strict typing issues (PM-30861)
+    // "strict": true
+  }
+}
