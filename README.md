@@ -9,6 +9,7 @@ This project leverages [Playwright](https://playwright.dev/) to run automated fo
     - [Live tests](#live-tests)
   - [Requirements](#requirements)
   - [Quick start](#quick-start)
+  - [Returning Workflow](#returning-workflow)
   - [Setup](#setup)
     - [Using Docker Compose](#using-docker-compose)
     - [Seeding Your Vault](#seeding-your-vault)
@@ -46,8 +47,8 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 ## Limitations
 
 - Extension builds can only be tested with Chromium clients at present.
-- BIT can test the browser client builds against active feature flags, but only those supported by the server utilized by the [self-host image](https://github.com/bitwarden/self-host/releases/tag/v2025.7.2) (aka [Bitwarden Unified](https://bitwarden.com/help/install-and-deploy-unified-beta/)) found in the [Docker compose configuration](./docker-compose.yml). Because of release timings, this can mean some feature-flagged experiences available in the server will not immediately be available for testing in BIT (until the updated self-host image is released and updated in the Docker compose configuration).
-  - Similarly the Bitwarden web client served and used with BIT is pinned to the self-host image version.
+- BIT can test the browser client builds against active feature flags, but only those supported by the server utilized by the [Bitwarden Lite image](https://github.com/bitwarden/self-host/pkgs/container/lite) (see [Install and deploy Lite](https://bitwarden.com/help/install-and-deploy-lite/)) found in the [Docker compose configuration](./docker-compose.yml). Because of release timings, this can mean some feature-flagged experiences available in the server will not immediately be available for testing in BIT (until the updated image is released and updated in the Docker compose configuration).
+  - Similarly the Bitwarden web client served and used with BIT is pinned to the image version.
 
 ### Live tests
 
@@ -68,8 +69,8 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 > Note: Docker is required for quick start
 
 - Install the requirements listed above
-- From the project root, run `cp .env.example .env` and update the `.env` values per the commented notes in the file.
 - If NVM is installed, run `nvm install`.
+- (Optional, unless you don't want to use the default configuration) From the project root, run `cp .env.example .env` and update the `.env` values per the commented notes in the file.
 - Next run `npm run setup:all`, entering your system password when prompted.
 - Run static tests with `npm run test:static`.
 
@@ -194,7 +195,7 @@ Test scenarios are collected and defined at [`/tests`](./tests/). These scenario
 
 #### Known failures
 
-User scenarios that are known to fail testing in specific cases are added to the `knownFailures` property of [`testPages`](./constants/test-pages.ts) (the listed tests will skip the owning test page). New failures added to this property should include a brief description of the kind of failure experienced, along with a ticket number tracking the issue.
+User scenarios that are known to fail testing in specific cases are added to the `skipTests` property of [`testPages`](./constants/test-pages.ts) (the listed tests will skip the owning test page). New failures added to this property should include a brief description of the kind of failure experienced, along with a ticket number tracking the issue.
 
 ## CI / CD
 
