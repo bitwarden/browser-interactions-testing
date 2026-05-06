@@ -7,7 +7,7 @@
     "outDir": "../benchmarks-out",
     "experimentalDecorators": true,
     "esModuleInterop": true
-    // @TODO turn on and resolve strict typing issues
+    // FIXME turn on and resolve strict typing issues (PM-30861)
     // "strict": true
   }
 }
