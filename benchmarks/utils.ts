@@ -5,7 +5,7 @@ import { PerfCapture, PerfMeasureResult } from "../abstractions";
 
 export const DEFAULT_MEASURES: readonly string[] = ["getShadowRoot"];
 
-export const PERF_OUTPUT_DIR = path.join(__dirname, "../test-summary/perf");
+export const PERF_OUTPUT_DIR = path.resolve("test-summary/perf");
 
 // FIXME: ":autofill:bw" is the public suffix contract from
 // clients/apps/browser/src/autofill/content/performance.md. Consider exporting
