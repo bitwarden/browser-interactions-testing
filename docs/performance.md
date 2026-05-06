@@ -93,7 +93,9 @@ branch, then compare. The suggested flow:
 2. Check out the candidate branch; rebuild; run again; copy `perf-summary.csv`
    as `candidate.csv`.
 3. Diff the two CSVs on the natural key `(test_name, url, measure_name)`
-   and inspect `count`, `avg_ms`, and `stddev_ms` deltas.
+   and inspect `count_mean`, `avg_ms_mean`, and `avg_ms_stddev` deltas.
+   Treat any `avg_ms_mean` delta smaller than the larger of the two
+   sides' `avg_ms_stddev` as noise.
 
 The raw-entries JSON under `test-summary/perf/<safe-title-path>__run<n>.json`
 is available if a finer-grained analysis is wanted (e.g. histograms or
@@ -169,17 +171,41 @@ by `_`. Schema:
 ### Aggregated CSV
 
 One file at `test-summary/perf-summary.csv`, emitted by
-`perf-summary-reporter.ts` during Playwright's `onEnd` hook. Columns:
+`perf-summary-reporter.ts` during Playwright's `onEnd` hook. One row per
+`(test, url, measure)` tuple, **aggregated across all repeats** of that
+tuple. Columns:
 
 ```
-test_name,url,measure_name,count,total_ms,avg_ms,min_ms,max_ms,stddev_ms
+test_name,url,measure_name,runs,count_mean,count_stddev,avg_ms_mean,avg_ms_stddev,min_ms,max_ms
 ```
 
-One row per `(test, url, measure)` tuple. `test_name` is the test's title
-path joined by `>`. Values that contain commas, quotes, or newlines are
-RFC-4180-escaped (wrapped in double quotes with internal quotes doubled);
-this matters because the title path can legitimately contain commas.
+- `runs` — number of non-poisoned per-test JSON files that contributed
+  to the aggregate. Typically equal to `BENCHMARK_RUNS` for healthy runs;
+  smaller if some iterations were poisoned.
+- `count_mean`, `count_stddev` — mean and population stddev of the
+  measurement count per run. A non-zero `count_stddev` means the measure
+  fired a different number of times across repeats, which usually
+  indicates a flaky scenario.
+- `avg_ms_mean` — the headline number: mean of per-run averages. This is
+  what most before/after comparisons read first.
+- `avg_ms_stddev` — population stddev of per-run averages, i.e. how much
+  the measurement varies across iterations. The most useful column when
+  judging whether a candidate-vs-baseline delta is real or noise: if
+  `|candidate.avg_ms_mean − baseline.avg_ms_mean|` is smaller than the
+  larger `avg_ms_stddev`, the difference is in the noise.
+- `min_ms`, `max_ms` — overall extremes across all entries from all
+  contributing runs.
 
-Rows where `poisoned === true` in the source JSON are omitted. If every
-row for a run is poisoned, the CSV still contains the header row but no
-data rows.
+`test_name` is the test's title path joined by `>`. Values that contain
+commas, quotes, or newlines are RFC-4180-escaped (wrapped in double
+quotes with internal quotes doubled); this matters because the title
+path can legitimately contain commas.
+
+Within-run stats (`total_ms`, `stddev_ms` — the population stddev of the
+durations of individual entries within a single run) drop off the CSV.
+The per-run JSON under `test-summary/perf/` retains them for ad-hoc
+analysis if needed.
+
+Rows where every contributing run was poisoned are omitted entirely. If
+every row for a run is poisoned, the CSV still contains the header row
+but no data rows.
