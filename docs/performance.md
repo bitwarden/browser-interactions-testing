@@ -71,12 +71,14 @@ outputs.
 
 ### 3. Rebuild the extension
 
-BIT runs against a real MV3 build of the extension (see `build:extension`
-in `package.json`). After editing code in `clients/apps/browser/`, rebuild
-before re-running benchmarks:
+BIT runs against a real MV3 build of the extension. Benchmarks require the
+content-script measurement flag to be set at build time — the standard
+`build:extension` script does not enable instrumentation, and benchmarks
+against that build will fail clearly at the first navigation. Use the
+dedicated bench-build script:
 
 ```
-npm run build:extension
+npm run build:extension:bench
 npm run benchmark:static
 ```
 
@@ -85,10 +87,10 @@ npm run benchmark:static
 A typical use is to measure the same scenario on `main` and on a feature
 branch, then compare. The suggested flow:
 
-1. Check out the baseline branch; `npm run build:extension`;
-   `npm run benchmark:static`; copy `test-summary/perf/summary.csv` aside as
+1. Check out the baseline branch; `npm run build:extension:bench`;
+   `npm run benchmark:static`; copy `test-summary/perf-summary.csv` aside as
    `baseline.csv`.
-2. Check out the candidate branch; rebuild; run again; copy `summary.csv`
+2. Check out the candidate branch; rebuild; run again; copy `perf-summary.csv`
    as `candidate.csv`.
 3. Diff the two CSVs on the natural key `(test_name, url, measure_name)`
    and inspect `count`, `avg_ms`, and `stddev_ms` deltas.
@@ -97,9 +99,9 @@ The raw-entries JSON under `test-summary/perf/<safe-title-path>__run<n>.json`
 is available if a finer-grained analysis is wanted (e.g. histograms or
 percentiles). One JSON file is written per repeat iteration.
 
-Note that `npm run benchmark:static` wipes `test-summary/perf/` at the
-start of every run, so copy `summary.csv` (and the per-test JSON if you
-want it) out of that directory before running again.
+Note that `npm run benchmark:static` wipes `test-summary/perf/` and
+`test-summary/perf-summary.csv` at the start of every run, so copy the
+CSV (and the per-test JSON if you want it) out before running again.
 
 A measure name registered in `DEFAULT_MEASURES` but never fired during a
 test is still written with `count: 0` and zeroed aggregates (and is not
@@ -166,7 +168,7 @@ by `_`. Schema:
 
 ### Aggregated CSV
 
-One file at `test-summary/perf/summary.csv`, emitted by
+One file at `test-summary/perf-summary.csv`, emitted by
 `perf-summary-reporter.ts` during Playwright's `onEnd` hook. Columns:
 
 ```

@@ -18,20 +18,15 @@ extending the harness has no effect on the rest of the suite.
 
 ### Content-script enablement
 
-The benchmark fixture's `context.addInitScript` sets a pair of
-`globalThis` flags (`__BITWARDEN_ENABLE_INSTRUMENTATION__` and
-`__BITWARDEN_USE_TIMEOUT_FLUSH__`) at document start for every page in
-the context. The autofill bootstrap scripts (`bootstrap-autofill.ts` and
-`bootstrap-autofill-overlay.ts` in the clients repo) read those flags
-inside their IIFE guard and call `enableInstrumentation()` /
-`useTimeoutForFlush()` before constructing autofill services. Wrappers
-therefore begin recording from the first invocation.
+Instrumentation is gated by the client build using the
+`BW_INCLUDE_CONTENT_SCRIPT_MEASUREMENTS` environment variable. The
+`npm run build:extension:bench` script in this repo rebuilds the
+client using this variable.
 
-`useTimeoutForFlush()` is always enabled alongside instrumentation. Per
-the companion clients-side doc, the library's default flush path uses
-`requestIdleCallback`, which never fires on heavy or continuously
-animating pages. `setTimeout`-based flush makes measurements reliably
-observable at extraction time.
+To detect a misconfigured run early, each spec should call
+`assertInstrumentationEnabled(page)` (in `benchmarks/utils.ts`)
+immediately after the first `goto`. This method throws an error
+if run on an incorrect build.
 
 ### Capture timing
 
@@ -72,7 +67,7 @@ writer and the reporter-side reader.
 reporter implementing `onEnd`. It reads every JSON in the perf output
 directory, flattens to one CSV row per `(test, url, measure)` tuple,
 drops rows where the source result is poisoned, and writes
-`test-summary/perf/summary.csv`. It is registered only in
+`test-summary/perf-summary.csv`. It is registered only in
 `playwright.benchmark.config.ts`; the regular test config does not load
 it.
 

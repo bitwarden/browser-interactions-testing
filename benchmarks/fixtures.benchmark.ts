@@ -77,20 +77,6 @@ export function createBenchmarkTest(
         context.setDefaultNavigationTimeout(120000),
       ]);
 
-      await context.addInitScript(() => {
-        // FIXME: __BITWARDEN_ENABLE_INSTRUMENTATION__ and
-        // __BITWARDEN_USE_TIMEOUT_FLUSH__ are public-suffix-style contracts with
-        // the clients-side autofill bootstrap. There is no shared definition; if
-        // the bootstrap renames either flag, this fixture silently stops
-        // instrumenting. Consider exporting both names from the clients repo's
-        // performance.ts so the two cannot drift.
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).__BITWARDEN_ENABLE_INSTRUMENTATION__ = true;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).__BITWARDEN_USE_TIMEOUT_FLUSH__ = true;
-      });
-
       await use(context);
     },
     background: async ({ context, manifestVersion }, use) => {

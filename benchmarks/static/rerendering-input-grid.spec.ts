@@ -1,4 +1,5 @@
 import { createBenchmarkTest } from "../fixtures.benchmark";
+import { assertInstrumentationEnabled } from "../utils";
 import {
   defaultGotoOptions,
   defaultWaitForOptions,
@@ -26,6 +27,7 @@ test("getShadowRoot during runaway grid rerenders", async ({
   extensionSetup,
 }) => {
   await extensionSetup.goto(URL_UNDER_TEST, defaultGotoOptions);
+  await assertInstrumentationEnabled(extensionSetup);
 
   const intervalInput = extensionSetup.locator(
     'input[name="rerenderInterval"]',

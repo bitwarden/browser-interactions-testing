@@ -9,15 +9,20 @@ const CSV_HEADER =
 
 class PerfSummaryReporter implements Reporter {
   inputFolder: string;
+  outputFile: string;
 
-  constructor(options: { inputFolder?: string } = {}) {
+  constructor(options: { inputFolder?: string; outputFile?: string } = {}) {
     this.inputFolder = options.inputFolder || "test-summary/perf";
+    this.outputFile = options.outputFile || "test-summary/perf-summary.csv";
   }
 
   onEnd(_result: FullResult) {
     const dir = path.isAbsolute(this.inputFolder)
       ? this.inputFolder
       : path.join(__dirname, this.inputFolder);
+    const outputPath = path.isAbsolute(this.outputFile)
+      ? this.outputFile
+      : path.join(__dirname, this.outputFile);
 
     if (!fs.existsSync(dir)) {
       return;
@@ -61,7 +66,8 @@ class PerfSummaryReporter implements Reporter {
       }
     }
 
-    fs.writeFileSync(path.join(dir, "summary.csv"), rows.join("\n") + "\n");
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, rows.join("\n") + "\n");
   }
 }
 

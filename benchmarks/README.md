@@ -41,10 +41,25 @@ test("autofill on a basic login form", async ({ extensionSetup }) => {
 
 The `perfCapture` fixture is auto-attached. It watches main-frame navigations on `extensionSetup` (the page returned by the fixture, post-vault-login) and captures performance measures from the page being navigated *away from*. So benchmark steps should drive `extensionSetup` directly — `await extensionSetup.goto(testSiteURL, ...)` — rather than opening a new page via `context.newPage()`. A capture also runs at fixture teardown to cover the final page in the sequence.
 
-Each repeat writes its own JSON file under `test-summary/perf/` (suffixed with `__run<n>`), and the `perf-summary-reporter` aggregates everything into `summary.csv` at the end of the run.
+Each repeat writes its own JSON file under `test-summary/perf/` (suffixed with `__run<n>`), and the `perf-summary-reporter` aggregates everything into `test-summary/perf-summary.csv` at the end of the run.
 
 A note on overhead: the capture mechanism uses `context.route("**/*")`, which routes every request through a JavaScript handler in the test process. The handler short-circuits non-navigation requests, but the user-space round-trip still happens for each one. For static test-site pages this is negligible; if you point a benchmark at a page with many subresources (third-party scripts, image-heavy forms), expect the route hook to show up as part of what you're measuring.
 
 ## Prerequisites
+
+### Instrumented build required
+
+Benchmarks measure named entries written by the extension's autofill content scripts. Those entries are only produced when the extension is built with content-script measurements enabled — a build-time flag, not a runtime one (see [`docs/performance.md`](../docs/performance.md) and the design rationale at `clients/apps/browser/src/autofill/content/performance.design.md`).
+
+Use the dedicated build script:
+
+```
+npm run build:extension:bench
+```
+
+> [!WARNING]
+> Running benchmarks against a default `build:extension` output will fail at the first `goto` with a specific error pointing at this script — silent zero-count data is not produced.
+
+### Vault seeding
 
 The benchmark fixture logs into the configured vault and depends on the same setup pipeline as the rest of the suite (`flightcheck`, `setup:crypto`, `setup:vault`, `seed:vault:ciphers`). Whatever cipher your benchmark needs must already be seeded.

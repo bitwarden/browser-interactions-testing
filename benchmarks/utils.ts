@@ -7,10 +7,15 @@ export const DEFAULT_MEASURES: readonly string[] = ["getShadowRoot"];
 
 export const PERF_OUTPUT_DIR = path.resolve("test-summary/perf");
 
-// FIXME: ":autofill:bw" is the public suffix contract from
-// clients/apps/browser/src/autofill/content/performance.md. Consider exporting
-// it as a constant from performance.ts so the two repos cannot drift.
+// FIXME: ":autofill:bw" and "perf:enabled:autofill:bw" are public-suffix-style
+// contracts with clients/apps/browser/src/autofill/content/performance.ts.
+// There is no shared definition; if `NAMES_SUFFIX` or the enablement-mark name
+// changes on the clients side, the suffix below silently misses every measure
+// and `assertInstrumentationEnabled` reports a misleading "rebuild with
+// build:extension:bench" instead of the real cause. Consider exporting both
+// strings from performance.ts so the two repos cannot drift.
 const PERF_MEASURE_SUFFIX = "autofill:bw";
+const PERF_ENABLED_MARK = "perf:enabled:autofill:bw";
 
 export async function extractMeasures(
   page: Page,
@@ -53,6 +58,22 @@ export async function extractMeasures(
     }
     return result;
   }, lookups);
+}
+
+export async function assertInstrumentationEnabled(page: Page): Promise<void> {
+  try {
+    await page.waitForFunction(
+      (markName) => performance.getEntriesByName(markName, "mark").length > 0,
+      PERF_ENABLED_MARK,
+      { timeout: 5000, polling: 100 },
+    );
+  } catch {
+    throw new Error(
+      `Autofill instrumentation marker not found on ${page.url()}. The ` +
+        "extension build does not have content-script measurements enabled. " +
+        "Rebuild with `npm run build:extension:bench` and re-run.",
+    );
+  }
 }
 
 export async function writePerfResults(
