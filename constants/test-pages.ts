@@ -217,6 +217,28 @@ export const testPages: PageTest[] = [
     },
     skipTests: [],
   },
+  {
+    url: `${testSiteHost}/forms/login/shadow-root-inputs-closed`,
+    inputs: {
+      username: {
+        selector: '[data-mirror="username"]',
+        verifyAccessor: "text",
+        value: testUserName,
+      },
+      password: {
+        selector: '[data-mirror="password"]',
+        verifyAccessor: "text",
+        value: "fakeShadowRootInputsClosedPassword",
+      },
+    },
+    actions: {
+      submit: async (page) =>
+        await page.getByRole("button", { name: "Login", exact: true }).click(),
+    },
+    skipTests: [
+      TestNames.InlineMenuAutofill, // closed-shadow-root inputs cannot be focused via Playwright locators
+    ],
+  },
   // @TODO add test for /forms/create/create-account
   // @TODO add test for /forms/create/create-account-extended/
   // Card and Identity Ciphers currently cannot be autofilled through the same mechanism that Login Ciphers are. This is because of how we handle messaging for autofilling login items. The extension will need to be updated to handle these types of Ciphers.
