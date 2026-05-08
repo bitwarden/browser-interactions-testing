@@ -236,7 +236,12 @@ export const testPages: PageTest[] = [
         await page.getByRole("button", { name: "Login", exact: true }).click(),
     },
     skipTests: [
-      TestNames.InlineMenuAutofill, // closed-shadow-root inputs cannot be focused via Playwright locators
+      // these tests require focusing an input to perform autofill. Playwright cannot focus these
+      // because it cannot locate elements in closed shadow roots
+      // see: https://playwright.dev/docs/locators#locate-in-shadow-dom
+      TestNames.InlineMenuAutofill,
+      TestNames.NewCredentialsNotification,
+      TestNames.PasswordUpdateNotification,
     ],
   },
   // @TODO add test for /forms/create/create-account
