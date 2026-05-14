@@ -36,7 +36,7 @@ else
   echo "nvm not detected; skipping 'nvm install'. Ensure your active Node version matches ${projectRoot}/.nvmrc."
 fi
 
-npm install -g @bitwarden/cli@2026.2.0
+npm install -g @bitwarden/cli@2026.4.1
 
 npm ci
 npx playwright install --with-deps chromium
