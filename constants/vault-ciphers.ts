@@ -132,7 +132,8 @@ export const pageCiphers: PageCipher[] = [
   },
   {
     cipherType: CipherType.Login,
-    url: `${testSiteHost}/forms/login/shadow-root-inputs`,
+    // Trailing slash distinguishes from `/shadow-root-inputs-closed`; both pages are served with trailing slashes by Docusaurus.
+    url: `${testSiteHost}/forms/login/shadow-root-inputs/`,
     uriMatchType: UriMatchType.StartsWith,
     fields: {
       username: {
@@ -140,6 +141,19 @@ export const pageCiphers: PageCipher[] = [
       },
       password: {
         value: "fakeShadowRootInputsPassword",
+      },
+    },
+  },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/login/shadow-root-inputs-closed`,
+    uriMatchType: UriMatchType.StartsWith,
+    fields: {
+      username: {
+        value: testUserName,
+      },
+      password: {
+        value: "fakeShadowRootInputsClosedPassword",
       },
     },
   },

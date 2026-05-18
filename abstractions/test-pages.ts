@@ -5,6 +5,8 @@ type FillProperties = {
   multiStepNextInputKey?: string;
   preFillActions?: (page: Page) => void;
   selector: string | ((page: Page) => Promise<Locator>);
+  /** How autofill verification reads the filled value. "value" (default): `toHaveValue`. "text": `toHaveText` — for non-input mirrors used as side channels (e.g. inputs inside closed shadow roots that Playwright can't reach directly). */
+  verifyAccessor?: "value" | "text";
   /** Represents the expectation that the inline menu should not appear on the input */
   shouldNotHaveInlineMenu?: boolean;
   /** Represents the expectation that the input should not be autofilled */

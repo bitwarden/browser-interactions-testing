@@ -74,7 +74,12 @@ test.describe("Extension autofills forms when triggered", () => {
           typeof firstInputSelector === "string"
             ? await testPage.locator(firstInputSelector).first()
             : await firstInputSelector(testPage);
-        await firstInputElement.waitFor(defaultWaitForOptions);
+        // text-mode mirrors have no rendered size until autofill populates them, so wait for attachment, not visibility
+        await firstInputElement.waitFor(
+          firstInput.verifyAccessor === "text"
+            ? { ...defaultWaitForOptions, state: "attached" }
+            : defaultWaitForOptions,
+        );
 
         await doAutofill(background);
 
@@ -95,7 +100,13 @@ test.describe("Extension autofills forms when triggered", () => {
             ? ""
             : currentInput.value;
 
-          await expect(currentInputSelectedElement).toHaveValue(expectedValue);
+          if (currentInput.verifyAccessor === "text") {
+            await expect(currentInputSelectedElement).toHaveText(expectedValue);
+          } else {
+            await expect(currentInputSelectedElement).toHaveValue(
+              expectedValue,
+            );
+          }
 
           await testPage.screenshot({
             fullPage: true,
