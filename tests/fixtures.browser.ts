@@ -96,11 +96,7 @@ export const test = base.extend<{
     await use(extensionId);
   },
   extensionSetup: async ({ context, extensionId, testOutputPath }, use) => {
-    let testPage: Page;
-
-    await test.step("Obtain the test page", async () => {
-      testPage = await obtainTestPage(context);
-    });
+    const testPage: Page = await obtainTestPage(context);
 
     await test.step("Configure the environment", async () => {
       if (vaultHostURL) {

@@ -8,11 +8,7 @@ import {
 } from "@playwright/test";
 import { configDotenv } from "dotenv";
 
-import {
-  vaultEmail,
-  vaultPassword,
-  vaultHostURL,
-} from "../constants";
+import { vaultEmail, vaultPassword, vaultHostURL } from "../constants";
 import { PerfCapture } from "../abstractions";
 import {
   fetchFeatureFlags,
@@ -86,11 +82,7 @@ export function createBenchmarkTest(
       await use(extensionId);
     },
     extensionSetup: async ({ context, extensionId }, use) => {
-      let testPage: Page;
-
-      await test.step("Obtain the test page", async () => {
-        testPage = await obtainTestPage(context);
-      });
+      const testPage: Page = await obtainTestPage(context);
 
       await test.step("Configure the environment", async () => {
         if (vaultHostURL) {
