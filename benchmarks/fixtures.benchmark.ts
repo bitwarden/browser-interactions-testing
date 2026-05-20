@@ -86,7 +86,11 @@ export function createBenchmarkTest(
       await use(extensionId);
     },
     extensionSetup: async ({ context, extensionId }, use) => {
-      const testPage = await obtainTestPage(context);
+      let testPage: Page;
+
+      await test.step("Obtain the test page", async () => {
+        testPage = await obtainTestPage(context);
+      });
 
       await test.step("Configure the environment", async () => {
         if (vaultHostURL) {
