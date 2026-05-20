@@ -10,18 +10,17 @@ import {
 import { configDotenv } from "dotenv";
 
 import {
-  debugIsActive,
   screenshotsOutput,
   vaultEmail,
   vaultPassword,
   vaultHostURL,
 } from "../constants";
 import {
-  closeWelcomePage,
   fetchFeatureFlags,
   type FeatureFlags,
   getBackgroundPage,
   loginToVault,
+  obtainTestPage,
   prepareEnvironment,
   readManifestVersion,
   submitEnvironment,
@@ -97,16 +96,7 @@ export const test = base.extend<{
     await use(extensionId);
   },
   extensionSetup: async ({ context, extensionId, testOutputPath }, use) => {
-    let testPage: Page;
-
-    await test.step("Close the extension welcome page when it pops up", async () => {
-      testPage = await closeWelcomePage(
-        context,
-        !debugIsActive &&
-          process.env.HEADLESS !== "true" &&
-          process.env.CI === "true",
-      );
-    });
+    const testPage: Page = await obtainTestPage(context);
 
     await test.step("Configure the environment", async () => {
       if (vaultHostURL) {
