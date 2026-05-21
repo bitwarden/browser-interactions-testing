@@ -6,12 +6,21 @@ import { defaultGotoOptions, defaultWaitForOptions } from "../constants";
 
 export type FeatureFlags = { [key: string]: boolean };
 
-export async function obtainTestPage(context: BrowserContext): Promise<Page> {
-  const contextPages = context.pages();
+export async function closeWelcomePage(
+  context: BrowserContext,
+  // Wait for the extension to open the welcome page before continuing
+  // (only relevant when using prod or build artifacts in CI)
+  shouldWaitForWelcomePopup: boolean,
+): Promise<Page> {
+  if (shouldWaitForWelcomePopup) {
+    await context.waitForEvent("page");
+  }
+
+  const contextPages = await context.pages();
 
   // close all but the first tab
   await Promise.all(
-    contextPages.slice(1).map((contextPage: Page) => contextPage.close()),
+    contextPages.slice(1).map((contextPage) => contextPage.close()),
   );
 
   return contextPages[0];
