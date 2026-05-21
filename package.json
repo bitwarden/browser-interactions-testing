@@ -84,7 +84,7 @@
     "typecheck": "npx tsc -p ./scripts/tsconfig.json && npx tsc -p ./tests/tsconfig.json && npx tsc -p ./benchmarks/tsconfig.json"
   },
   "engines": {
-    "node": "23.11.x",
-    "npm": "~11.3.0"
+    "node": "24.15.x",
+    "npm": "~11.14.0"
   }
 }
