@@ -65,7 +65,7 @@ export async function prepareEnvironment(
 }
 
 export async function submitEnvironment(testPage: Page): Promise<void> {
-  await testPage.click("bit-dialog button[type='submit']");
+  await testPage.click("[bit-dialog] button[type='submit']");
 }
 
 export async function loginToVault(
