@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "commonjs",
-    "moduleResolution": "Node",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "rootDir": "..",
     "sourceMap": true,
     "outDir": "../tests-out",
     "experimentalDecorators": true,
-    "esModuleInterop": true
-    // @TODO turn on and resolve strict typing issues
-    // "strict": true
+    "esModuleInterop": true,
+    "types": ["node", "chrome"],
+    // FIXME turn on and resolve strict typing issues (PM-30861)
+    "strict": false
   }
 }
