@@ -49,9 +49,9 @@ export async function prepareEnvironment(
   await environmentSelectorMenuButton.waitFor(defaultWaitForOptions);
   await environmentSelectorMenuButton.click();
 
-  const environmentSelectorMenu = await testPage.getByRole("menuitem", {
-    name: "self-hosted",
-  });
+  const environmentSelectorMenu = await testPage
+    .locator("#cdk-overlay-0")
+    .getByRole("button", { name: "self-hosted" });
 
   await environmentSelectorMenu.waitFor(defaultWaitForOptions);
   await environmentSelectorMenu.click();
