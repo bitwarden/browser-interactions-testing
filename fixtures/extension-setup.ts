@@ -87,7 +87,7 @@ export async function loginToVault(
   await masterPasswordInput.fill(vaultPassword);
 
   const loginButton = await testPage.getByRole("button", {
-    name: "Log in with master password",
+    name: "Log in",
   });
   await loginButton.waitFor(defaultWaitForOptions);
   await loginButton.click();
