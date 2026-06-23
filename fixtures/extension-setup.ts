@@ -29,6 +29,15 @@ export async function closeWelcomePage(
 export async function dismissDefaultPasswordManagerPrompt(
   testPage: Page,
 ): Promise<void> {
+  await testPage.waitForURL(/#\/(default-password-manager-prompt|login)/, {
+    ...defaultGotoOptions,
+    timeout: defaultWaitForOptions.timeout,
+  });
+
+  if (!testPage.url().includes("default-password-manager-prompt")) {
+    return;
+  }
+
   const skipButton = testPage
     .locator("autofill-default-password-manager-prompt")
     .getByRole("button", { name: "Skip" });
