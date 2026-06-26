@@ -155,11 +155,44 @@ jobs:
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
 
+      - name: Wait for admin DB migrations to complete
+        run: |
+          echo "Waiting for admin DB migrations..."
+          timeout 180 sh -c '
+            until docker compose exec -T bitwarden sh -c "grep -q \"Migration successful\" /etc/bitwarden/logs/admin-*.log 2>/dev/null"; do
+              sleep 2
+            done
+          '
+          echo "Migrations complete."
+
       - name: Generate crypto values
         run: npm run setup:crypto
 
       - name: Setup the vault test account
         run: npm run seed:vault:account
+
+      - name: Dump bitwarden container logs on failure
+        if: failure()
+        run: docker compose logs bitwarden --tail=500
+
+      - name: Dump db container logs on failure
+        if: failure()
+        run: docker compose logs db --tail=500
+
+      - name: Dump bitwarden internal app logs on failure
+        if: failure()
+        run: |
+          docker compose exec -T bitwarden sh -c '
+            echo "=== /etc/bitwarden contents ==="
+            ls -la /etc/bitwarden 2>/dev/null || true
+            echo "=== finding log files ==="
+            find /etc/bitwarden /var/log -name "*.log" -type f 2>/dev/null
+            echo "=== dumping each ==="
+            find /etc/bitwarden /var/log -name "*.log" -type f 2>/dev/null | while read f; do
+              echo "--- $f ---"
+              tail -200 "$f" 2>/dev/null || true
+            done
+          ' || true
 
       - name: Setup the vault test account ciphers
         run: npm run seed:vault:ciphers
