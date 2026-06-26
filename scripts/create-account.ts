@@ -39,12 +39,16 @@ async function createAccount() {
   const vaultHost = `${VAULT_HOST_URL}:${VAULT_HOST_PORT}`;
 
   try {
-    const requestOptions = {
+    const requestOptions: RequestInit & { compress?: boolean } = {
       headers: {
         accept: "application/json",
         "content-type": "application/json; charset=utf-8",
       },
       method: "POST",
+      // node-fetch passthrough: skip gzip negotiation/decompression. The lite
+      // container advertises `Content-Encoding: gzip` on register responses but
+      // emits a body that gunzip rejects, surfacing as ERR_STREAM_PREMATURE_CLOSE.
+      compress: false,
     };
 
     const preCreationResponse = await fetch(
@@ -55,8 +59,13 @@ async function createAccount() {
       },
     );
 
-    const preCreationResponseData =
-      (await preCreationResponse.json()) as PreAccountCreateResponseData;
+    const rawText1 = await preCreationResponse.text();
+    console.log(
+      `[debug] step1 status=${preCreationResponse.status} body=${rawText1.slice(0, 500)}`,
+    );
+    const preCreationResponseData = JSON.parse(
+      rawText1,
+    ) as PreAccountCreateResponseData;
 
     if (
       typeof preCreationResponseData !== "string" &&
@@ -117,14 +126,18 @@ async function createAccount() {
       },
     );
 
-    const responseData = (await response.json()) as AccountCreationResponseData;
+    const rawText2 = await response.text();
+    console.log(
+      `[debug] step2 status=${response.status} body=${rawText2.slice(0, 500)}`,
+    );
+    const responseData = JSON.parse(rawText2) as AccountCreationResponseData;
 
     if (responseData.object === "registerFinish") {
       emitSuccessMessage(vaultHost);
       return;
     }
   } catch (error) {
-    // Server isn't ready yet
+    console.log("[debug] caught:", error);
   }
 
   console.log(`Retrying account creation at ${vaultHost}...`);
