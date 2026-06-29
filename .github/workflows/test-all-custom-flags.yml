@@ -154,6 +154,16 @@ jobs:
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
 
+      - name: Wait for admin DB migrations to complete
+        run: |
+          echo "Waiting for admin DB migrations..."
+          timeout 120 sh -c '
+            until docker compose exec -T bitwarden sh -c "grep -q \"Migration successful\" /etc/bitwarden/logs/admin-*.log 2>/dev/null"; do
+              sleep 2
+            done
+          '
+          echo "Migrations complete."
+
       - name: Generate crypto values
         run: npm run setup:crypto
 
