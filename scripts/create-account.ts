@@ -1,4 +1,3 @@
-import fetch from "cross-fetch";
 import { configDotenv } from "dotenv";
 
 configDotenv({ quiet: true });
@@ -39,7 +38,7 @@ async function createAccount() {
   const vaultHost = `${VAULT_HOST_URL}:${VAULT_HOST_PORT}`;
 
   try {
-    const requestOptions = {
+    const requestOptions: RequestInit = {
       headers: {
         accept: "application/json",
         "content-type": "application/json; charset=utf-8",
@@ -124,7 +123,7 @@ async function createAccount() {
       return;
     }
   } catch (error) {
-    // Server isn't ready yet
+    console.log("[debug] caught:", error);
   }
 
   console.log(`Retrying account creation at ${vaultHost}...`);
