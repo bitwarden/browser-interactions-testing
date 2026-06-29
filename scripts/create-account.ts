@@ -123,7 +123,7 @@ async function createAccount() {
       return;
     }
   } catch (error) {
-    console.log("[debug] caught:", error);
+    // Server isn't ready yet
   }
 
   console.log(`Retrying account creation at ${vaultHost}...`);
