@@ -144,7 +144,26 @@ jobs:
           certutil -d "sql:$HOME/.pki/nssdb" -A -t "CP,CP," -n TestAutomationSSL -i "./$BW_SSL_CERT"
 
       - name: Install Bitwarden CLI
-        run: npm install -g @bitwarden/cli@2026.4.1
+        run: npm install -g @bitwarden/cli@2026.6.0
+
+      # FIXME Temporary workaround for PM-39403: server >= 2026.6.1 returns responses
+      # that node-fetch v2 treats as a premature close (ERR_STREAM_PREMATURE_CLOSE),
+      # even though the response body is fully delivered. Neutralize the two
+      # `new Error('Premature close')` emission sites in the CLI's bundled
+      # node-fetch so seed:vault:ciphers can proceed. Remove this step once
+      # PM-39403 ships and the lite image is rebuilt with the fix.
+      - name: Patch @bitwarden/cli node-fetch (PM-39403 workaround)
+        run: |
+          NF=$(npm root -g)/@bitwarden/cli/node_modules/node-fetch/lib/index.js
+          BEFORE=$(grep -c "Premature close" "$NF" || echo 0)
+          # Each match is followed by `err.code = ...` and an emit/callback
+          # line; delete the 3-line body, leaving the surrounding `if` empty.
+          sed -i "/new Error('Premature close')/,+2d" "$NF"
+          AFTER=$(grep -c "Premature close" "$NF" || echo 0)
+          echo "node-fetch patch: removed $((BEFORE - AFTER)) of $BEFORE match(es)"
+          if [ "$AFTER" != "0" ]; then
+            echo "WARNING: not all Premature-close references removed; @bitwarden/cli's node-fetch may have changed shape"
+          fi
 
       - name: Install project dependencies
         run: |
@@ -153,6 +172,16 @@ jobs:
 
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
+
+      - name: Wait for admin DB migrations to complete
+        run: |
+          echo "Waiting for admin DB migrations..."
+          timeout 120 sh -c '
+            until docker compose exec -T bitwarden sh -c "grep -q \"Migration successful\" /etc/bitwarden/logs/admin-*.log 2>/dev/null"; do
+              sleep 2
+            done
+          '
+          echo "Migrations complete."
 
       - name: Generate crypto values
         run: npm run setup:crypto
