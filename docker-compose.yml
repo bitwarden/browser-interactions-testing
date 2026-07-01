@@ -1,11 +1,11 @@
-name: v2026-06-00
+name: v2026-06-01
 services:
   bitwarden:
     depends_on:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/lite:2026.6.0
+    image: ghcr.io/bitwarden/lite@sha256:01181904fd02020dbc4d0598dd31a153b3784abd8a4d3ac9099fc1a939a58e6e # 2026.6.1
     restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
@@ -21,7 +21,7 @@ services:
       MARIADB_PASSWORD: ${BW_DB_PASSWORD}
       MARIADB_DATABASE: ${BW_DB_DATABASE}
       MARIADB_RANDOM_ROOT_PASSWORD: "true"
-    image: mariadb:12
+    image: mariadb@sha256:b1c7bf836e64ed9406a8984af29509f40089d55cea14b32f12c4726a1f17104b # 12
     restart: "no"
     volumes:
       - data:/var/lib/mysql
