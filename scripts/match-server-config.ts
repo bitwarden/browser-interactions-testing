@@ -1,4 +1,3 @@
-import fetch from "cross-fetch";
 import path from "path";
 import fs from "fs";
 import { configDotenv } from "dotenv";
