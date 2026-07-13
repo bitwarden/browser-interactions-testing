@@ -95,32 +95,62 @@ runs:
 
     - name: Create dotenv file
       shell: bash
+      env:
+        # Secrets from Azure Key Vault
+        KV_BW_DB_DATABASE: ${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}
+        KV_BW_DB_PASSWORD: ${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}
+        KV_BW_DB_USERNAME: ${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}
+        KV_BW_INSTALLATION_ID: ${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}
+        KV_BW_INSTALLATION_KEY: ${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}
+        KV_PUBLIC_TEST_EMAIL: ${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}
+        KV_VAULT_EMAIL: ${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}
+        KV_VAULT_PASSWORD: ${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}
+        # Action inputs
+        IN_BW_DB_PORT: ${{ inputs.BW_DB_PORT }}
+        IN_BW_DB_PROVIDER: ${{ inputs.BW_DB_PROVIDER }}
+        IN_BW_DB_SERVER: ${{ inputs.BW_DB_SERVER }}
+        IN_BW_DOMAIN: ${{ inputs.BW_DOMAIN }}
+        IN_BW_ENABLE_SSL: ${{ inputs.BW_ENABLE_SSL }}
+        IN_BW_SSL_CERT: ${{ inputs.BW_SSL_CERT }}
+        IN_BW_SSL_KEY: ${{ inputs.BW_SSL_KEY }}
+        IN_CI: ${{ inputs.CI }}
+        IN_CLI_SERVE_HOST: ${{ inputs.CLI_SERVE_HOST }}
+        IN_CLI_SERVE_PORT: ${{ inputs.CLI_SERVE_PORT }}
+        IN_EXTENSION_BUILD_PATH: ${{ inputs.EXTENSION_BUILD_PATH }}
+        IN_PAGES_HOST_INSECURE_PORT: ${{ inputs.PAGES_HOST_INSECURE_PORT }}
+        IN_PAGES_HOST_PORT: ${{ inputs.PAGES_HOST_PORT }}
+        IN_PAGES_HOST: ${{ inputs.PAGES_HOST }}
+        IN_REMOTE_VAULT_CONFIG_MATCH: ${{ inputs.REMOTE_VAULT_CONFIG_MATCH }}
+        IN_VAULT_HOST_INSECURE_PORT: ${{ inputs.VAULT_HOST_INSECURE_PORT }}
+        IN_VAULT_HOST_PORT: ${{ inputs.VAULT_HOST_PORT }}
+        IN_VAULT_HOST_URL: ${{ inputs.VAULT_HOST_URL }}
       run: |
-        sudo setcap 'cap_net_bind_service=+ep' `which node`
-        > .env
-        echo "BW_DB_DATABASE=\"${{ steps.get-kv-secrets.outputs.BW-DB-DATABASE }}\"" >> .env
-        echo "BW_DB_PASSWORD=\"${{ steps.get-kv-secrets.outputs.BW-DB-PASSWORD }}\"" >> .env
-        echo "BW_DB_USERNAME=\"${{ steps.get-kv-secrets.outputs.BW-DB-USERNAME }}\"" >> .env
-        echo "BW_INSTALLATION_ID=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-ID }}\"" >> .env
-        echo "BW_INSTALLATION_KEY=\"${{ steps.get-kv-secrets.outputs.BW-INSTALLATION-KEY }}\"" >> .env
-        echo "PUBLIC_TEST_EMAIL=\"${{ steps.get-kv-secrets.outputs.PUBLIC-TEST-EMAIL }}\"" >> .env
-        echo "VAULT_EMAIL=\"${{ steps.get-kv-secrets.outputs.VAULT-EMAIL }}\"" >> .env
-        echo "VAULT_PASSWORD=\"${{ steps.get-kv-secrets.outputs.VAULT-PASSWORD }}\"" >> .env
-        echo "BW_DB_PORT=${{ inputs.BW_DB_PORT }}" >> .env
-        echo "BW_DB_PROVIDER=\"${{ inputs.BW_DB_PROVIDER }}\"" >> .env
-        echo "BW_DB_SERVER=\"${{ inputs.BW_DB_SERVER }}\"" >> .env
-        echo "BW_DOMAIN=\"${{ inputs.BW_DOMAIN }}\"" >> .env
-        echo "BW_ENABLE_SSL=\"${{ inputs.BW_ENABLE_SSL }}\"" >> .env
-        echo "BW_SSL_CERT=\"${{ inputs.BW_SSL_CERT }}\"" >> .env
-        echo "BW_SSL_KEY=\"${{ inputs.BW_SSL_KEY }}\"" >> .env
-        echo "CI=${{ inputs.CI }}" >> .env
-        echo "CLI_SERVE_HOST=\"${{ inputs.CLI_SERVE_HOST }}\"" >> .env
-        echo "CLI_SERVE_PORT=${{ inputs.CLI_SERVE_PORT }}" >> .env
-        echo "EXTENSION_BUILD_PATH=\"${{ inputs.EXTENSION_BUILD_PATH }}\"" >> .env
-        echo "PAGES_HOST_INSECURE_PORT=${{ inputs.PAGES_HOST_INSECURE_PORT }}" >> .env
-        echo "PAGES_HOST_PORT=${{ inputs.PAGES_HOST_PORT }}" >> .env
-        echo "PAGES_HOST=\"${{ inputs.PAGES_HOST }}\"" >> .env
-        echo "REMOTE_VAULT_CONFIG_MATCH=\"${{ inputs.REMOTE_VAULT_CONFIG_MATCH }}\"" >> .env
-        echo "VAULT_HOST_INSECURE_PORT=${{ inputs.VAULT_HOST_INSECURE_PORT }}" >> .env
-        echo "VAULT_HOST_PORT=${{ inputs.VAULT_HOST_PORT }}" >> .env
-        echo "VAULT_HOST_URL=\"${{ inputs.VAULT_HOST_URL }}\"" >> .env
+        sudo setcap 'cap_net_bind_service=+ep' "$(which node)"
+        {
+          echo "BW_DB_DATABASE=\"$KV_BW_DB_DATABASE\""
+          echo "BW_DB_PASSWORD=\"$KV_BW_DB_PASSWORD\""
+          echo "BW_DB_USERNAME=\"$KV_BW_DB_USERNAME\""
+          echo "BW_INSTALLATION_ID=\"$KV_BW_INSTALLATION_ID\""
+          echo "BW_INSTALLATION_KEY=\"$KV_BW_INSTALLATION_KEY\""
+          echo "PUBLIC_TEST_EMAIL=\"$KV_PUBLIC_TEST_EMAIL\""
+          echo "VAULT_EMAIL=\"$KV_VAULT_EMAIL\""
+          echo "VAULT_PASSWORD=\"$KV_VAULT_PASSWORD\""
+          echo "BW_DB_PORT=$IN_BW_DB_PORT"
+          echo "BW_DB_PROVIDER=\"$IN_BW_DB_PROVIDER\""
+          echo "BW_DB_SERVER=\"$IN_BW_DB_SERVER\""
+          echo "BW_DOMAIN=\"$IN_BW_DOMAIN\""
+          echo "BW_ENABLE_SSL=\"$IN_BW_ENABLE_SSL\""
+          echo "BW_SSL_CERT=\"$IN_BW_SSL_CERT\""
+          echo "BW_SSL_KEY=\"$IN_BW_SSL_KEY\""
+          echo "CI=$IN_CI"
+          echo "CLI_SERVE_HOST=\"$IN_CLI_SERVE_HOST\""
+          echo "CLI_SERVE_PORT=$IN_CLI_SERVE_PORT"
+          echo "EXTENSION_BUILD_PATH=\"$IN_EXTENSION_BUILD_PATH\""
+          echo "PAGES_HOST_INSECURE_PORT=$IN_PAGES_HOST_INSECURE_PORT"
+          echo "PAGES_HOST_PORT=$IN_PAGES_HOST_PORT"
+          echo "PAGES_HOST=\"$IN_PAGES_HOST\""
+          echo "REMOTE_VAULT_CONFIG_MATCH=\"$IN_REMOTE_VAULT_CONFIG_MATCH\""
+          echo "VAULT_HOST_INSECURE_PORT=$IN_VAULT_HOST_INSECURE_PORT"
+          echo "VAULT_HOST_PORT=$IN_VAULT_HOST_PORT"
+          echo "VAULT_HOST_URL=\"$IN_VAULT_HOST_URL\""
+        } > .env
