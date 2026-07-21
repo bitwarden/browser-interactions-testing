@@ -21,19 +21,20 @@ export type StressCategory =
   (typeof StressCategory)[keyof typeof StressCategory];
 
 /**
- * A `FRAME_DROP_OVERRIDE` sweep point, not a standing category. It replaces the
- * level table to probe the exhausting boundary and carries its own tag.
+ * An explicit set of parameters supplied at run time, outside the standing
+ * categories. It replaces the level table with one point and carries its own
+ * tag.
  */
-export const SWEEP = "sweep";
+export const CUSTOM = "custom";
 
-export type StressTagName = StressCategory | typeof SWEEP;
+export type StressTagName = StressCategory | typeof CUSTOM;
 
 /** Whether a string is one of the standing stress categories. */
 export function isStressCategory(value: string): value is StressCategory {
   return (Object.values(StressCategory) as string[]).includes(value);
 }
 
-/** The Playwright tag used to select a category (or the sweep) with `--grep`. */
+/** The Playwright tag used to select a category (or a custom point) with `--grep`. */
 export function stressTag(name: StressTagName): string {
   return `@${name}`;
 }

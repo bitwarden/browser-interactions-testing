@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import { createBenchmarkTest } from "../fixtures.benchmark";
-import { StressCategory, SWEEP, stressTag } from "../../abstractions/stress";
+import { StressCategory, CUSTOM, stressTag } from "../../abstractions/stress";
 import {
   defaultGotoOptions,
   defaultWaitForOptions,
@@ -22,7 +22,7 @@ import {
 // Two environment variables override the parameters without editing this table:
 //
 // - FRAME_DROP_OVERRIDE="breadth,depth,interval" replaces the level table with
-//   one custom point, tagged `@sweep`, for probing the exhausting boundary past
+//   one custom point, tagged `@custom`, for probing the exhausting boundary past
 //   the collector's depth limit. The `benchmark` wrapper selects it when the
 //   variable is set.
 // - FRAME_DROP_WINDOW_MS sets the measured window in milliseconds (default
@@ -35,7 +35,7 @@ const URL_UNDER_TEST = `${testSiteHost}/scenarios/stability/frame-drop-check/`;
 
 interface StressLevel {
   name: string;
-  // The stress category this level belongs to. Absent for a sweep override.
+  // The stress category this level belongs to. Absent for a custom override.
   category?: StressCategory;
   breadth: number;
   depth: number;
@@ -84,7 +84,7 @@ const levels = parseOverride(process.env.FRAME_DROP_OVERRIDE) ?? LEVELS;
 
 for (const level of levels) {
   const title = `frame-drop-check ${level.name} (b${level.breadth} d${level.depth} i${level.interval}ms)`;
-  const tag = stressTag(level.category ?? SWEEP);
+  const tag = stressTag(level.category ?? CUSTOM);
 
   test(title, { tag }, async ({ extensionSetup, impact }) => {
     const page = extensionSetup;
@@ -136,6 +136,11 @@ function parseOverride(raw?: string): StressLevel[] | null {
   }
   const [breadth, depth, interval] = parts;
   return [
-    { name: `sweep-${breadth}-${depth}-${interval}`, breadth, depth, interval },
+    {
+      name: `custom-${breadth}-${depth}-${interval}`,
+      breadth,
+      depth,
+      interval,
+    },
   ];
 }

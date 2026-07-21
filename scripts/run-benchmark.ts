@@ -2,7 +2,7 @@ import { spawnSync } from "child_process";
 import {
   isStressCategory,
   StressCategory,
-  SWEEP,
+  CUSTOM,
   stressTag,
 } from "../abstractions/stress";
 
@@ -79,10 +79,10 @@ if (runsRaw !== undefined) {
   runs = snapshot ? 1 : 10;
 }
 
-// A FRAME_DROP_OVERRIDE point is tagged for the sweep and replaces the level
+// A FRAME_DROP_OVERRIDE point carries the custom tag and replaces the level
 // table, so target it directly rather than the stress category.
 const grepTag = process.env.FRAME_DROP_OVERRIDE
-  ? stressTag(SWEEP)
+  ? stressTag(CUSTOM)
   : stressTag(stress);
 
 function run(command: string, commandArgs: string[], env?: NodeJS.ProcessEnv) {
