@@ -14,7 +14,13 @@ import {
   vaultPassword,
   vaultHostURL,
 } from "../constants";
-import { PerfCapture } from "../abstractions";
+import {
+  CaptureMode,
+  CdpImpactResult,
+  ImpactCapture,
+  InPageImpactResult,
+  PerfCapture,
+} from "../abstractions";
 import {
   closeWelcomePage,
   fetchFeatureFlags,
@@ -25,7 +31,31 @@ import {
   readManifestVersion,
   submitEnvironment,
 } from "../fixtures/extension-setup";
-import { DEFAULT_MEASURES, extractMeasures, writePerfResults } from "./utils";
+import {
+  createCdpCapture,
+  DEFAULT_MEASURES,
+  extractMeasures,
+  installInPageInstrumentation,
+  readInPageImpact,
+  resetInPageImpact,
+  writeImpactResults,
+} from "../instrumentation";
+import { writePerfResults } from "./utils";
+
+/**
+ * Records one impact window.
+ */
+export interface ImpactRecorder {
+  /** runs the workload bracketed by the CDP
+   * session and the in-page accumulators, persists both channels, and returns the
+   * CDP result. An empty or poisoned capture becomes a test annotation.
+   */
+  measure(
+    page: Page,
+    url: string,
+    workload: () => Promise<void>,
+  ): Promise<CdpImpactResult>;
+}
 
 configDotenv({ quiet: true });
 
@@ -46,7 +76,10 @@ export function createBenchmarkTest(
     featureFlags: FeatureFlags;
     manifestVersion: number;
     perfCapture: void;
+    impact: ImpactRecorder;
+    captureMode: CaptureMode;
   }>({
+    captureMode: ["default", { option: true }],
     context: async ({ browser }, use) => {
       console.log("\x1b[1m\x1b[36m%s\x1b[0m", "\tBenchmarking with:");
       console.log(
@@ -77,7 +110,11 @@ export function createBenchmarkTest(
         context.setDefaultNavigationTimeout(120000),
       ]);
 
+      await installInPageInstrumentation(context);
+
       await use(context);
+
+      await context.close();
     },
     background: async ({ context, manifestVersion }, use) => {
       await use(await getBackgroundPage(context, manifestVersion));
@@ -169,6 +206,82 @@ export function createBenchmarkTest(
       },
       { auto: true },
     ],
+    impact: async ({ context, extensionId, captureMode }, use, testInfo) => {
+      // Install the in-page agent here, not on the shared context, so a
+      // benchmark that never measures impact carries none of its overhead.
+      // Runs during fixture setup, before the spec navigates.
+      await installInPageInstrumentation(context);
+
+      const captures: ImpactCapture[] = [];
+
+      const snapshotLabel = `${testInfo.titlePath.join("_")}__run${testInfo.repeatEachIndex}`;
+
+      const measure = async (
+        page: Page,
+        url: string,
+        workload: () => Promise<void>,
+      ): Promise<CdpImpactResult> => {
+        const capture = createCdpCapture(context, page, {
+          extensionId,
+          mode: captureMode,
+          snapshotLabel,
+        });
+        let cdp: CdpImpactResult;
+        let inPage: InPageImpactResult | null = null;
+
+        await resetInPageImpact(page);
+        await capture.start();
+        try {
+          await workload();
+        } finally {
+          // Snapshot the in-page window before CDP teardown so it covers the
+          // workload rather than the teardown, matching the trace window.
+          inPage = await readInPageImpact(page);
+          cdp = await capture.stop();
+        }
+
+        // Surface a silent capture failure without discarding the data point.
+        if (cdp?.poisoned) {
+          testInfo.annotations.push({
+            type: "impact-cdp-poisoned",
+            description: `${url}: ${cdp.poisonReasons?.join("; ") ?? "unknown"}`,
+          });
+        }
+        if (!inPage || inPage.windowMs === 0) {
+          testInfo.annotations.push({
+            type: "impact-in-page-empty",
+            description: `no in-page impact captured for ${url}`,
+          });
+        }
+        if (
+          inPage?.supported &&
+          (!inPage.supported.longTasks || !inPage.supported.loaf)
+        ) {
+          const missing = [
+            inPage.supported.longTasks ? null : "longtask",
+            inPage.supported.loaf ? null : "LoAF",
+          ]
+            .filter(Boolean)
+            .join(", ");
+          testInfo.annotations.push({
+            type: "impact-in-page-unsupported",
+            description: `${url}: unsupported observers: ${missing}`,
+          });
+        }
+
+        captures.push({
+          url,
+          timestamp: new Date().toISOString(),
+          inPage: inPage ?? undefined,
+          cdp,
+        });
+        return cdp;
+      };
+
+      await use({ measure });
+
+      await writeImpactResults(testInfo, captures);
+    },
   });
 
   return { test, expect: test.expect };

@@ -5,6 +5,10 @@ export type PerfMeasureResult = {
   min: number;
   max: number;
   stddev: number;
+  /**
+   *  Set when the extension marked this measure untrustworthy. The summary
+   *  reporter drops poisoned measures.
+   */
   poisoned: boolean;
   entries: { startTime: number; duration: number }[];
 };

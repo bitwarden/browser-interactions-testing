@@ -2,142 +2,168 @@
 
 This document complements [`performance.md`](performance.md). Where that
 doc is the operator's guide (how to run, how to register a new measure,
-how to read the output), this one covers the internals: how the harness
-is plumbed end-to-end, how poisoning is detected, and what the harness
-cannot do. Read this when you need to extend the framework itself.
+how to read the output), this one describes the systems that collect the
+data and the decisions that shape how they fit together. Read it when you
+need to extend the harness or judge whether a number can be trusted.
 
-## How it works
+## Systems involved
 
-### Suite isolation
+Data collection spans the extension, the browser, and the test runner.
 
-The harness lives entirely under `benchmarks/`, separate from `tests/`.
-The benchmark fixture (`benchmarks/fixtures.benchmark.ts`) is the only
-place that injects the instrumentation init script and registers the
-capture hook. Regular tests never load it, so adding, disabling, or
-extending the harness has no effect on the rest of the suite.
+- **The instrumented extension.** The client emits User Timing marks and
+  measures from named spans in the autofill code. This instrumentation is
+  compiled in behind a build flag, so a stock build carries none of it and a
+  measured build carries it wherever the spans are placed.
+- **The browser's performance surfaces.** The Performance Timeline holds the
+  extension's User Timing entries and the page-observable cost signals — long
+  tasks, Long Animation Frames, and requestAnimationFrame timing — that a
+  script running in the page can read with no special privilege. The Chrome
+  DevTools Protocol (CDP) exposes what the page cannot see for itself: the
+  compositor frame timeline, garbage-collection events, engine counters,
+  allocation sampling, and heap snapshots.
+- **Playwright.** Drives navigation and hosts the fixtures. Its request
+  interception is the one hook that can read a document's timeline before
+  navigation discards it, and its project and fixture options carry the run's
+  configuration.
+- **The reporters.** Two aggregators fold the many per-run captures into one
+  CSV each — one for User-Timing measures, one for Experience Impact signals —
+  for direct before/after comparison.
 
-### Content-script enablement
+## Design decisions
 
-Instrumentation is gated by the client build using the
-`BW_INCLUDE_CONTENT_SCRIPT_MEASUREMENTS` environment variable. The
-`npm run build:extension:bench` script in this repo rebuilds the
-client using this variable.
+### Two channels, split by portability
 
-To detect a misconfigured run early, each spec should call
-`assertInstrumentationEnabled(page)` (in `benchmarks/utils.ts`)
-immediately after the first `goto`. This method throws an error
-if run on an incorrect build.
+The Experience Impact signals come from two channels because no single
+mechanism is both portable and complete.
 
-### Capture timing
+The in-page channel uses only standard browser APIs that any script on the page
+can reach. It ports to any harness — a Selenium or home-grown framework can
+install the same observers — but it sees only what the page sees, and it infers
+dropped frames rather than reading them. Because Bitwarden's content scripts run
+in isolated worlds, long animation frames caused within them cannot be isolated
+using in-page channels.
 
-Measures are captured **before** each main-frame navigation so the
-`performance` timeline is not lost on reload. The `perfCapture` fixture
-registers a `context.route("**/*")` handler that, on main-frame navigation
-requests, calls `extractMeasures` via `page.evaluate` to read the current
-page's entries, then calls `route.continue()` to let the navigation
-proceed. A second capture runs at fixture teardown to cover the common
-case where a test only loads one page.
+More precise information on content scripts is, instead, collected using The Crhome
+DevTools Protocol (CDP). This requires a debugging session, which ties it to
+Chromium and, here, to Playwright. In return, it reads the compositor's own frame,
+which allows us to isolate the extension's content scripts from the page's own activity.
 
-Captures are keyed by URL and deduplicated per test. URLs served from
-`chrome-extension://` and `about:blank` are excluded — the harness only
-records real test-site pages.
+The in-page channel travels; the CDP channel goes deep. Keeping them separate lets a
+field deployment take the portable signals and a lab run add the rest.
 
-### How poisoning is detected
+> [!IMPORTANT]
+> The [W3C BiDi project](https://w3c.github.io/webdriver-bidi/) is underway to
+> introduce CDP-like features beyond the chrome runtime environment. Once these APIs
+> are stable, portability across runtimes need no longer constrain the design.
 
-The clients-side library's `poison("foo")` call emits a
-`foo:poison:autofill:bw` mark onto the Performance Timeline. During
-extraction, the harness runs `page.evaluate` to call
-`performance.getEntriesByName(…, "mark")` for the poison name of each
-measure and sets `poisoned: true` on the result when any such mark
-exists. The `count`, `total`, `avg`, etc. fields remain populated even
-when poisoned, so the JSON preserves the raw data for debugging. The CSV
-reporter excludes poisoned rows entirely — the CSV is intended for direct
-before/after comparison where untrustworthy numbers must not be included.
+### Capturing before navigation
 
-### Output pipeline
+The Performance Timeline belongs to a document and is discarded when that
+document unloads. A measure must therefore be read while its page is still
+live, which means the harness has to act in the narrow window between a
+navigation being requested and the current document going away.
 
-`benchmarks/utils.ts` owns the per-test writer (`writePerfResults`),
-which writes one JSON document per repeat into `test-summary/perf/`. The
-filename suffix `__run<n>` separates the iterations of a repeated
-benchmark. The per-test payload uses the `PerfPayload` shape in
-`abstractions/perf-types.ts`, which is shared by both the fixture-side
-writer and the reporter-side reader.
+Playwright's request interception is the only hook that holds that window open:
+it pauses a request until the harness releases it, so the timeline can be read
+first. Navigation events do not work — they fire after the old document is
+gone, or they do not block the navigation and so race the read. If interception
+overhead ever matters, an early CDP navigation-lifecycle event is the natural
+replacement, at the cost of managing a session for a hook that request
+interception already provides for free.
 
-`perf-summary-reporter.ts` at the repo root is a custom Playwright
-reporter implementing `onEnd`. It reads every JSON in the perf output
-directory, flattens to one CSV row per `(test, url, measure)` tuple,
-drops rows where the source result is poisoned, and writes
-`test-summary/perf-summary.csv`. It is registered only in
-`playwright.benchmark.config.ts`; the regular test config does not load
-it.
+### Keeping the debugging session narrow
+
+A debugging session perturbs what it measures, and a broad trace perturbs it
+more. The default mode enables only the trace categories the signals actually
+need, so its numbers stay close enough to an unobserved page to stand in for
+one — which is what makes the default mode the basis for comparison. The
+session brackets each measured window exactly, so the trace covers the workload
+and nothing around it.
+
+### Separating the capture modes
+
+Attribution costs something. A CPU profile interrupts the main thread often
+enough to distort timing; a heap snapshot walks the whole object graph and is
+large. Neither belongs in a run whose purpose is to compare cost. So the
+always-collected low-overhead signals form one mode, and each heavier form of
+attribution is its own opt-in mode layered on top. A cheap signal is used to
+detect a regression; answering "which code" or "what is retained" uses a
+fine-grained pass once the cheap signals show there is something to explain.
+
+The modes are mutually exclusive per run, and the result type reflects that:
+each mode's extra data lives only on its own variant, so a consumer cannot read
+a CPU profile off a run that never took one.
+
+### Reliability: flag, don't report
+
+Measurement can fail quietly — a trace can drop events, a debugging call can
+throw, or the extension can mark a measure it knows to be untrustworthy. Rather
+than let a misleading number into a comparison, the harness records the failure
+and excludes the affected data from the aggregated CSV while keeping it in the
+per-run detail for debugging.
+
+This works at two levels. The extension declares a single measure
+untrustworthy, which drops that measure from the summary. The harness declares
+a whole CDP capture untrustworthy, which drops its debugging-derived columns
+but still counts the run. The two axes are independent: within one run a
+poisoned measure can sit beside a clean capture, and a clean measure beside a
+poisoned capture.
+
+### Isolation from the functional suite
+
+All capture is registered from the benchmark fixture and nowhere else, so the
+functional suite is untouched by it. This is deliberate rather than incidental:
+the functional suite runs with a slow-motion delay that inflates every timing,
+so any measure collected there would be meaningless. Confining instrumentation
+to the benchmark path keeps that invalid data from ever being produced.
 
 ## Extending the harness
 
-### Adding a new measure point
+- **Adding a new measure point**: See the [operator's guide](performance.md).
+- **Adding a new benchmark**: See the [benchmarking guide](benchmarking.md).
 
-Covered in the operator's guide ([`performance.md`](performance.md)) — in
-short, add the `stopwatch`/`measure` call clients-side, then either
-append the name to `DEFAULT_MEASURES` in `benchmarks/utils.ts` or
-pass a custom list to `createBenchmarkTest` in the spec that needs it.
+### Adding a new benchmark
 
-### Iframe-scoped measures
+Covered
 
-Currently unsupported (see Limitations below). To extend:
+### Widening capture beyond the main frame
 
-1. Enumerate `page.frames()` instead of reading only the main frame.
-2. Call `frame.evaluate` against each frame of interest, filtering out
-   the ones that don't host autofill content scripts.
-3. Key captures by `(page-url, frame-url)` instead of page URL alone, and
-   widen the CSV schema with a `frame_url` column.
+The harness reads only the top document of each page (see Limitations).
+Extending to iframe-hosted content scripts — the inline menu and notification
+bar — is not presently in-scope of benchmarking. Adding this would entail
+enumerating all of the frames, filtering to the ones hosting autofill,
+keying each capture by frame as well as page, and widening the output schema to carry
+the frame identity. The cost is a wider key and more evaluation round-trips per
+capture, which is why it is not paid until an iframe entrypoint needs measuring.
 
-### Alternative capture mechanisms
-
-The current before-nav capture relies on `context.route`, which awaits
-user-space code before allowing a request to proceed. Alternatives that
-were considered and rejected:
-
-- `page.on("framenavigated")` — fires _after_ navigation, by which point
-  the prior frame's Performance Timeline has been destroyed. The
-  extract would read the new frame's empty timeline.
-- `page.on("request")` with `isNavigationRequest()` — Playwright event
-  listeners do not block the navigation from proceeding, so an
-  `await extractMeasures` inside the handler races the navigation.
-
-If route-handler overhead becomes a problem, the most promising replacement
-is a `CDPSession` listener on `Page.frameRequestedNavigation`. That event
-fires early in the nav lifecycle and, unlike `framenavigated`, gives us
-a window in which the previous page is still live. It is not used today
-because it adds CDP-session management surface for a small gain.
+> [!WARNING]
+> This would let each frame be measured _independently_. Aggregating across
+> frames requires the addition of spans and/or correlation ids. These have not
+> been anticipated by the design.
 
 ## Limitations
 
-### Iframe-scoped measures not collected
-
-The harness captures measures only from the main frame of each page.
-Content scripts that run inside cross-origin or same-origin iframes
-accumulate their own `performance` timelines in those frames;
-`extractMeasures` currently calls `page.evaluate`, which targets the main
-frame's realm, so iframe-scoped entries are not collected.
-
-This will matter when the `inline-menu` and `notification-bar`
-entrypoints are instrumented — both of those scripts run inside iframes.
-See [Extending the harness](#iframe-scoped-measures) above for the
-remediation sketch.
-
-### Route-handler overhead
-
-Registering the main-frame navigation hook uses `context.route("**/*")`,
-which forwards every request through a JavaScript handler. This is
-negligible for the small test pages exercised by BIT but is not free;
-the handler is only installed by the benchmark fixture, so the regular
-test suite is unaffected. Within a benchmark, the route hook is part of
-what is being measured — keep this in mind when comparing benchmark
-numbers to ad-hoc timing data captured outside the harness.
-
 ### Main-frame only
 
-The teardown capture and the route-hook capture both read `page.url()`
-and `page.mainFrame()`. Popups and `window.open`-ed pages are not
-measured. Fine for autofill scenarios that stay on a single top-level
-document; a limitation to revisit if workflows that span multiple
-top-level pages need instrumentation.
+Capture reads the top document of each page, so content scripts in iframes keep
+their own timelines that the harness never collects, and popups or
+`window.open`-ed pages are not measured at all. This is fine for autofill
+scenarios that stay on a single top-level document, and it is the scope limit
+to lift first when iframe entrypoints or multi-page workflows need
+instrumentation.
+
+### The capture hook is inside the measured window
+
+Reading the timeline before navigation runs a handler on every request. It is
+negligible for BIT's small test pages, but within a benchmark it is part of
+what is being measured — a reason to compare harness numbers against other
+harness numbers, not against ad-hoc timing taken outside it.
+
+### The measure-name contract is unshared
+
+A measure name links a span in the extension to a column in the output, but the
+two repositories hold their own copy of that string with nothing enforcing
+agreement. A rename on the extension side does not fail loudly here — it simply
+zeroes the measure, which reads the same as a span that never fired. Registering
+a new measure (above) means keeping both sides in step by hand until the
+contract is shared.
