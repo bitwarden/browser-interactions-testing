@@ -122,10 +122,6 @@ to the benchmark path keeps that invalid data from ever being produced.
 - **Adding a new measure point**: See the [operator's guide](performance.md).
 - **Adding a new benchmark**: See the [benchmarking guide](benchmarking.md).
 
-### Adding a new benchmark
-
-Covered
-
 ### Widening capture beyond the main frame
 
 The harness reads only the top document of each page (see Limitations).
