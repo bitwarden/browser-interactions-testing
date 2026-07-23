@@ -110,8 +110,6 @@ export function createBenchmarkTest(
         context.setDefaultNavigationTimeout(120000),
       ]);
 
-      await installInPageInstrumentation(context);
-
       await use(context);
 
       await context.close();
@@ -207,9 +205,9 @@ export function createBenchmarkTest(
       { auto: true },
     ],
     impact: async ({ context, extensionId, captureMode }, use, testInfo) => {
-      // Install the in-page agent here, not on the shared context, so a
-      // benchmark that never measures impact carries none of its overhead.
-      // Runs during fixture setup, before the spec navigates.
+      // The impact fixture is set up only for benchmarks that request it, so
+      // installing the agent here keeps it off benchmarks that never measure
+      // impact. Runs during fixture setup, before the spec navigates.
       await installInPageInstrumentation(context);
 
       const captures: ImpactCapture[] = [];
