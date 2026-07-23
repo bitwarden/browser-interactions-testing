@@ -2,7 +2,7 @@
 
 This document is a practical guide for running the BIT performance harness.
 
-- To add a new benchmark, see [Benchmarking](../benchmarking.md)
+- To add a new benchmark, see [Benchmarking](benchmarking.md)
 
 ## Measuring a benchmark
 
