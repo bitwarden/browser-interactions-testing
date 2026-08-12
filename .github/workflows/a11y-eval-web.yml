@@ -53,11 +53,6 @@ jobs:
           VAULT_HOST_PORT: ${{ vars.VAULT_HOST_PORT }}
           VAULT_HOST_URL: ${{ vars.VAULT_HOST_URL }}
 
-      - name: Create feature flags file
-        env:
-          _FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS }}
-        run: echo "{\"flagValues\":$_FEATURE_FLAGS}" > "flags.json"
-
       - name: Generate and install certs
         run: |
           npm run setup:ssl
@@ -74,6 +69,11 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
+
+      - name: Create feature flags file
+        env:
+          FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS }}
+        run: npm run setup:flags:ci
 
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
