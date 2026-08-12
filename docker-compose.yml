@@ -13,7 +13,6 @@ services:
     volumes:
       - ./${BW_SSL_CERT}:/etc/bitwarden/${BW_SSL_CERT}
       - ./${BW_SSL_KEY}:/etc/bitwarden/${BW_SSL_KEY}
-      - ./flags.json:/app/Api/flags.json
 
   db:
     environment:
