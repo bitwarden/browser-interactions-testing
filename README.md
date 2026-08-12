@@ -161,7 +161,7 @@ You may import a vault in the form of a [Bitwarden-formatted JSON file](https://
 
 ## Feature flags
 
-The Bitwarden documentation [describes how to make use of implemented feature flags](https://contributing.bitwarden.com/contributing/feature-flags/#local-configuration-json-file). Here, your flag key-value pairs can be added to the `flags.json` file. Note, changes to this file will require rebuilding the Docker image (e.g. `docker compose up -d --build --remove-orphans`).
+The Bitwarden documentation [describes how to make use of implemented feature flags](https://contributing.bitwarden.com/contributing/feature-flags/#flag-data-sources). Here, your flag key-value pairs can be added to the `flags.env` file using the `Features__FlagValues__<flag-key>=<value>` format. Note, changes to this file will require rebuilding the Docker image (e.g. `docker compose up -d --build --remove-orphans`).
 
 ## Debugging and Updating Tests
 
