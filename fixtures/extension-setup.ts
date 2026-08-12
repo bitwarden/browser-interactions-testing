@@ -152,8 +152,8 @@ export function readManifestVersion(pathToExtension: string): number {
 
 /**
  * We deliberately fetch the configuration from the vault server instead of
- * just pulling in the local `flags.json` because the server may or may not
- * support (and therefore return) the flags in the `flags.json` file.
+ * just pulling in the local `flags.env` because the server may or may not
+ * support (and therefore return) the flags in the `flags.env` file.
  */
 export async function fetchFeatureFlags(
   vaultHostURL: string,

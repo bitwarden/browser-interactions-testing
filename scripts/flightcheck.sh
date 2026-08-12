@@ -250,9 +250,11 @@ if curl -sf $CACERT_OPT --max-time 3 "${VAULT_URL}/alive" > /dev/null 2>&1; then
   FLAG_SOURCE="${REMOTE_VAULT_CONFIG_MATCH:-not configured}"
 
   if [ -f "$ROOT_DIR/flags.env" ]; then
-    FLAG_COUNT=$(grep -c "^Features__FlagValues__" "$ROOT_DIR/flags.env" 2>/dev/null || echo 0)
+    # `grep -c` prints its count even when that count is zero, and exits 1 in
+    # that case, so a `|| echo 0` fallback would append a second count
+    FLAG_COUNT=$(grep -c "^Features__FlagValues__" "$ROOT_DIR/flags.env" 2>/dev/null)
 
-    if [ "$FLAG_COUNT" -gt 0 ] 2>/dev/null; then
+    if [ "${FLAG_COUNT:-0}" -gt 0 ]; then
       row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
     else
       row "$WARN" "Feature flags" "empty  (flags.env has no flag values)"
