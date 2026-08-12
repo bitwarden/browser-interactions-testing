@@ -5,6 +5,8 @@ services:
       - db
     env_file:
       - .env
+      - path: ./flags.env
+        required: false
     image: ghcr.io/bitwarden/lite@sha256:ca1007fb3a8e973692ca1b92b87e52d2101976ef9bdf76d8639682485a5866dc # 2026.7.2
     restart: "no"
     ports:
