@@ -1,18 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>bitwarden/renovate-config"],
-  "enabledManagers": [
-    "custom.regex",
-    "dockerfile",
-    "docker-compose",
-    "github-actions",
-    "npm",
-    "nvm"
-  ],
+  "enabledManagers": ["custom.regex", "github-actions", "npm", "nvm"],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["(^|/)docker-compose\\.ya?ml$"],
+      "managerFilePatterns": ["/(^|\\/)docker-compose\\.ya?ml$/"],
       "matchStrings": [
         "image:\\s+(?<depName>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)\\s+#\\s+(?<currentValue>\\S+)"
       ],
@@ -21,13 +14,8 @@
   ],
   "packageRules": [
     {
-      "groupName": "dockerfile minor",
-      "matchManagers": ["dockerfile"],
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
       "groupName": "docker-compose minor",
-      "matchManagers": ["docker-compose", "custom.regex"],
+      "matchManagers": ["custom.regex"],
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
