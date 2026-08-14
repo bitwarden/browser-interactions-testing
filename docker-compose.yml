@@ -1,11 +1,13 @@
-name: v2026-06-02
+name: v2026-07-02
 services:
   bitwarden:
     depends_on:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/lite@sha256:d9e555578207cad8f6f2c9c6574262fe067589c48bc1fdcd718999b4475f9844 # 2026.6.2
+      - path: ./flags.env
+        required: false
+    image: ghcr.io/bitwarden/lite@sha256:ca1007fb3a8e973692ca1b92b87e52d2101976ef9bdf76d8639682485a5866dc # 2026.7.2
     restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
@@ -13,7 +15,6 @@ services:
     volumes:
       - ./${BW_SSL_CERT}:/etc/bitwarden/${BW_SSL_CERT}
       - ./${BW_SSL_KEY}:/etc/bitwarden/${BW_SSL_KEY}
-      - ./flags.json:/app/Api/flags.json
 
   db:
     environment:

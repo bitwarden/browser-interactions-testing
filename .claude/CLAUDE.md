@@ -72,7 +72,8 @@ npm run prettier:fix          # format all files
 npm run typecheck             # typecheck scripts/ and tests/
 npm run setup:install         # generate and write BW_INSTALLATION_ID / BW_INSTALLATION_KEY
 npm run setup:crypto          # generate and write crypto values to .env
-npm run setup:flags           # sync feature flags from REMOTE_VAULT_CONFIG_MATCH into flags.json
+npm run setup:flags           # sync feature flags from REMOTE_VAULT_CONFIG_MATCH into flags.env
+npm run setup:flags:ci        # write the explicit FEATURE_FLAGS JSON (set by CI workflow input) into flags.env
 npm run setup:vault           # create account + seed vault
 npm run seed:vault:ciphers    # seed vault only (account must exist)
 npm run seed:vault:import     # import a vault JSON file (requires VAULT_IMPORT_FILE)

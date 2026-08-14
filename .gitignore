@@ -2,6 +2,9 @@
 .DS_Store
 Thumbs.db
 
+# Generated feature flag values
+flags.env
+
 # Secrets
 .env
 dev-server.local.pem

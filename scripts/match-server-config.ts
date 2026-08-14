@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { configDotenv } from "dotenv";
+import { writeFeatureFlagEnvironmentFile } from "./write-feature-flags";
 
 configDotenv({ quiet: true });
 
@@ -82,23 +83,13 @@ async function matchRemoteFeatureFlags() {
       const { featureStates } =
         ((await response.json()) as VaultConfigurationResponseData) || {};
 
-      const flagsContent = await fs.promises.readFile("flags.json", "utf8");
-
-      let parsedFile = {};
-
-      if (flagsContent) {
-        parsedFile = JSON.parse(flagsContent);
-      }
-
-      const fileData = { ...parsedFile, flagValues: { ...featureStates } };
-
-      const newFileContent = JSON.stringify(fileData);
-
-      await fs.promises.writeFile("flags.json", newFileContent, "utf8");
+      const flagCount = await writeFeatureFlagEnvironmentFile(
+        featureStates ?? {},
+      );
 
       console.log(
         "\x1b[1m\x1b[32m%s\x1b[0m", // bold, light green foreground
-        `Feature flag values from ${REMOTE_VAULT_CONFIG_MATCH} have been successfully written to 'flags.json'!\n`,
+        `${flagCount} feature flag value(s) from ${REMOTE_VAULT_CONFIG_MATCH} have been successfully written to 'flags.env'!\n`,
       );
     } catch (error) {
       throw error;
@@ -106,7 +97,7 @@ async function matchRemoteFeatureFlags() {
   } else {
     console.warn(
       "\x1b[1m\x1b[33m%s\x1b[0m", // bold, yellow foreground
-      "No remote config URL was provided!\n",
+      "No remote config URL was provided! Any existing 'flags.env' file has been left as-is.\n",
     );
   }
 
