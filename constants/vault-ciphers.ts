@@ -183,12 +183,47 @@ export const pageCiphers: PageCipher[] = [
       city: { value: "New York" },
       state: { value: "NY" },
       postalCode: { value: "10001" },
-      country: { value: "USA" },
+      country: { value: "United States" },
+    },
+  },
+  {
+    cipherType: CipherType.Identity,
+    url: `${testSiteHost}/forms/identity/address-spec-simple`,
+    uriMatchType: UriMatchType.StartsWith,
+    fields: {
+      firstName: { value: "John" },
+      middleName: { value: "M" },
+      lastName: { value: "Smith" },
+      company: { value: "Bitwarden" },
+      email: { value: "identity@example.com" },
+      phone: { value: "5555555555" },
+      address1: { value: "123 Main St" },
+      address2: { value: "Apt 1" },
+      city: { value: "New York" },
+      state: { value: "NY" },
+      postalCode: { value: "10001" },
+      country: { value: "United States" },
     },
   },
   {
     cipherType: CipherType.Card,
     url: `${testSiteHost}/forms/payment/card-payment`,
+    uriMatchType: UriMatchType.StartsWith,
+    fields: {
+      cardholderName: { value: "John Smith" },
+      brand: { value: "Visa" },
+      number: { value: "4111111111111111" },
+      expMonth: { value: "12" },
+      expYear: { value: "2025" },
+      code: { value: "123" },
+    },
+  },
+  {
+    cipherType: CipherType.Card,
+    url: `${testSiteHost}/forms/payment/iframe-payment`,
+    // The iframe embeds the bare payment page; match that URI too so the card
+    // cipher is offered inside the frame (mirrors the iframe-login cipher).
+    additionalLoginUrls: [`${testSiteHost}/payment-page-bare`],
     uriMatchType: UriMatchType.StartsWith,
     fields: {
       cardholderName: { value: "John Smith" },

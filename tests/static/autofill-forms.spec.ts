@@ -8,8 +8,13 @@ import {
   TestNames,
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
-import { FillProperties } from "../../abstractions";
-import { getPagesToTest, doAutofill, formatUrlToFilename } from "../utils";
+import { AutofillCommand, FillProperties } from "../../abstractions";
+import {
+  getPagesToTest,
+  doAutofill,
+  autofillCommandSender,
+  formatUrlToFilename,
+} from "../utils";
 
 const testOutputPath = "autofill-forms";
 let testRetryCount = 0;
@@ -36,7 +41,9 @@ test.describe("Extension autofills forms when triggered", () => {
     const pagesToTest = getPagesToTest();
 
     for (const page of pagesToTest) {
-      const { url, inputs, skipTests } = page;
+      const { url, inputs, skipTests, autofillCommand } = page;
+      const sender =
+        autofillCommandSender[autofillCommand ?? AutofillCommand.Login];
 
       await test.step(`Autofill the form at ${url}`, async () => {
         if (skipTests?.includes(TestNames.MessageAutofill)) {
@@ -81,7 +88,7 @@ test.describe("Extension autofills forms when triggered", () => {
             : defaultWaitForOptions,
         );
 
-        await doAutofill(background);
+        await doAutofill(background, sender);
 
         /* Pause a moment before capturing input values.
            (otherwise, when expecting an empty value, the test may pass before the fill,
@@ -147,7 +154,7 @@ test.describe("Extension autofills forms when triggered", () => {
                 : await nextInputSelector(testPage);
             await nextInputElement.waitFor(defaultWaitForOptions);
 
-            await doAutofill(background);
+            await doAutofill(background, sender);
           }
 
           if (debugIsActive) {
