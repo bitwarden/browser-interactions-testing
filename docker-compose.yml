@@ -22,7 +22,7 @@ services:
       MARIADB_PASSWORD: ${BW_DB_PASSWORD}
       MARIADB_DATABASE: ${BW_DB_DATABASE}
       MARIADB_RANDOM_ROOT_PASSWORD: "true"
-    image: mariadb@sha256:628f228f0fd5913a220438693576b29b6fe4dc1fa0a1298c0e98579fae28635f # 12
+    image: mariadb@sha256:759869cb6f003234a95c6384cdee245b4bce7de26913fe607a8110362c0c007d # 12
     restart: "no"
     volumes:
       - data:/var/lib/mysql
