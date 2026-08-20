@@ -167,9 +167,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Match feature flags file to remote config
-        run: |
-          touch flags.json
-          npm run setup:flags
+        run: npm run setup:flags
 
       - name: Build and start the test vault
         run: docker compose up -d --build --remove-orphans --wait --wait-timeout 60
@@ -225,7 +223,7 @@ jobs:
         with:
           name: test-summary
           path: |
-            ./flags.json
+            ./flags.env
             ./test-summary
             ./tests-out/videos
             ./tests-out/screenshots

@@ -1,11 +1,13 @@
-name: v2026-06-01
+name: v2026-07-02
 services:
   bitwarden:
     depends_on:
       - db
     env_file:
       - .env
-    image: ghcr.io/bitwarden/lite@sha256:01181904fd02020dbc4d0598dd31a153b3784abd8a4d3ac9099fc1a939a58e6e # 2026.6.1
+      - path: ./flags.env
+        required: false
+    image: ghcr.io/bitwarden/lite@sha256:ca1007fb3a8e973692ca1b92b87e52d2101976ef9bdf76d8639682485a5866dc # 2026.7.2
     restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
@@ -13,7 +15,6 @@ services:
     volumes:
       - ./${BW_SSL_CERT}:/etc/bitwarden/${BW_SSL_CERT}
       - ./${BW_SSL_KEY}:/etc/bitwarden/${BW_SSL_KEY}
-      - ./flags.json:/app/Api/flags.json
 
   db:
     environment:
@@ -21,7 +22,7 @@ services:
       MARIADB_PASSWORD: ${BW_DB_PASSWORD}
       MARIADB_DATABASE: ${BW_DB_DATABASE}
       MARIADB_RANDOM_ROOT_PASSWORD: "true"
-    image: mariadb@sha256:b1c7bf836e64ed9406a8984af29509f40089d55cea14b32f12c4726a1f17104b # 12
+    image: mariadb@sha256:628f228f0fd5913a220438693576b29b6fe4dc1fa0a1298c0e98579fae28635f # 12
     restart: "no"
     volumes:
       - data:/var/lib/mysql

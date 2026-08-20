@@ -26,6 +26,26 @@ export async function closeWelcomePage(
   return contextPages[0];
 }
 
+export async function dismissDefaultPasswordManagerPrompt(
+  testPage: Page,
+): Promise<void> {
+  await testPage.waitForURL(/#\/(default-password-manager-prompt|login)/, {
+    ...defaultGotoOptions,
+    timeout: defaultWaitForOptions.timeout,
+  });
+
+  if (!testPage.url().includes("default-password-manager-prompt")) {
+    return;
+  }
+
+  const skipButton = testPage
+    .locator("autofill-default-password-manager-prompt")
+    .getByRole("button", { name: "Skip" });
+
+  await skipButton.waitFor(defaultWaitForOptions);
+  await skipButton.click();
+}
+
 export async function prepareEnvironment(
   testPage: Page,
   extensionId: string,
@@ -38,6 +58,7 @@ export async function prepareEnvironment(
     name: "Log in",
   });
   await welcomeCarouselDismissButton.click();
+  await dismissDefaultPasswordManagerPrompt(testPage);
 
   const extensionURL = `chrome-extension://${extensionId}/popup/index.html#/login`;
   await testPage.goto(extensionURL, defaultGotoOptions);
@@ -131,8 +152,8 @@ export function readManifestVersion(pathToExtension: string): number {
 
 /**
  * We deliberately fetch the configuration from the vault server instead of
- * just pulling in the local `flags.json` because the server may or may not
- * support (and therefore return) the flags in the `flags.json` file.
+ * just pulling in the local `flags.env` because the server may or may not
+ * support (and therefore return) the flags in the `flags.env` file.
  */
 export async function fetchFeatureFlags(
   vaultHostURL: string,

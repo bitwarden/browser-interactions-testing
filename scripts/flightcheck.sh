@@ -248,26 +248,25 @@ if curl -sf $CACERT_OPT --max-time 3 "${VAULT_URL}/alive" > /dev/null 2>&1; then
 
   # Check feature flags — source vs. loaded state are separate concerns
   FLAG_SOURCE="${REMOTE_VAULT_CONFIG_MATCH:-not configured}"
-  FLAG_COUNT=$(python3 -c "
-import json, sys
-try:
-    d = json.load(open(sys.argv[1]))
-    print(len(d.get('flagValues', {})))
-except:
-    print(-1)
-" "$ROOT_DIR/flags.json" 2>/dev/null || echo -1)
 
-  if [ "$FLAG_COUNT" -gt 0 ] 2>/dev/null; then
-    row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
-  elif [ "$FLAG_COUNT" -eq 0 ] 2>/dev/null; then
-    row "$WARN" "Feature flags" "empty  (flags.json has no flagValues)"
+  if [ -f "$ROOT_DIR/flags.env" ]; then
+    # `grep -c` prints its count even when that count is zero, and exits 1 in
+    # that case, so a `|| echo 0` fallback would append a second count
+    FLAG_COUNT=$(grep -c "^Features__FlagValues__" "$ROOT_DIR/flags.env" 2>/dev/null)
+
+    if [ "${FLAG_COUNT:-0}" -gt 0 ]; then
+      row "$OK" "Feature flags" "${FLAG_COUNT} flags loaded"
+    else
+      row "$WARN" "Feature flags" "empty  (flags.env has no flag values)"
+      hint "npm run setup:flags"
+      warnings=$((warnings + 1))
+    fi
+  else
+    row "$WARN" "Feature flags" "not generated  (no flags.env file)"
     hint "npm run setup:flags"
     warnings=$((warnings + 1))
-  else
-    row "$WARN" "Feature flags" "could not read flags.json"
-    warnings=$((warnings + 1))
   fi
-  hint "source: ${FLAG_SOURCE}"
+  hint "Feature flag sync source set to: ${FLAG_SOURCE}"
 else
   row "$WARN" "Vault" "not reachable  (${VAULT_URL})"
   warnings=$((warnings + 1))
