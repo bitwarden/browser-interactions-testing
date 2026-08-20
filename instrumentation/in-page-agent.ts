@@ -38,42 +38,48 @@ export function inPageAgentSource(): string {
     let startedAt = performance.now();
     let lastFrame = performance.now();
 
+    const supportedEntryTypes = PerformanceObserver.supportedEntryTypes ?? [];
+
     // buffered replays entries from before the observer attached.
-    try {
-      const longTaskObserver = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          state.longTasks.count++;
-          state.longTasks.totalMs += entry.duration;
-          state.longTasks.totalBlockingMs += Math.max(
-            0,
-            entry.duration - LONG_TASK_MS,
-          );
-          if (entry.duration > state.longTasks.maxMs) {
-            state.longTasks.maxMs = entry.duration;
+    if (supportedEntryTypes.includes("longtask")) {
+      try {
+        const longTaskObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            state.longTasks.count++;
+            state.longTasks.totalMs += entry.duration;
+            state.longTasks.totalBlockingMs += Math.max(
+              0,
+              entry.duration - LONG_TASK_MS,
+            );
+            if (entry.duration > state.longTasks.maxMs) {
+              state.longTasks.maxMs = entry.duration;
+            }
           }
-        }
-      });
-      longTaskObserver.observe({ type: "longtask", buffered: true });
-      supported.longTasks = true;
-    } catch {
-      supported.longTasks = false;
+        });
+        longTaskObserver.observe({ type: "longtask", buffered: true });
+        supported.longTasks = true;
+      } catch {
+        supported.longTasks = false;
+      }
     }
 
-    try {
-      const loafObserver = new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) {
-          state.loaf.count++;
-          state.loaf.totalMs += entry.duration;
-          state.loaf.totalBlockingMs += entry.blockingDuration || 0;
-          if (entry.duration > state.loaf.maxMs) {
-            state.loaf.maxMs = entry.duration;
+    if (supportedEntryTypes.includes("long-animation-frame")) {
+      try {
+        const loafObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            state.loaf.count++;
+            state.loaf.totalMs += entry.duration;
+            state.loaf.totalBlockingMs += entry.blockingDuration || 0;
+            if (entry.duration > state.loaf.maxMs) {
+              state.loaf.maxMs = entry.duration;
+            }
           }
-        }
-      });
-      loafObserver.observe({ type: "long-animation-frame", buffered: true });
-      supported.loaf = true;
-    } catch {
-      supported.loaf = false;
+        });
+        loafObserver.observe({ type: "long-animation-frame", buffered: true });
+        supported.loaf = true;
+      } catch {
+        supported.loaf = false;
+      }
     }
 
     // A dropped-frame proxy that needs no debugging session. Undercounts real
