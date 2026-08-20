@@ -1,14 +1,21 @@
-import { Page, TestInfo, Worker, Frame } from "@playwright/test";
+import { Page, TestInfo, Worker, Frame, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import {
   debugIsActive,
   defaultGotoOptions,
+  defaultWaitForOptions,
   messageColor,
   startFromTestUrl,
   testPages,
   violationColor,
 } from "../constants";
 import { testPages as publicTestPages } from "../constants/public";
+import {
+  AutofillCommand,
+  AutofillCommandValue,
+  FillProperties,
+  PageTest,
+} from "../abstractions";
 
 export function getPagesToTest(usePublicTestPages: boolean = false) {
   const filteredPageTests = usePublicTestPages ? publicTestPages : testPages;
@@ -35,22 +42,113 @@ export function getPagesToTest(usePublicTestPages: boolean = false) {
   return filteredPageTests;
 }
 
-export async function doAutofill(background: Page | Worker) {
-  await background.evaluate(() =>
-    chrome.tabs.query({ active: true }, (tabs) => {
-      if (tabs[0]) {
-        return chrome.tabs.sendMessage(tabs[0]?.id || 0, {
-          command: "collectPageDetails",
-          tab: tabs[0],
-          sender: "autofill_cmd",
-        });
-      }
-    }),
+/** Maps a page's `AutofillCommand` to the extension command sender that routes the
+    autofill to the matching cipher type. */
+export const autofillCommandSender = {
+  [AutofillCommand.Login]: "autofill_cmd",
+  [AutofillCommand.Card]: "autofill_card",
+  [AutofillCommand.Identity]: "autofill_identity",
+} as const satisfies Record<AutofillCommandValue, string>;
+
+export type AutofillCommandSender =
+  (typeof autofillCommandSender)[keyof typeof autofillCommandSender];
+
+export async function doAutofill(
+  background: Page | Worker,
+  sender: AutofillCommandSender = autofillCommandSender[AutofillCommand.Login],
+) {
+  await background.evaluate(
+    (sender) =>
+      chrome.tabs.query({ active: true }, (tabs) => {
+        if (tabs[0]) {
+          return chrome.tabs.sendMessage(tabs[0]?.id || 0, {
+            command: "collectPageDetails",
+            tab: tabs[0],
+            sender,
+          });
+        }
+      }),
+    sender,
   );
 }
 
 export function formatUrlToFilename(urlString: string) {
   return urlString.replace(/[^a-z\d]/gi, "-");
+}
+
+/** Resolve a page input's selector to a Locator. */
+export async function resolveInputLocator(page: Page, input: FillProperties) {
+  return typeof input.selector === "string"
+    ? page.locator(input.selector).first()
+    : await input.selector(page);
+}
+
+/** Resolve an input and wait for it to be present. Text-mode mirrors (`verifyAccessor: "text"`)
+    have no rendered size until autofill populates them, so wait for attachment, not visibility. */
+export async function waitForInput(page: Page, input: FillProperties) {
+  const element = await resolveInputLocator(page, input);
+  await element.waitFor(
+    input.verifyAccessor === "text"
+      ? { ...defaultWaitForOptions, state: "attached" }
+      : defaultWaitForOptions,
+  );
+  return element;
+}
+
+/** The trigger suites cover only single-step forms (multi-step pages are skipped). Enforce that
+    precondition in code so a multi-step page reaching verification without a trigger skip fails
+    loudly here rather than silently mis-verifying its later-step fields. */
+function assertSingleStepForm(inputs: PageTest["inputs"]) {
+  for (const inputKey of Object.keys(inputs)) {
+    if (inputs[inputKey].multiStepNextInputKey) {
+      throw new Error(
+        `Trigger autofill verification does not support multi-step forms (input "${inputKey}"). ` +
+          "Add a TestNames.PageLoadAutofill / PopupAutofill skip for this page.",
+      );
+    }
+  }
+}
+
+/**
+ * Assert every input on a page holds its expected autofilled value (empty when
+ * `shouldNotAutofill`). Used by the trigger suites, which cover only single-step forms
+ * (multi-step pages are skipped), so this does not walk `multiStepNextInputKey`.
+ */
+export async function expectInputsAutofilled(
+  page: Page,
+  inputs: PageTest["inputs"],
+) {
+  assertSingleStepForm(inputs);
+  for (const inputKey of Object.keys(inputs)) {
+    const input: FillProperties = inputs[inputKey];
+    const element = await resolveInputLocator(page, input);
+    const expectedValue = input.shouldNotAutofill ? "" : input.value;
+
+    if (input.verifyAccessor === "text") {
+      await expect(element).toHaveText(expectedValue);
+    } else {
+      await expect(element).toHaveValue(expectedValue);
+    }
+  }
+}
+
+/** Assert every input on a page is empty — the false-positive guard the trigger suites
+    run before initiating a fill. */
+export async function expectInputsEmpty(
+  page: Page,
+  inputs: PageTest["inputs"],
+) {
+  assertSingleStepForm(inputs);
+  for (const inputKey of Object.keys(inputs)) {
+    const input: FillProperties = inputs[inputKey];
+    const element = await resolveInputLocator(page, input);
+
+    if (input.verifyAccessor === "text") {
+      await expect(element).toHaveText("");
+    } else {
+      await expect(element).toHaveValue("");
+    }
+  }
 }
 
 export async function getNotificationFrame(
