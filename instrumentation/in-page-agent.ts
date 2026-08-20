@@ -14,9 +14,6 @@ export function inPageAgentSource(): string {
       return;
     }
 
-    // A frame delta this large means the tab was backgrounded, not that a frame
-    // dropped. Excluded from the rAF stats.
-    const BACKGROUND_GAP_MS = 1000;
     // Deltas above the frame budget but below the long-task threshold are jank
     // the long-task signal cannot see.
     const FRAME_BUDGET_MS = 1000 / 60;
@@ -87,17 +84,15 @@ export function inPageAgentSource(): string {
     function frame(now: number) {
       const delta = now - lastFrame;
       lastFrame = now;
-      if (delta < BACKGROUND_GAP_MS) {
-        state.raf.frames++;
-        state.raf.sumMs += delta;
-        if (delta > state.raf.worstMs) {
-          state.raf.worstMs = delta;
-        }
-        if (delta > LONG_TASK_MS) {
-          state.raf.dropped++;
-        } else if (delta > FRAME_BUDGET_MS) {
-          state.raf.jankFrames++;
-        }
+      state.raf.frames++;
+      state.raf.sumMs += delta;
+      if (delta > state.raf.worstMs) {
+        state.raf.worstMs = delta;
+      }
+      if (delta > LONG_TASK_MS) {
+        state.raf.dropped++;
+      } else if (delta > FRAME_BUDGET_MS) {
+        state.raf.jankFrames++;
       }
       requestAnimationFrame(frame);
     }
