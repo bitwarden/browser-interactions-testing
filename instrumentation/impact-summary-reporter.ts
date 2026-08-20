@@ -67,9 +67,7 @@ class ImpactSummaryReporter implements Reporter {
     // writeImpactResults writes. Normalizing unconditionally keeps the
     // per-file containment check below comparing like with like.
     const dir = path.resolve(this.inputFolder);
-    const outputPath = path.isAbsolute(this.outputFile)
-      ? this.outputFile
-      : path.resolve(this.outputFile);
+    const outputPath = path.resolve(this.outputFile);
 
     if (!fs.existsSync(dir)) {
       return;

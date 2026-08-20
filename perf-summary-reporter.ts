@@ -31,10 +31,10 @@ class PerfSummaryReporter implements Reporter {
     // comparing like with like.
     const dir = path.isAbsolute(this.inputFolder)
       ? path.resolve(this.inputFolder)
-      : path.join(__dirname, this.inputFolder);
+      : path.resolve(__dirname, this.inputFolder);
     const outputPath = path.isAbsolute(this.outputFile)
-      ? this.outputFile
-      : path.join(__dirname, this.outputFile);
+      ? path.resolve(this.outputFile)
+      : path.resolve(__dirname, this.outputFile);
 
     if (!fs.existsSync(dir)) {
       return;
