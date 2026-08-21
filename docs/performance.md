@@ -25,8 +25,9 @@ npm run benchmark:grueling --runs=20     # override the run count
 
 Each command runs the benchmark 10 times by default, or once with
 `--snapshot`; `--runs=<n>` overrides both. Use the `=` form for `--runs` — npm
-drops the value from a bare `--runs 20`. To run a different set of measures, see
-"Adding a new measure" below.
+drops the value from a bare `--runs 20`. To run a different set of measures,
+see [Adding a new measure](benchmarking.md#adding-a-new-measure) in the
+benchmarking guide.
 
 Benchmarks are isolated from the regular test suite (`tests/`); they live
 in `benchmarks/`, are compiled separately, and run only via these commands.
@@ -117,7 +118,8 @@ non-`[a-zA-Z0-9_-]` character replaced by `_`, suffixed `__run<n>` with the
 zero-indexed repeat counter. The perf directory is defined in
 `benchmarks/utils.ts` and as the default `inputFolder` of
 `perf-summary-reporter.ts`; the impact paths in
-`instrumentation/impact-results.ts` and `impact-summary-reporter.ts`.
+`instrumentation/impact-results.ts` and
+`instrumentation/impact-summary-reporter.ts`.
 
 > [!TIP]
 > The per-run detail files support finer-grained analyses than the CSV!

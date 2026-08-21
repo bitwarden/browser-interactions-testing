@@ -21,26 +21,103 @@ The whole point is that runs are comparable to each other. A few practical habit
 
 ## Writing a benchmark
 
-Each benchmark file constructs its own `test` object from the fixture factory. If your benchmark measures specific predictability figures, pass them into `createBenchmarkTest`.
+Benchmark files live under `benchmarks/static/`. Each constructs its own `test`
+object from the fixture factory and tags every test with the stress category
+it belongs to — see [`abstractions/stress.ts`](../abstractions/stress.ts). The
+`benchmark:<stress>` commands run `playwright test --grep=@<stress>`, so an
+untagged test matches no filter and never runs under any `npm run
+benchmark:*` command — only via a manual `npx playwright test` invocation.
 
 > [!IMPORTANT]
-> A broad set of predictability measures is in development. These are listed in `DEFAULT_MEASURES`.
+> A broad set of predictability measures is in development. These are listed in
+> `DEFAULT_MEASURES`; pass your own list to `createBenchmarkTest` only when you
+> need something other than the default.
+
+There are two measurement patterns. A benchmark can use either, or both in the
+same test.
+
+### Measuring User-Timing spans
+
+Call `assertInstrumentationEnabled` right after navigating, so a benchmark run
+against a non-instrumented build fails loudly instead of silently reporting
+zeroed measures:
 
 ```ts
-import { createBenchmarkTest } from "./fixtures.benchmark";
+import { createBenchmarkTest } from "../fixtures.benchmark";
+import { assertInstrumentationEnabled } from "../../instrumentation";
+import { StressCategory, stressTag } from "../../abstractions/stress";
+import { defaultGotoOptions, testSiteHost } from "../../constants";
 
-const { test } = createBenchmarkTest(["getShadowRoot"]);
+const { test } = createBenchmarkTest();
+const URL_UNDER_TEST = `${testSiteHost}/scenarios/.../`;
 
-test("autofill on a basic login form", async ({ extensionSetup }) => {
-    // your fixed sequence of steps, navigating extensionSetup to the URL under test
-});
+test(
+    "autofill on a basic login form",
+    { tag: stressTag(StressCategory.Taxing) },
+    async ({ extensionSetup }) => {
+        await extensionSetup.goto(URL_UNDER_TEST, defaultGotoOptions);
+        await assertInstrumentationEnabled(extensionSetup);
+        // your fixed sequence of steps
+    },
+);
 ```
 
-The `perfCapture` fixture is auto-attached. It watches main-frame navigations on `extensionSetup` (the page returned by the fixture, post-vault-login) and captures performance measures from the page being navigated _away from_. So benchmark steps should drive `extensionSetup` directly — `await extensionSetup.goto(testSiteURL, ...)` — rather than opening a new page via `context.newPage()`. A capture also runs at fixture teardown to cover the final page in the sequence.
+The `perfCapture` fixture is auto-attached — it needs no opt-in. It watches
+main-frame navigations on `extensionSetup` (the page returned by the fixture,
+post-vault-login) and captures performance measures from the page being
+navigated _away from_. So benchmark steps should drive `extensionSetup`
+directly — `await extensionSetup.goto(testSiteURL, ...)` — rather than opening
+a new page via `context.newPage()`. A capture also runs at fixture teardown to
+cover the final page in the sequence.
 
-Each repeat writes its own JSON file under `test-summary/perf/` (suffixed with `__run<n>`), and the `perf-summary-reporter` aggregates everything into `test-summary/perf-summary.csv` at the end of the run.
+Each repeat writes its own JSON file under `test-summary/perf/` (suffixed with
+`__run<n>`), and the `perf-summary-reporter` aggregates everything into
+`test-summary/perf-summary.csv` at the end of the run.
 
-A note on overhead: the capture mechanism uses `context.route("**/*")`, which routes every request through a JavaScript handler in the test process. The handler short-circuits non-navigation requests, but the user-space round-trip still happens for each one. For static test-site pages this is negligible; if you point a benchmark at a page with many subresources (third-party scripts, image-heavy forms), expect the route hook to show up as part of what you're measuring.
+### Measuring Experience Impact
+
+Measures the cost the extension imposes just by running — main-thread stalls,
+dropped frames, GC, memory growth — via the `impact` fixture, which is set up
+only for benchmarks that request it. Wrap the workload in `impact.measure`:
+
+```ts
+import { createBenchmarkTest } from "../fixtures.benchmark";
+import { StressCategory, stressTag } from "../../abstractions/stress";
+import { defaultGotoOptions, testSiteHost } from "../../constants";
+
+const { test } = createBenchmarkTest();
+const URL_UNDER_TEST = `${testSiteHost}/scenarios/.../`;
+
+test(
+    "frame drops under a taxing workload",
+    { tag: stressTag(StressCategory.Taxing) },
+    async ({ extensionSetup, impact }) => {
+        await extensionSetup.goto(URL_UNDER_TEST, defaultGotoOptions);
+
+        await impact.measure(extensionSetup, URL_UNDER_TEST, async () => {
+            // your fixed sequence of steps
+        });
+    },
+);
+```
+
+See [`performance.md`](performance.md#experience-impact-metrics) for what each
+capture mode records.
+
+### Overhead to plan around
+
+Every benchmark pays the User-Timing route-hook cost, whether or not it
+measures a User-Timing span. That's negligible on the static test site, so keep
+it that way: pointing a benchmark at a page with many subresources (third-party
+scripts, image-heavy forms) puts that cost inside what you're measuring.
+
+Request the `impact` fixture only when you need Experience Impact numbers; a
+benchmark that skips it carries none of that channel's overhead. Inside the
+`impact` fixture, use the default CDP mode for before/after comparisons, and
+reach for `--cpu` only to locate a bottleneck rather than to compare runs —
+its profiler perturbs the page too much to trust a delta against it. See
+[Experience Impact metrics](performance.md#experience-impact-metrics) for all
+three modes.
 
 ## Adding a new measure
 

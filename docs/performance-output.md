@@ -40,9 +40,10 @@ A few terms recur across both files:
 - **Jank** — visible stutter: a frame slower than the display's refresh interval
   (~16.7ms at 60Hz) but short of the dropped-frame threshold.
 - **Dropped frame** — a frame that missed its presentation deadline. The rAF
-  agent counts one when the callback gap falls between 50ms and the ~1s cutoff
-  it treats as a backgrounded tab; the CDP channel reads the compositor's own
-  dropped count.
+  agent counts one whenever the callback gap exceeds the 50ms long-task
+  threshold, with no upper bound, so a backgrounded tab reads the same as a
+  genuine stall. The CDP channel reads the compositor's own dropped count
+  instead.
 - **GC** — garbage collection, the pauses the JavaScript engine takes to reclaim
   memory. Long or frequent pauses surface as stalls.
 

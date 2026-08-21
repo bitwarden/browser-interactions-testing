@@ -230,6 +230,8 @@ export function createBenchmarkTest(
         await resetInPageImpact(page);
         await capture.start();
         try {
+          // workloads that throw are torn down by design. `finally` ensures that there are no
+          // in-process actions running after a workload failure.
           await workload();
         } finally {
           // Snapshot the in-page window before CDP teardown so it covers the
