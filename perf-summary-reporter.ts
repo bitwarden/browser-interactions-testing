@@ -27,20 +27,25 @@ class PerfSummaryReporter implements Reporter {
   }
 
   onEnd(_result: FullResult) {
+    // Normalizing both branches keeps the per-file containment check below
+    // comparing like with like.
     const dir = path.isAbsolute(this.inputFolder)
-      ? this.inputFolder
-      : path.join(__dirname, this.inputFolder);
+      ? path.resolve(this.inputFolder)
+      : path.resolve(__dirname, this.inputFolder);
     const outputPath = path.isAbsolute(this.outputFile)
-      ? this.outputFile
-      : path.join(__dirname, this.outputFile);
+      ? path.resolve(this.outputFile)
+      : path.resolve(__dirname, this.outputFile);
 
     if (!fs.existsSync(dir)) {
       return;
     }
 
     const jsonFiles = fs
-      .readdirSync(dir)
-      .filter((name) => name.endsWith(".json"));
+      .readdirSync(dir, { withFileTypes: true })
+      // Regular files only. Skipping symlinks stops a link planted in the
+      // directory from redirecting the read to a file outside it.
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+      .map((entry) => entry.name);
 
     if (jsonFiles.length === 0) {
       return;
@@ -53,7 +58,7 @@ class PerfSummaryReporter implements Reporter {
     const buckets = new Map<string, Bucket>();
 
     for (const file of jsonFiles) {
-      const payload = readPerfPayload(path.join(dir, file));
+      const payload = readPerfPayload(dir, file);
       if (!payload) {
         continue;
       }
@@ -108,11 +113,29 @@ class PerfSummaryReporter implements Reporter {
   }
 }
 
-function readPerfPayload(file: string): PerfPayload | null {
+function readPerfPayload(dir: string, name: string): PerfPayload | null {
+  // `name` is a directory entry, so it is already a basename; resolving it and
+  // confirming it still sits directly under `dir` rejects anything that would
+  // read outside the directory.
+  const resolved = path.resolve(dir, name);
+  if (path.dirname(resolved) !== dir) {
+    return null;
+  }
+  let fd: number | undefined;
   try {
-    return JSON.parse(fs.readFileSync(file, "utf8")) as PerfPayload;
+    // O_NOFOLLOW refuses a symlink swapped in for the entry after it was
+    // listed, so the read cannot be redirected outside the directory.
+    fd = fs.openSync(
+      resolved,
+      fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0),
+    );
+    return JSON.parse(fs.readFileSync(fd, "utf8")) as PerfPayload;
   } catch {
     return null;
+  } finally {
+    if (fd !== undefined) {
+      fs.closeSync(fd);
+    }
   }
 }
 
