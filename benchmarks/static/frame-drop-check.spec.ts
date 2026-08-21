@@ -142,7 +142,9 @@ function parseOverride(raw?: string): StressLevel[] | null {
   }
   const parts = raw.split(",").map((p) => Number.parseInt(p.trim(), 10));
   if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) {
-    return null;
+    throw new Error(
+      `Invalid FRAME_DROP_OVERRIDE "${raw}". Use a 3-item positive integer list for breadth, depth, and interval in milliseconds.`,
+    );
   }
   const [breadth, depth, interval] = parts;
   return [
