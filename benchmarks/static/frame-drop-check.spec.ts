@@ -73,10 +73,7 @@ const LEVELS: StressLevel[] = [
   },
 ];
 
-const MEASURE_WINDOW_MS = Number.parseInt(
-  process.env.FRAME_DROP_WINDOW_MS ?? "6000",
-  10,
-);
+const MEASURE_WINDOW_MS = parseWindowMs(process.env.FRAME_DROP_WINDOW_MS);
 
 const SETUP_TIMEOUT_MS = 30_000;
 
@@ -124,6 +121,19 @@ async function setNumber(
   const input = page.locator(`input[name="${name}"]`);
   await input.waitFor({ ...defaultWaitForOptions, timeout: SETUP_TIMEOUT_MS });
   await input.fill(String(value));
+}
+
+function parseWindowMs(raw: string | undefined): number {
+  if (raw === undefined) {
+    return 6000;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error(
+      `Invalid FRAME_DROP_WINDOW_MS "${raw}". Use a positive integer of milliseconds.`,
+    );
+  }
+  return parsed;
 }
 
 function parseOverride(raw?: string): StressLevel[] | null {
