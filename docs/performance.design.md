@@ -119,8 +119,7 @@ to the benchmark path keeps that invalid data from ever being produced.
 
 ## Extending the harness
 
-- **Adding a new measure point**: See the [operator's guide](performance.md).
-- **Adding a new benchmark**: See the [benchmarking guide](benchmarking.md).
+- **Adding a new measure or benchmark**: See the [benchmarking guide](benchmarking.md).
 
 ### Widening capture beyond the main frame
 
