@@ -35,7 +35,9 @@ import {
   createCdpCapture,
   DEFAULT_MEASURES,
   extractMeasures,
+  impactWindowHeld,
   installInPageInstrumentation,
+  markImpactWindow,
   readInPageImpact,
   resetInPageImpact,
   writeImpactResults,
@@ -48,7 +50,17 @@ import { writePerfResults } from "./utils";
 export interface ImpactRecorder {
   /** runs the workload bracketed by the CDP
    * session and the in-page accumulators, persists both channels, and returns the
-   * CDP result. An empty or poisoned capture becomes a test annotation.
+   * CDP result. An empty, poisoned, or invalid capture becomes a test
+   * annotation.
+   *
+   * The workload must not navigate. A new document gets fresh in-page
+   * accumulators, and the CDP counters were baselined against the outgoing
+   * one, so the capture measures a fragment of the workload while looking
+   * whole. A navigation is detected and warned about rather than corrected.
+   *
+   * The returned result is the raw CDP reading, unfiltered by that verdict —
+   * an invalidated capture still returns populated numbers. Read the
+   * annotations before asserting on it.
    */
   measure(
     page: Page,
@@ -226,18 +238,44 @@ export function createBenchmarkTest(
         });
         let cdp: CdpImpactResult;
         let inPage: InPageImpactResult | null = null;
+        let navigated = false;
 
         await resetInPageImpact(page);
+        await markImpactWindow(page);
         await capture.start();
         try {
           // workloads that throw are torn down by design. `finally` ensures that there are no
           // in-process actions running after a workload failure.
           await workload();
         } finally {
+          // Check before reading, so the reading is known to belong to the
+          // document the window opened on. Catch errors here so that CDP
+          // capture stops in response to an error.
+          navigated = !(await impactWindowHeld(page).catch(() => false));
+
           // Snapshot the in-page window before CDP teardown so it covers the
           // workload rather than the teardown, matching the trace window.
           inPage = await readInPageImpact(page);
           cdp = await capture.stop();
+        }
+
+        // The benchmark rejects its own scenario here. Both channels look
+        // healthy after a navigation, so nothing downstream could tell that
+        // the numbers describe whichever document the workload ended on.
+        const invalidReasons: string[] = [];
+        if (navigated) {
+          invalidReasons.push(
+            "the workload navigated during the impact window, so the capture covers only part of it; split the benchmark so each window stays on one document",
+          );
+        }
+
+        for (const reason of invalidReasons) {
+          const warning = `${url}: ${reason}`;
+          console.warn("\x1b[1m\x1b[33m%s\x1b[0m", `\tWARNING ${warning}`);
+          testInfo.annotations.push({
+            type: "impact-capture-invalid",
+            description: warning,
+          });
         }
 
         // Surface a silent capture failure without discarding the data point.
@@ -274,6 +312,7 @@ export function createBenchmarkTest(
           timestamp: new Date().toISOString(),
           inPage: inPage ?? undefined,
           cdp,
+          ...(invalidReasons.length > 0 ? { invalidReasons } : {}),
         });
         return cdp;
       };

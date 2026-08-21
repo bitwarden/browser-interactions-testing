@@ -101,6 +101,20 @@ test(
 );
 ```
 
+> [!WARNING]
+> The workload must not navigate. Both channels are scoped to one document: a
+> new document gets fresh in-page accumulators, and the CDP counters were
+> baselined against the outgoing one, so their deltas straddle two documents.
+> The capture ends up describing whichever document the workload ended on while
+> looking like a complete measurement.
+>
+> `impact.measure` detects this and invalidates its own capture: it emits a
+> warning, adds an `impact-capture-invalid` annotation, records the reason in
+> `invalidReasons`, and the summary drops the capture instead of counting it as
+> a run. The lost portion cannot be recovered, so fix the benchmark — navigate
+> _before_ opening the window, and split a flow that has to navigate into one
+> `impact.measure` call per page.
+
 See [`performance.md`](performance.md#experience-impact-metrics) for what each
 capture mode records.
 

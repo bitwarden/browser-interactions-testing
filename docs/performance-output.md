@@ -84,6 +84,9 @@ columns:
 - `cdp_ext_alloc_bytes_mean` — mean sampled allocation attributed to the
   extension's content scripts.
 - `cdp_poisoned_runs` — CDP captures excluded as unreliable.
+- `invalid_runs` — captures the benchmark rejected outright. These contribute to
+  no other column, so a row with a high `invalid_runs` and a low `runs` is a
+  benchmark to fix rather than a result to read.
 
 Read the per-run JSON under `test-summary/impact/` for the full per-capture
 detail these columns summarize — the CPU profile and snapshot path never reach
@@ -190,7 +193,16 @@ for benchmark runs, a CDP channel:
     - `poisoned: true` marks a capture that cannot be trusted (dropped trace
       events, a missing terminal event, or a thrown protocol call);
       `poisonReasons` lists why. A poisoned capture is counted but excluded from
-      the CDP columns of the CSV.
+      the CDP columns of the CSV. Poisoning is all-or-nothing per CDP result,
+      so the signals that did arrive stay here in the JSON even though the CDP
+      columns omit them. See
+      [`performance.design.md`](performance.design.md) for the conditions that
+      poison a capture.
+- `invalidReasons` is present only when the benchmark rejected its own capture,
+  and lists every reason found. A workload that navigated mid-window, for instance,
+  leaves both channels reporting healthy signals that describe only the document
+  it ended on, even though its pre-navigation signals were dropped.
+  The summary drops invalid captures rather than counting them as a run.
 
 ## Predictability
 
@@ -279,6 +291,6 @@ One file per repeat, following the `PerfPayload` shape in
   divisor). A single-entry measure reports `stddev: 0`.
 - Poisoned measures stay in the JSON for debugging and drop from the CSV; see
   [`performance.design.md`](performance.design.md) for how poisoning is
-  detected.
+  detected and how it differs from an invalid capture.
 - A measure registered in `DEFAULT_MEASURES` but never fired is written with
   `count: 0` and zeroed aggregates, and is not flagged poisoned.

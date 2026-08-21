@@ -105,6 +105,17 @@ export type ImpactCapture = {
   timestamp: string;
   inPage?: InPageImpactResult;
   cdp?: CdpImpactResult;
+  /**
+   * Why the benchmark rejected its own capture, listing every reason found.
+   * Absent when the capture stands.
+   *
+   * Invalidation is wider in scope than poisoning. Poisoning marks one measurement
+   * unreliable, while this marks every measurement collected by the scenario unreliable.
+   * The signals may be intact and still describe something other
+   * than what the benchmark set out to measure, so the summary drops the
+   * capture outright rather than counting it as a run.
+   */
+  invalidReasons?: string[];
 };
 
 export type ImpactPayload = {

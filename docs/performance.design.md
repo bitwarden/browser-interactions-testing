@@ -102,12 +102,60 @@ than let a misleading number into a comparison, the harness records the failure
 and excludes the affected data from the aggregated CSV while keeping it in the
 per-run detail for debugging.
 
-This works at two levels. The extension declares a single measure
-untrustworthy, which drops that measure from the summary. The harness declares
-a whole CDP capture untrustworthy, which drops its debugging-derived columns
-but still counts the run. The two axes are independent: within one run a
-poisoned measure can sit beside a clean capture, and a clean measure beside a
-poisoned capture.
+A _measurement_ here is one producer's reading, not one number: the extension's
+User-Timing measure is a measurement, and the CDP collector's whole result is
+a measurement.
+
+**Poisoning** marks one measurement unreliable. The other measurements in the
+run are unaffected, and the run still counts. Each producer poisons its own:
+
+- The extension poisons a User-Timing measure it knows not to trust, through
+  the `poison` call described in
+  `apps/browser/src/autofill/content/performance.md` in the clients repo. That
+  measure drops from the summary; its siblings are unaffected.
+- The CDP collector poisons its result when a signal it asked for did not
+  arrive intact. Its measurement is the whole channel, so the run keeps its
+  in-page columns and loses every CDP column.
+
+The two are independent: within one run a poisoned measure can sit beside a
+clean CDP result, and a clean measure beside a poisoned one.
+
+**Invalidation** marks every measurement in a capture unavailable at once. It
+answers a different question than poisoning does: not "did this measurement
+fail?" but "does it describe what the benchmark asked for?" A workload that
+navigated mid-window leaves both channels reporting healthy signals that
+describe only the document the workload ended on — nothing failed, and nothing
+is salvageable. The benchmark records why in `invalidReasons`, and the summary
+drops the capture rather than counting it as a run: there is no column it could
+safely occupy.
+
+#### When the CDP collector poisons
+
+These are the failures the collector reports. Any one adds a line to
+`poisonReasons` and poisons the result. All of them happen while closing the
+window; `frames`, `gc`, and `cpuProfile` are summarized from one shared trace,
+so whatever shortens the trace shortens all three.
+
+- `HeapProfiler.stopSampling` throws, costing `allocation`.
+- The closing `Performance.getMetrics` throws, costing the `metrics` deltas.
+- `Tracing.tracingComplete` does not fire within 30 seconds, so the trace was
+  never confirmed complete and `frames`, `gc`, and `cpuProfile` may be short.
+- The trace reports `dataLossOccurred`, meaning the browser dropped events all
+  three are summarized from.
+- The tracing block throws, costing `frames`, `gc`, and `cpuProfile` outright.
+- A heap snapshot cannot be written in snapshot mode, costing
+  `heapSnapshotPath`.
+
+A failure while _opening_ the window is not on this list and does not poison
+anything. `Performance.enable`, the baseline `getMetrics`, `HeapProfiler.enable`,
+`startSampling`, and `Tracing.start` all rethrow after detaching the session, so
+the run produces no capture at all and the test errors instead.
+
+Poisoning is all-or-nothing per result: one failed call poisons the whole CDP
+result even when the other signals arrived intact, and the summary then omits
+that run from every CDP column rather than the affected one alone. The intact
+signals stay in the per-run JSON, which is where to look when a
+`cdp_poisoned_runs` count needs explaining.
 
 ### Isolation from the functional suite
 

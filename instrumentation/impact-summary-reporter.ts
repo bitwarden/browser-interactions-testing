@@ -8,6 +8,9 @@ import { ImpactCapture, ImpactPayload } from "../abstractions";
 // poisoned CDP capture is left out of the CDP columns but still counts toward
 // `runs`, so an unreliable level reads as present with empty CDP data.
 //
+// A capture the benchmark invalidated contributes nothing but the
+// `invalid_runs` count.
+//
 // FIXME: shares its onEnd/bucket/csv shape with perf-summary-reporter. A shared
 // base would unify them.
 const CSV_HEADER = [
@@ -31,6 +34,7 @@ const CSV_HEADER = [
   "cdp_js_heap_delta_mean",
   "cdp_ext_alloc_bytes_mean",
   "cdp_poisoned_runs",
+  "invalid_runs",
 ].join(",");
 
 interface Bucket {
@@ -51,6 +55,7 @@ interface Bucket {
   cdpHeapDelta: number[];
   cdpExtAlloc: number[];
   cdpPoisoned: number;
+  invalid: number;
 }
 
 class ImpactSummaryReporter implements Reporter {
@@ -120,6 +125,7 @@ class ImpactSummaryReporter implements Reporter {
           fmt(mean(bucket.cdpHeapDelta)),
           fmt(mean(bucket.cdpExtAlloc)),
           bucket.cdpPoisoned,
+          bucket.invalid,
         ].join(","),
       );
     }
@@ -155,6 +161,7 @@ function getBucket(
       cdpHeapDelta: [],
       cdpExtAlloc: [],
       cdpPoisoned: 0,
+      invalid: 0,
     };
     buckets.set(key, bucket);
   }
@@ -162,6 +169,13 @@ function getBucket(
 }
 
 function addCapture(bucket: Bucket, capture: ImpactCapture) {
+  // Counted so the exclusion is visible, then dropped: an invalid capture
+  // measured something other than what the benchmark asked for.
+  if (capture.invalidReasons?.length) {
+    bucket.invalid++;
+    return;
+  }
+
   bucket.runs++;
 
   const inPage = capture.inPage;

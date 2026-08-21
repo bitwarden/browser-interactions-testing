@@ -29,3 +29,28 @@ export async function resetInPageImpact(page: Page): Promise<void> {
     (globalThis as { __bwImpact?: { reset(): void } }).__bwImpact?.reset();
   });
 }
+
+/**
+ * Mark the page's current document as the one an impact window measures. Call
+ * at the start of the window; `impactWindowHeld` gives the verdict at the end.
+ */
+export async function markImpactWindow(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (globalThis as { __bwImpactWindow?: boolean }).__bwImpactWindow = true;
+  });
+}
+
+/**
+ * Report whether the marked document is still the live one. False means a
+ * navigation replaced it mid-window, so readings taken afterward describe only
+ * the document the workload ended on.
+ *
+ * A document restored from the back/forward cache keeps its mark, so a
+ * workload that navigates away and back reads as held.
+ */
+export async function impactWindowHeld(page: Page): Promise<boolean> {
+  return page.evaluate(
+    () =>
+      (globalThis as { __bwImpactWindow?: boolean }).__bwImpactWindow === true,
+  );
+}
