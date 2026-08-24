@@ -221,9 +221,6 @@ export const pageCiphers: PageCipher[] = [
   {
     cipherType: CipherType.Card,
     url: `${testSiteHost}/forms/payment/iframe-payment`,
-    // The iframe embeds the bare payment page; match that URI too so the card
-    // cipher is offered inside the frame (mirrors the iframe-login cipher).
-    additionalLoginUrls: [`${testSiteHost}/payment-page-bare`],
     uriMatchType: UriMatchType.StartsWith,
     fields: {
       cardholderName: { value: "John Smith" },
