@@ -57,7 +57,7 @@ npm run test:static:headless  # headless (currently broken with MV3)
 npm run test:static:autofill
 npm run test:static:inline-menu
 npm run test:static:notification
-npm run test:static:triggers  # this suite is opt-in; run it manually
+npm run test:static:triggers
 
 # Single spec file
 npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt npx playwright test tests/static/autofill-forms.spec.ts
