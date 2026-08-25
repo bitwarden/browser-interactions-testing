@@ -2,6 +2,7 @@ import {
   defaultGotoOptions,
   defaultWaitForOptions,
   TestNames,
+  testPages,
   testSiteHost,
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
@@ -42,12 +43,11 @@ test.describe("Autofill on page load", () => {
     const popupPage = await extensionSetup;
 
     // Negative control (once): with the setting off, the simple form must NOT fill.
-    const simplePage = getPagesToTest().find(
-      ({ url }) => url === simpleFormUrl,
-    );
+    // This cannot use `getPagesToTest()` because that list may not include the simple form.
+    const simplePage = testPages.find(({ url }) => url === simpleFormUrl);
     if (!simplePage) {
       throw new Error(
-        `Expected the simple login page (${simpleFormUrl}) in the test set.`,
+        `Expected the simple login page (${simpleFormUrl}) in \`testPages\`.`,
       );
     }
     const baselinePage = await context.newPage();
