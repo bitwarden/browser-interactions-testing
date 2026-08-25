@@ -22,6 +22,8 @@ import {
   This test uses that same seam.
 */
 
+const FILL_SETTLE_DELAY = 800;
+
 test.describe("Popup vault-item click triggers autofill", () => {
   test("Clicking Fill in the popup autofills matching forms", async ({
     context,
@@ -96,6 +98,9 @@ test.describe("Popup vault-item click triggers autofill", () => {
         await expectInputsEmpty(formPage, inputs);
 
         await fillBadge.or(fillHover).first().click();
+
+        // Let the fill land before reading values, so empty-expected inputs can't pass early.
+        await formPage.waitForTimeout(FILL_SETTLE_DELAY);
 
         // The popup click autofilled the web form.
         await expectInputsAutofilled(formPage, inputs);
