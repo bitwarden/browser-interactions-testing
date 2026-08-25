@@ -17,9 +17,8 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - `pretest` compiles `tests/` (TS) into `tests-out/` (JS)
 - Playwright launches Chromium with `--load-extension`
 - `fixtures.browser.ts` logs into vault, exposes context
-- 3 static specs: autofill-forms, inline-menu, notifications — all loop over `testPages` via `getPagesToTest()`
-- `doAutofill(background, sender)` triggers fill via `chrome.tabs.sendMessage`. `sender` selects the cipher type, set it via `PageTest.autofillCommand`
-- Static test site (test-the-web) served locally
+- All static specs loop over `testPages` via `getPagesToTest()`. They use the `test-the-web` static website, served locally.
+- `doAutofill(background, sender)` triggers fill via `chrome.tabs.sendMessage`. `sender` selects the cipher type, set it via `PageTest.autofillCommand`.
 
 ## Key Principles
 
