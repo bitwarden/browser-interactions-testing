@@ -10,12 +10,8 @@ import {
   violationColor,
 } from "../constants";
 import { testPages as publicTestPages } from "../constants/public";
-import {
-  AutofillCommand,
-  AutofillCommandValue,
-  FillProperties,
-  PageTest,
-} from "../abstractions";
+import { FillProperties, PageTest } from "../abstractions";
+import { AutofillCommand } from "../enums";
 
 export function getPagesToTest(usePublicTestPages: boolean = false) {
   const filteredPageTests = usePublicTestPages ? publicTestPages : testPages;
@@ -48,7 +44,7 @@ export const autofillCommandSender = {
   [AutofillCommand.Login]: "autofill_cmd",
   [AutofillCommand.Card]: "autofill_card",
   [AutofillCommand.Identity]: "autofill_identity",
-} as const satisfies Record<AutofillCommandValue, string>;
+} as const satisfies Record<AutofillCommand, string>;
 
 export type AutofillCommandSender =
   (typeof autofillCommandSender)[keyof typeof autofillCommandSender];

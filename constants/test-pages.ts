@@ -1,4 +1,5 @@
-import { AutofillCommand, PageTest } from "../abstractions";
+import { PageTest } from "../abstractions";
+import { AutofillCommand } from "../enums";
 import { testSiteHost } from "./server";
 import { testUserName, testEmail } from "./settings";
 

@@ -1,5 +1,6 @@
 import { Page, Locator } from "@playwright/test";
 import { TestNames } from "../constants";
+import { AutofillCommand } from "../enums";
 
 type FillProperties = {
   multiStepNextInputKey?: string;
@@ -16,21 +17,6 @@ type FillProperties = {
   /** Used by autofill tests to represent expected values, and by other tests as values to be entered ( @TODO separate these concerns ) */
   value: string;
 };
-
-/**
-  Which cipher type autofill fills for a page.
-*/
-export const AutofillCommand = {
-  /** Fill the matching login cipher. */
-  Login: "login",
-  /** Fill the matching card cipher. */
-  Card: "card",
-  /** Fill the matching identity cipher. */
-  Identity: "identity",
-} as const;
-
-type AutofillCommandValue =
-  (typeof AutofillCommand)[keyof typeof AutofillCommand];
 
 type PageTest = {
   url: string;
@@ -74,7 +60,7 @@ type PageTest = {
    * Which autofill command the message ("blind") autofill should send for this page;
    * defaults to `AutofillCommand.Login`.
    */
-  autofillCommand?: AutofillCommandValue;
+  autofillCommand?: AutofillCommand;
   /** Tests that should not be run against the page pattern because they are known failures or are not applicable */
   skipTests?: TestNameKeys[];
   actions?: {
@@ -99,10 +85,4 @@ type PageGoToOptions = {
   referer?: string;
 };
 
-export {
-  AutofillCommandValue,
-  FillProperties,
-  LocatorWaitForOptions,
-  PageGoToOptions,
-  PageTest,
-};
+export { FillProperties, LocatorWaitForOptions, PageGoToOptions, PageTest };

@@ -8,7 +8,8 @@ import {
   TestNames,
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
-import { AutofillCommand, FillProperties } from "../../abstractions";
+import { FillProperties } from "../../abstractions";
+import { AutofillCommand } from "../../enums";
 import {
   getPagesToTest,
   doAutofill,
