@@ -18,8 +18,7 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - Playwright launches Chromium with `--load-extension`
 - `fixtures.browser.ts` logs into vault, exposes context
 - 3 static specs: autofill-forms, inline-menu, notifications — all loop over `testPages` via `getPagesToTest()`
-- `doAutofill(background, sender)` triggers fill via `chrome.tabs.sendMessage`; `sender` selects the cipher type (`autofill_cmd` login / `autofill_card` / `autofill_identity`), chosen per page from `PageTest.autofillCommand`
-- `tests/triggers/` — an **opt-in** suite for input-method triggers, run via `test:static:triggers`. It is **not presently wired into CI** — run it manually.
+- `doAutofill(background, sender)` triggers fill via `chrome.tabs.sendMessage`. `sender` selects the cipher type, set it via `PageTest.autofillCommand`
 - Static test site (test-the-web) served locally
 
 ## Key Principles
@@ -44,7 +43,7 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **Expected non-fill**: Use `shouldNotAutofill`, `shouldNotHaveInlineMenu`, `shouldNotTriggerNewNotification` flags to express **expected behavior**, not failures.
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
 - **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
-- **Performance tests**: Consult [Performance Instrumentation in BIT](../docs/performance.md) for comprehensive advice on writing a performance test.
+- **Performance tests**: Consult [Benchmarking](../docs/benchmarking.md) when writing a performance test.
 
 ## Running Tests
 
@@ -58,7 +57,7 @@ npm run test:static:headless  # headless (currently broken with MV3)
 npm run test:static:autofill
 npm run test:static:inline-menu
 npm run test:static:notification
-npm run test:static:triggers
+npm run test:static:triggers  # this suite is opt-in; run it manually
 
 # Single spec file
 npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt npx playwright test tests/static/autofill-forms.spec.ts
