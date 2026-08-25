@@ -32,7 +32,7 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 2. Add a `testPages` entry in `constants/test-pages.ts` — see existing entries for shape
 3. Add a matching `pageCiphers` entry in `constants/vault-ciphers.ts` — URLs and field values must match
 4. Re-seed the vault: `npm run seed:vault:ciphers`
-5. Run tests to verify: `npm run test:static:debug`
+5. Run tests to verify: `npm run test:static` or `npm run test:static:experimental`
 
 ## Patterns
 
@@ -42,9 +42,9 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **Expected non-fill**: Use `shouldNotAutofill`, `shouldNotHaveInlineMenu`, `shouldNotTriggerNewNotification` flags to express **expected behavior**, not failures.
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
 - **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
+- **Established static test suite**: This suite runs autofill correctness tests during CI on the clients repository. These tests are located in `tests/static`.
+- **Experimental test suites**: These suites are not reliable enough to execute during continuous integration. They include in-development tests and unreliable test harnesses. Experimental suites are highly varied, and their features should be integrated with the static suite once they stabilize.
 - **Performance tests**: Consult [Benchmarking](../docs/benchmarking.md) when writing a performance test.
-- **Established test suite**: The established test suite runs autofill correctness tests during CI on the clients repository.
-- **Experimental and established test suites**: Experimental test suites extend the established suite with in-development tests and test harnesses. The experimental suite must be executed manually.
 
 ## Running Tests
 
@@ -53,9 +53,10 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 npm run test:static           # headed
 npm run test:static:debug     # with Playwright inspector
 
-# Experimental static test suites
-npm run test:static:experimental  # headed
-npm run test:static:headless      # headless tests are currently broken with MV3
+# Experimental test suites
+npm run test:static:experimental        # headed
+npm run test:static:experimental:debug  # with Playwright inspector
+npm run test:static:headless            # headless tests are currently broken with MV3
 
 # Individual test suites
 npm run test:static:autofill
