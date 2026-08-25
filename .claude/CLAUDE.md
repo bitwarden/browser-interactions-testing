@@ -43,7 +43,7 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
 - **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
 - **Established static test suite**: This suite runs autofill correctness tests during CI on the clients repository. These tests are located in `tests/static`.
-- **Experimental test suites**: These suites are not reliable enough to execute during continuous integration. They include in-development tests and unreliable test harnesses. Experimental suites are highly varied, and their features should be integrated with the static suite once they stabilize.
+- **Experimental test suites**: These suites are not reliable enough to execute during continuous integration. Experimental suites do not have a single location, and may consist solely of alternate configurations or environment variables. Use experimental test suites to develop new suites and harnesses.
 - **Performance tests**: Consult [Benchmarking](../docs/benchmarking.md) when writing a performance test.
 
 ## Running Tests
