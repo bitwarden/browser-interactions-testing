@@ -43,6 +43,8 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **Known failures**: Always use `skipTests` on the `PageTest` entry with a ticket number comment. Never use `test.skip()` in spec files.
 - **Expected non-fill**: Use `shouldNotAutofill`, `shouldNotHaveInlineMenu`, `shouldNotTriggerNewNotification` flags to express **expected behavior**, not failures.
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
+- **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
+- **Performance tests**: Consult [Performance Instrumentation in BIT](../docs/performance.md) for comprehensive advice on writing a performance test.
 
 ## Running Tests
 
