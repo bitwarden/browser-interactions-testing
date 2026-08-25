@@ -43,14 +43,19 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
 - **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
 - **Performance tests**: Consult [Benchmarking](../docs/benchmarking.md) when writing a performance test.
+- **Established test suite**: The established test suite runs autofill correctness tests during CI on the clients repository.
+- **Experimental and established test suites**: Experimental test suites extend the established suite with in-development tests and test harnesses. The experimental suite must be executed manually.
 
 ## Running Tests
 
 ```bash
-# All static tests
+# Established static test suite
 npm run test:static           # headed
 npm run test:static:debug     # with Playwright inspector
-npm run test:static:headless  # headless (currently broken with MV3)
+
+# Experimental static test suites
+npm run test:static:experimental  # headed
+npm run test:static:headless      # headless tests are currently broken with MV3
 
 # Individual test suites
 npm run test:static:autofill
