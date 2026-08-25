@@ -60,6 +60,9 @@ export const test = base.extend<{
     ]);
 
     await use(context);
+
+    // do not leak the context created by the fixture
+    await context.close();
   },
   webClientSetup: async ({ context }, use) => {
     let testPage: Page;

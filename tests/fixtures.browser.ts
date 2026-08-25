@@ -88,6 +88,9 @@ export const test = base.extend<{
     ]);
 
     await use(context);
+
+    // do not leak the context created by the fixture
+    await context.close();
   },
   background: async ({ context, manifestVersion }, use) => {
     await use(await getBackgroundPage(context, manifestVersion));

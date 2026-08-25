@@ -28,6 +28,9 @@ import {
   decides ciphers whose own autofill-on-page-load is unset — the seeded ciphers'
   are). Visiting #/autofill writes the default to `false` as a side effect of the
   select initializing, so the default must be set back explicitly.
+
+  Both settings live on disk state local to the browser profile, and the `context`
+  fixture is test-scoped. The settings enabled below are discarded with the profile.
 */
 
 const settingPropagationDelay = 1500;
