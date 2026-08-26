@@ -3,13 +3,20 @@ import {
   debugIsActive,
   defaultGotoOptions,
   defaultNavigationTimeout,
-  defaultWaitForOptions,
   screenshotsOutput,
   TestNames,
 } from "../../constants";
 import { test, expect } from "../fixtures.browser";
 import { FillProperties } from "../../abstractions";
-import { getPagesToTest, doAutofill, formatUrlToFilename } from "../utils";
+import { AutofillCommand } from "../../enums";
+import {
+  getPagesToTest,
+  doAutofill,
+  autofillCommandSender,
+  formatUrlToFilename,
+  resolveInputLocator,
+  waitForInput,
+} from "../utils";
 
 const testOutputPath = "autofill-forms";
 let testRetryCount = 0;
@@ -36,7 +43,9 @@ test.describe("Extension autofills forms when triggered", () => {
     const pagesToTest = getPagesToTest();
 
     for (const page of pagesToTest) {
-      const { url, inputs, skipTests } = page;
+      const { url, inputs, skipTests, autofillCommand } = page;
+      const sender =
+        autofillCommandSender[autofillCommand ?? AutofillCommand.Login];
 
       await test.step(`Autofill the form at ${url}`, async () => {
         if (skipTests?.includes(TestNames.MessageAutofill)) {
@@ -69,19 +78,9 @@ test.describe("Extension autofills forms when triggered", () => {
           }
         }
 
-        const firstInputSelector = firstInput.selector;
-        const firstInputElement =
-          typeof firstInputSelector === "string"
-            ? await testPage.locator(firstInputSelector).first()
-            : await firstInputSelector(testPage);
-        // text-mode mirrors have no rendered size until autofill populates them, so wait for attachment, not visibility
-        await firstInputElement.waitFor(
-          firstInput.verifyAccessor === "text"
-            ? { ...defaultWaitForOptions, state: "attached" }
-            : defaultWaitForOptions,
-        );
+        await waitForInput(testPage, firstInput);
 
-        await doAutofill(background);
+        await doAutofill(background, sender);
 
         /* Pause a moment before capturing input values.
            (otherwise, when expecting an empty value, the test may pass before the fill,
@@ -90,11 +89,10 @@ test.describe("Extension autofills forms when triggered", () => {
 
         for (const inputKey of inputKeys) {
           const currentInput: FillProperties = inputs[inputKey];
-          const currentInputSelector = currentInput.selector;
-          const currentInputSelectedElement =
-            typeof currentInputSelector === "string"
-              ? await testPage.locator(currentInputSelector).first()
-              : await currentInputSelector(testPage);
+          const currentInputSelectedElement = await resolveInputLocator(
+            testPage,
+            currentInput,
+          );
 
           const expectedValue = currentInput.shouldNotAutofill
             ? ""
@@ -140,14 +138,9 @@ test.describe("Extension autofills forms when triggered", () => {
               }
             }
 
-            const nextInputSelector = nextStepInput.selector;
-            const nextInputElement =
-              typeof nextInputSelector === "string"
-                ? await testPage.locator(nextInputSelector).first()
-                : await nextInputSelector(testPage);
-            await nextInputElement.waitFor(defaultWaitForOptions);
+            await waitForInput(testPage, nextStepInput);
 
-            await doAutofill(background);
+            await doAutofill(background, sender);
           }
 
           if (debugIsActive) {

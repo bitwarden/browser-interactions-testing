@@ -60,6 +60,8 @@ export const test = base.extend<{
     ]);
 
     await use(context);
+
+    await context.close();
   },
   webClientSetup: async ({ context }, use) => {
     let testPage: Page;

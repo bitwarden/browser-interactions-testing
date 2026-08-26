@@ -17,9 +17,8 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - `pretest` compiles `tests/` (TS) into `tests-out/` (JS)
 - Playwright launches Chromium with `--load-extension`
 - `fixtures.browser.ts` logs into vault, exposes context
-- 3 static specs: autofill-forms, inline-menu, notifications — all loop over `testPages` via `getPagesToTest()`
-- `doAutofill()` triggers fill via `chrome.tabs.sendMessage`
-- Static test site (test-the-web) served locally
+- All static specs loop over `testPages` via `getPagesToTest()`. They use the `test-the-web` static website, served locally.
+- `doAutofill(background, sender)` triggers fill via `chrome.tabs.sendMessage`. `sender` selects the cipher type, set it via `PageTest.autofillCommand`.
 
 ## Key Principles
 
@@ -33,7 +32,7 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 2. Add a `testPages` entry in `constants/test-pages.ts` — see existing entries for shape
 3. Add a matching `pageCiphers` entry in `constants/vault-ciphers.ts` — URLs and field values must match
 4. Re-seed the vault: `npm run seed:vault:ciphers`
-5. Run tests to verify: `npm run test:static:debug`
+5. Run tests to verify: `npm run test:static` or `npm run test:static:experimental`
 
 ## Patterns
 
@@ -42,19 +41,28 @@ Playwright-based end-to-end tests for the Bitwarden browser extension's content-
 - **Known failures**: Always use `skipTests` on the `PageTest` entry with a ticket number comment. Never use `test.skip()` in spec files.
 - **Expected non-fill**: Use `shouldNotAutofill`, `shouldNotHaveInlineMenu`, `shouldNotTriggerNewNotification` flags to express **expected behavior**, not failures.
 - **`defaultGotoOptions` and `defaultWaitForOptions`**: Always use these from `constants/settings.ts` instead of custom timeouts.
+- **Non-login ciphers**: Set `autofillCommand` on the `PageTest` entry; it defaults to `Login`.
+- **Established static test suite**: This suite runs autofill correctness tests during CI on the clients repository. These tests are located in `tests/static`.
+- **Experimental test suites**: These suites are not reliable enough to execute during continuous integration. Experimental suites do not have a single location, and may consist solely of alternate configurations or environment variables. Use experimental test suites to develop new suites and harnesses.
+- **Performance tests**: Consult [Benchmarking](../docs/benchmarking.md) when writing a performance test.
 
 ## Running Tests
 
 ```bash
-# All static tests
+# Established static test suite
 npm run test:static           # headed
 npm run test:static:debug     # with Playwright inspector
-npm run test:static:headless  # headless (currently broken with MV3)
+
+# Experimental test suites
+npm run test:static:experimental        # headed
+npm run test:static:experimental:debug  # with Playwright inspector
+npm run test:static:headless            # headless tests are currently broken with MV3
 
 # Individual test suites
 npm run test:static:autofill
 npm run test:static:inline-menu
 npm run test:static:notification
+npm run test:static:triggers
 
 # Single spec file
 npm run pretest && NODE_EXTRA_CA_CERTS=ssl.crt npx playwright test tests/static/autofill-forms.spec.ts

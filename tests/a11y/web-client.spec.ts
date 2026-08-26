@@ -91,7 +91,5 @@ test.describe("Web client", { tag: ["@web-client", "@a11y"] }, async () => {
     if (debugIsActive) {
       await testPage.pause();
     }
-
-    await testPage.close();
   });
 });

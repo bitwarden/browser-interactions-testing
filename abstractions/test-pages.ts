@@ -1,5 +1,6 @@
 import { Page, Locator } from "@playwright/test";
 import { TestNames } from "../constants";
+import { AutofillCommand } from "../enums";
 
 type FillProperties = {
   multiStepNextInputKey?: string;
@@ -55,6 +56,11 @@ type PageTest = {
     licenseNumber?: FillProperties;
   };
   onlyTest?: boolean;
+  /**
+   * Which autofill command the message ("blind") autofill should send for this page;
+   * defaults to `AutofillCommand.Login`.
+   */
+  autofillCommand?: AutofillCommand;
   /** Tests that should not be run against the page pattern because they are known failures or are not applicable */
   skipTests?: TestNameKeys[];
   actions?: {
