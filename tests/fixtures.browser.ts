@@ -55,6 +55,7 @@ export const test = base.extend<{
       `\t${browser.browserType().name()} version ${browser.version()}`,
     );
 
+    // isolate extension settings changes using a temporary profile
     const context = await chromium.launchPersistentContext("", {
       acceptDownloads: false, // for safety, do not accept downloads
       headless: false, // should always be `false`, even when testing headless Chrome
@@ -89,7 +90,6 @@ export const test = base.extend<{
 
     await use(context);
 
-    // do not leak the context created by the fixture
     await context.close();
   },
   background: async ({ context, manifestVersion }, use) => {

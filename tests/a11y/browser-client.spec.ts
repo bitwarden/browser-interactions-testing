@@ -56,7 +56,5 @@ test.describe("Browser client", { tag: ["@browser-client", "@a11y"] }, () => {
     if (debugIsActive) {
       await testPage.pause();
     }
-
-    await testPage.close();
   });
 });

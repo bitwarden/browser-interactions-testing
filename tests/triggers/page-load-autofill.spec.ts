@@ -24,13 +24,9 @@ import {
   between the two observations is the setting, so the fill is attributable to
   page-load autofill and not to some other filler.
 
-  Two settings gate the fill: the global toggle, and the per-login default (which
-  decides ciphers whose own autofill-on-page-load is unset — the seeded ciphers'
-  are). Visiting #/autofill writes the default to `false` as a side effect of the
-  select initializing, so the default must be set back explicitly.
-
-  Both settings live on disk state local to the browser profile, and the `context`
-  fixture is test-scoped. The settings enabled below are discarded with the profile.
+  Two settings gate the fill: the global toggle, and the per-login default.
+  Both settings are profile-local disk state rather than server-synced, so they reset
+  when the `context` is reset.
 */
 
 const settingPropagationDelay = 1500;
