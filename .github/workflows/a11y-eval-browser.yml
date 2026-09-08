@@ -92,6 +92,12 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
+      # The `tsx` runner used by the setup and seeding scripts transpiles
+      # without typechecking, so this step is what catches type errors in
+      # `scripts/` before those scripts run.
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Create feature flags file
         env:
           FEATURE_FLAGS: ${{ inputs.FEATURE_FLAGS }}
