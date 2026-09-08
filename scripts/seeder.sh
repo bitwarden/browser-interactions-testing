@@ -67,4 +67,4 @@ for i in $(seq 1 30); do
 done
 
 # Run the vault seeder
-ts-node ./scripts/vault-seeder.ts
+tsx ./scripts/vault-seeder.ts
