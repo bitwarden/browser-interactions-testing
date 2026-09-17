@@ -45,7 +45,10 @@ npm run setup:extension
 npm run build:extension
 npm run setup:install
 npm run setup:crypto
-docker compose up -d --build --remove-orphans --wait --wait-timeout 60
+
+# nginx reads the certificate into memory at startup, so an already-running
+# container would keep serving the certificate 'setup:ssl' just replaced
+docker compose up -d --build --remove-orphans --force-recreate --wait --wait-timeout 60
 npm run seed:vault:account
 npm run seed:vault:ciphers
 npm run seed:vault:import
