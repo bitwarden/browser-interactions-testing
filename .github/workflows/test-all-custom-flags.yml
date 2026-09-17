@@ -139,7 +139,7 @@ jobs:
           certutil -d "sql:$HOME/.pki/nssdb" -A -t "CP,CP," -n TestAutomationSSL -i "./$BW_SSL_CERT"
 
       - name: Install Bitwarden CLI
-        run: npm install -g @bitwarden/cli@2026.6.0
+        run: npm install -g @bitwarden/cli@2026.8.0
 
       # FIXME Temporary workaround for PM-39403: server >= 2026.6.1 returns responses
       # that node-fetch v2 treats as a premature close (ERR_STREAM_PREMATURE_CLOSE),
