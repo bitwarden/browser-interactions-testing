@@ -1,4 +1,4 @@
-name: v2026-08-00
+name: v2026-08-02
 services:
   bitwarden:
     depends_on:
@@ -7,7 +7,7 @@ services:
       - .env
       - path: ./flags.env
         required: false
-    image: ghcr.io/bitwarden/lite@sha256:11b0a7bd63686ce2563d8b78ad591f7e0ee9e350cd1f79ad6f11c9ce3dbb01f3 # 2026.8.0
+    image: ghcr.io/bitwarden/lite@sha256:1c5232138bb2112ae61b412adcf8ae83d77a6c18027c70d202398582d5cdcaf9 # 2026.8.2
     restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
