@@ -66,9 +66,10 @@ As a secondary concern, BIT aspires to track and anticipate feature compatibilit
 
 ## Quick start
 
-> Note: Docker is required for quick start
+> Note: Docker is required and must be running for quick start
 
 - Install the requirements listed above
+- Clone the project repo and `cd` into the root directory
 - If NVM is installed, run `nvm install`.
 - (Optional, unless you don't want to use the default configuration) From the project root, run `cp .env.example .env` and update the `.env` values per the commented notes in the file.
 - Next run `npm run setup:all`, entering your system password when prompted.
@@ -123,7 +124,7 @@ npm run test:static:debug
 
 Using Docker Compose will set up all the services required by the extension for testing. In order to use Docker Compose, you'll need to first:
 
-Create and start the containers and volumes with `docker compose up -d --build --remove-orphans`, and teardown with `docker compose down -v`
+Create and start the containers and volumes with `docker compose up -d --build --remove-orphans --force-recreate`, and teardown with `docker compose down -v`
 
 > If the image pull fails with a network error (e.g. `unexpected EOF`), re-run `docker compose pull` and then retry. If it continues to fail, try increasing the timeout: `COMPOSE_HTTP_TIMEOUT=120 docker compose pull`. A common underlying cause is endpoint protection or firewall rules blocking the pull.
 
@@ -161,7 +162,7 @@ You may import a vault in the form of a [Bitwarden-formatted JSON file](https://
 
 ## Feature flags
 
-The Bitwarden documentation [describes how to make use of implemented feature flags](https://contributing.bitwarden.com/contributing/feature-flags/#flag-data-sources). Here, your flag key-value pairs can be added to the `flags.env` file using the `Features__FlagValues__<flag-key>=<value>` format. Note, changes to this file will require rebuilding the Docker image (e.g. `docker compose up -d --build --remove-orphans`).
+The Bitwarden documentation [describes how to make use of implemented feature flags](https://contributing.bitwarden.com/contributing/feature-flags/#flag-data-sources). Here, your flag key-value pairs can be added to the `flags.env` file using the `Features__FlagValues__<flag-key>=<value>` format. Note, changes to this file will require rebuilding the Docker image (e.g. `docker compose up -d --build --remove-orphans --force-recreate`).
 
 ## Debugging and Updating Tests
 
