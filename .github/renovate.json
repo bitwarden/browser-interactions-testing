@@ -22,6 +22,14 @@
       "groupName": "gh minor",
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "description": "bitwarden/lite carries the latest server, web client, and feature flag changes BIT tests against, so update it as soon as a release is available to keep test signal current",
+      "groupName": "bitwarden lite",
+      "matchPackageNames": ["ghcr.io/bitwarden/lite"],
+      "matchUpdateTypes": ["major", "minor", "patch", "digest"],
+      "schedule": ["at any time"],
+      "minimumReleaseAge": "0 days"
     }
   ]
 }
