@@ -7,7 +7,7 @@ services:
       - .env
       - path: ./flags.env
         required: false
-    image: ghcr.io/bitwarden/lite@sha256:616624bf9a2e1bae68a6a7735732339db41b831e38593846f0c2b4983af34bb9 # 2026.9.0
+    image: ghcr.io/bitwarden/lite@sha256:f42c5a256face5c59990d515e7d672ff4f029c6d03acb8f0cb0c5839cd27fe2a # 2026.9.2
     restart: "no"
     ports:
       - ${VAULT_HOST_PORT}:8443
