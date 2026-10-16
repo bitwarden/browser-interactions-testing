@@ -34,7 +34,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
   test("Log in to the vault, open pages, and run page tests", async ({
     extensionId,
     extensionSetup,
-    featureFlags,
   }, testInfo) => {
     if (testInfo.retry > testRetryCount) {
       testRetryCount = testInfo.retry;
@@ -67,21 +66,6 @@ test.describe("Extension triggers a notification when a page form is submitted w
         shouldNotTriggerUpdateNotification,
         skipTests,
       } = page;
-
-      // @TODO remove branching test logic when `undetermined-cipher-scenario-logic`
-      // flag is removed
-      const hasUndeterminedCipherScenarioLogic =
-        featureFlags["undetermined-cipher-scenario-logic"] === true;
-
-      // When the undetermined-cipher-scenario-logic flag is on, password-update
-      // forms (no username, has password + newPassword) trigger a new cipher
-      // notification when no ciphers match the filled values.
-      const isPasswordUpdateForm =
-        !inputs.username && !!inputs.password && !!inputs.newPassword;
-      const resolvedShouldNotTriggerNewNotification =
-        hasUndeterminedCipherScenarioLogic && isPasswordUpdateForm
-          ? false
-          : shouldNotTriggerNewNotification;
 
       await test.step(`fill the form with non-stored credentials at ${url}`, async () => {
         if (skipTests?.includes(TestNames.NewCredentialsNotification)) {
@@ -166,7 +150,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           }
         }
 
-        await test.step(`the new cipher notification should ${resolvedShouldNotTriggerNewNotification ? "NOT " : ""}appear when submitting the form`, async () => {
+        await test.step(`the new cipher notification should ${shouldNotTriggerNewNotification ? "NOT " : ""}appear when submitting the form`, async () => {
           // Submit
           if (actions?.submit) {
             await actions.submit(testPage);
@@ -188,7 +172,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
           const notificationLocator = await getNotificationFrame(
             testPage,
             extensionId,
-            resolvedShouldNotTriggerNewNotification,
+            shouldNotTriggerNewNotification,
           );
 
           const {
@@ -200,7 +184,7 @@ test.describe("Extension triggers a notification when a page form is submitted w
             testPage,
           );
 
-          if (resolvedShouldNotTriggerNewNotification) {
+          if (shouldNotTriggerNewNotification) {
             // Ensure the wrong type of notification does not appear
             await expect(newCipherNotificationLocator).not.toBeVisible();
           } else {

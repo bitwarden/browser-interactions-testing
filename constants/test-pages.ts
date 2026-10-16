@@ -462,7 +462,6 @@ export const testPages: PageTest[] = [
         value: "newFakeUpdatePasswordPagePassword",
       },
     },
-    shouldNotTriggerNewNotification: true,
     skipTests: [
       TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-26477)
     ],
