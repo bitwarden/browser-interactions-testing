@@ -1,4 +1,4 @@
-name: v2026-10-00
+name: v2026-10-01
 services:
   bitwarden:
     depends_on:
