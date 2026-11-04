@@ -466,4 +466,28 @@ export const testPages: PageTest[] = [
       TestNames.MessageAutofill, // @TODO known failure - fills new password inputs with attribute `autocomplete="new-password"` (PM-26477)
     ],
   },
+  {
+    url: `${testSiteHost}/forms/multi-step/login-animated-password`,
+    inputs: {
+      username: {
+        multiStepNextInputKey: "password",
+        selector: "#ms-anim-username",
+        value: testUserName,
+      },
+      password: {
+        // Field is auto-focused as the password step mounts mid-animation (opacity: 0).
+        // Reproduces PM-45345 (Synology DSM): inline menu must appear on the
+        // auto-focused password field without requiring a blur + re-focus cycle.
+        selector: "#ms-anim-password",
+        value: "fakeAnimatedPasswordStepPassword",
+      },
+    },
+    skipTests: [
+      TestNames.MessageAutofill, // Bypasses inline menu entirely; not relevant to this regression
+      TestNames.NewCredentialsNotification, // Not the concern of this pattern
+      TestNames.PasswordUpdateNotification, // Not the concern of this pattern
+      TestNames.PageLoadAutofill, // Password field not in DOM at load
+      TestNames.PopupAutofill, // Single popup fill can't advance through steps
+    ],
+  },
 ];
