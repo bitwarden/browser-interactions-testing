@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Community PR Repro</title>
+    <style>
+      :root {
+        --bg: #fafaf9;
+        --fg: #1c1917;
+        --muted: #57534e;
+        --card: #ffffff;
+        --border: #e7e5e4;
+        --accent: #2563eb;
+        --warn-bg: #fef3c7;
+        --warn-border: #d97706;
+        --code-bg: #f5f5f4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1917;
+          --fg: #f5f5f4;
+          --muted: #a8a29e;
+          --card: #292524;
+          --border: #44403c;
+          --accent: #60a5fa;
+          --warn-bg: #422006;
+          --warn-border: #f59e0b;
+          --code-bg: #3a3633;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.55 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      main {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 28px;
+      }
+      h2 {
+        margin: 36px 0 12px;
+        font-size: 19px;
+      }
+      .lede {
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      code {
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+      .flow {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .step {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        gap: 12px;
+      }
+      .num {
+        flex: 0 0 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+      .step b {
+        display: block;
+      }
+      .step span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .arrow {
+        text-align: center;
+        color: var(--muted);
+        line-height: 1;
+        padding: 4px 0;
+      }
+      .check {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        font-size: 15px;
+      }
+      th {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .callout {
+        background: var(--warn-bg);
+        border-left: 4px solid var(--warn-border);
+        border-radius: 6px;
+        padding: 12px 16px;
+      }
+      .callout ul {
+        margin: 6px 0 0;
+        padding-left: 20px;
+      }
+      .callout li {
+        margin: 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>community-pr-repro</h1>
+      <p class="lede">
+        Turns a community autofill fix into proof: the bug reproduces on
+        <code>main</code>, a BIT test catches it, and the PR's build makes that
+        test pass.
+      </p>
+      <p class="lede">
+        One run = one PR or issue. With an issue only, it stops at the failing
+        baseline. Start with a fill/no-fill bug such as clients#23906.
+      </p>
+
+      <h2>Workflow</h2>
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <b>Read the PR or issue, write the repro brief</b
+            ><span
+              >Map the bug to a BIT <code>TestNames</code> key and its run
+              command. Stop if no spec asserts it.</span
+            >
+            <div class="check">Checkpoint: brief</div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <b>Start the environment, build main</b
+            ><span
+              ><code>docker compose up</code>, <code>start:test-site</code>,
+              <code>build:extension</code> from <code>clients@main</code>.</span
+            >
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <b>Find or add the pattern page, reproduce by hand</b
+            ><span
+              >Look at the reported live site first (observe only, video). Reuse
+              an existing test-the-web page if it shows the bug, else add one in
+              <code>test-site/client/docs/forms/</code>. Reproduce with
+              Playwright MCP.</span
+            >
+            <div class="check">Checkpoint: bug reproduced</div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="step">
+          <div class="num">4</div>
+          <div>
+            <b>Add the BIT entry, confirm it fails on main</b
+            ><span
+              >Append to <code>testPages</code> + <code>pageCiphers</code>, skip
+              specs that don't apply, seed, run the brief's command with
+              <code>START_FROM_TEST_URL</code>.</span
+            >
+            <div class="check">Checkpoint: failing for the right reason</div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="step">
+          <div class="num">5</div>
+          <div>
+            <b>Build the PR, confirm it passes (skip without a PR)</b
+            ><span
+              ><code>gh pr checkout</code> in <code>$BIT/clients</code>,
+              rebuild, rerun the same entry.</span
+            >
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="step">
+          <div class="num">6</div>
+          <div>
+            <b>Write the report, log learnings</b
+            ><span
+              >Report for the human reviewer; skip flag with ticket until merge;
+              append to <code>learnings.md</code>.</span
+            >
+            <div class="check">Checkpoint: report</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Inputs and outputs</h2>
+      <table>
+        <tr>
+          <th>Inputs</th>
+          <th>Outputs</th>
+        </tr>
+        <tr>
+          <td>
+            Community PR <em>or</em> bug report (issue) on
+            <code>bitwarden/clients</code>
+          </td>
+          <td>
+            <code>repro/&lt;id&gt;/brief.md</code>, <code>report.md</code>, and
+            videos of the site, the manual repro, and the BIT runs on main and
+            the PR
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Tracker ticket, e.g. <code>PM-45163</code> (in community PR titles)
+          </td>
+          <td>New or reused test-the-web pattern page</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            New or updated BIT <code>testPages</code> +
+            <code>pageCiphers</code> entry, failing on main and passing on the
+            PR
+          </td>
+        </tr>
+      </table>
+
+      <h2>Questions to answer at the start</h2>
+      <table>
+        <tr>
+          <th>Where</th>
+          <th>Question</th>
+        </tr>
+        <tr>
+          <td>Prerequisites</td>
+          <td>
+            Where is browser-interactions-testing checked out, and has
+            first-time setup (<code>npm run setup:all</code>) completed? If not,
+            what is missing?
+          </td>
+        </tr>
+        <tr>
+          <td>Prerequisites</td>
+          <td>
+            Is Playwright MCP configured to load
+            <code>$BIT/clients/apps/browser/build</code>? Give the config path
+            and confirm it records video. If none, write it and restart Claude
+            Code before Step 1.
+          </td>
+        </tr>
+        <tr>
+          <td>Prerequisites</td>
+          <td>
+            What branch naming and PR flow do you use for new test-the-web pages
+            and BIT entries?
+          </td>
+        </tr>
+        <tr>
+          <td>Step 6</td>
+          <td>
+            Where should the verification report go: a comment on the community
+            PR, the Jira ticket, or a local file only?
+          </td>
+        </tr>
+      </table>
+
+      <h2>Key constraints</h2>
+      <div class="callout">
+        <ul>
+          <li>
+            Do first-time BIT setup (<code>npm run setup:all</code>) before the
+            run: Docker, certs, vault account, and a full
+            <code>clients</code> install take longer than the session.
+          </li>
+          <li>
+            Fork PRs sit at <code>action_required</code> in
+            <code>build-browser.yml</code>, so there is no artifact to download.
+            Build the PR locally.
+          </li>
+          <li>
+            MV3 needs a real display: headless runs are broken. Run headed, with
+            one Playwright worker.
+          </li>
+          <li>
+            The MCP config records every Playwright context start-to-close. Do
+            setup (navigate, unlock, verify selectors) in a throw-away session,
+            close, delete <code>repro/_pending-videos/*.webm</code>, then
+            relaunch for a tight recorded pass — otherwise the saved video
+            bloats to minutes of fumbling.
+          </li>
+          <li>
+            The classifier blocks routing <code>VAULT_PASSWORD</code> into the
+            Playwright MCP sandbox (filesystem reads, pipes, loopback servers
+            all denied). Ask the user to unlock the popup interactively — the
+            vault re-locks on every Playwright relaunch, so one unlock inside
+            each recorded session is unavoidable.
+          </li>
+          <li>
+            Never use <code>test.skip()</code> in spec files. Known failures go
+            in <code>skipTests</code> with a ticket.
+          </li>
+          <li>
+            <code>START_FROM_TEST_URL</code> must match the entry URL exactly,
+            or the whole suite runs.
+          </li>
+          <li>
+            Don't change an existing test-the-web pattern's behavior. Add a new
+            page.
+          </li>
+          <li>
+            For #23906, the extension must collect the form
+            <em>before</em> Country rebuilds the State options. Put that
+            sequence in the first input's <code>preFillActions</code>, or the
+            test can pass on main and miss the bug.
+          </li>
+          <li>
+            #24710 (wrong cipher type in the inline menu) can't be asserted yet:
+            <code>shouldNotHaveInlineMenu</code> only checks that no menu
+            appears at all.
+          </li>
+          <li>
+            BIT's <code>pretest</code> deletes <code>tests-out/videos</code>.
+            Copy each run's videos into <code>repro/&lt;id&gt;/</code> before
+            the next run.
+          </li>
+          <li>
+            A new BIT entry runs in every static spec. Skip the ones that don't
+            apply, with reasons.
+          </li>
+          <li>
+            Out of scope: inline menu position bugs, batches of PRs, judging
+            code quality, and benchmarking.
+          </li>
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>
