@@ -31,7 +31,25 @@ Turns a community autofill report into end-to-end proof: the bug reproduces on `
 
 ## Prerequisites
 
-Confirm all of these before Step 1. First-time BIT setup (`npm run setup:all`, Docker, certs, vault account) takes longer than one run - do it beforehand.
+Before Step 1, actively verify the teammate's environment is ready. Don't assume — a teammate running this skill for the first time, or on a new machine, may be missing pieces.
+
+1. Run `npm run flightcheck` from `$BIT`. Address every failure before continuing. For common failures the fix maps cleanly to a setup script documented in `$BIT/.claude/CLAUDE.md`:
+    - Extension not built → `npm run build:extension`
+    - Docker not running → `docker compose up -d --wait`
+    - Vault not reachable → check docker status, restart if needed
+    - Test site not serveable → `npm run setup:test-site`, then `npm run start:test-site`
+    - Missing `.env` vars → `npm run setup:install`, `npm run setup:crypto`, `npm run setup:flags` (which one depends on what's missing)
+    - Vault account missing → `npm run setup:vault`
+
+    Run the fix after confirming with the user. For anything destructive (re-seeding the vault, regenerating crypto material, deleting state) or ambiguous (port conflicts, container SHA mismatches, unusual error output), present the diagnosis and the proposed fix to the user and wait for them to decide — don't just run it.
+
+2. Confirm the items flightcheck can't see:
+    - `$BIT` is exported in the user's shell. Ask them to run `echo $BIT` and confirm it prints their checkout path.
+    - `$BIT/.playwright-mcp-config.json` and `$BIT/.mcp.json` exist. If either is missing, point them to [references/.playwright-mcp-config.example.json](references/.playwright-mcp-config.example.json) and [references/.mcp.example.json](references/.mcp.example.json) — they copy to `$BIT`, replace `<YOUR_BIT_ROOT>` with their absolute BIT path, and restart Claude Code (MCP config is read only at startup).
+
+Do not proceed to Step 1 until flightcheck is clean and both shell/MCP items are confirmed.
+
+The bullets below are the self-serve reference for teammates who want to understand the setup before invoking the skill:
 
 - BIT root (`$BIT`): your local clone of `bitwarden/browser-interactions-testing`. Export it in your shell so later commands work: `export BIT=/absolute/path/to/your/browser-interactions-testing` (add the line to `~/.zshrc` or `~/.bashrc` to persist across terminals). Confirm first-time setup (`npm run setup:all`) is complete before starting.
 - `$BIT/clients` - clients checkout BIT builds the extension from (`npm run setup:extension`).
