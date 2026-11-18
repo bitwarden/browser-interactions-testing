@@ -128,7 +128,7 @@ jobs:
       - name: Unzip extension artifact
         run: |
           unzip -o "*dist-chrome-*.zip.zip"
-          unzip -o "dist-chrome*.zip" -d build
+          unzip -o "*dist-chrome*.zip" -d build
 
       - name: Generate and install certs
         run: |
