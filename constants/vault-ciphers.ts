@@ -296,4 +296,13 @@ export const pageCiphers: PageCipher[] = [
       },
     },
   },
+  {
+    cipherType: CipherType.Login,
+    url: `${testSiteHost}/forms/multi-step/login-animated-password`,
+    uriMatchType: UriMatchType.StartsWith,
+    fields: {
+      username: { value: testUserName },
+      password: { value: "fakeAnimatedPasswordStepPassword" },
+    },
+  },
 ];
