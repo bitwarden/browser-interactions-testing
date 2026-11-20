@@ -1,0 +1,19 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": {
+      "args": [
+        "--load-extension=<YOUR_BIT_ROOT>/clients/apps/browser/build",
+        "--disable-extensions-except=<YOUR_BIT_ROOT>/clients/apps/browser/build",
+        "--no-first-run"
+      ]
+    },
+    "contextOptions": {
+      "recordVideo": {
+        "dir": "./repro/_pending-videos",
+        "size": { "width": 1280, "height": 800 }
+      }
+    },
+    "userDataDir": "/tmp/bw-bit-profile"
+  }
+}
