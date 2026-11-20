@@ -359,6 +359,179 @@ export const testPages: PageTest[] = [
     ],
   },
   {
+    // Combined expiry field, MM/YY format (most common variant).
+    url: `${testSiteHost}/forms/payment/cc-expiry-variants/cc-expiry-mm-yy`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      cardholderName: { selector: "#p10a-name", value: "John Smith" },
+      number: { selector: "#p10a-num", value: "4111111111111111" },
+      expMonth: { selector: "#p10a-exp", value: "12/25" },
+      code: { selector: "#p10a-cvv", value: "123" },
+    },
+    skipTests: [
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Combined expiry field, MM/YYYY format — autofill must write a 4-digit year.
+    url: `${testSiteHost}/forms/payment/cc-expiry-variants/cc-expiry-mm-yyyy`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      cardholderName: { selector: "#p10b-name", value: "John Smith" },
+      number: { selector: "#p10b-num", value: "4111111111111111" },
+      expMonth: { selector: "#p10b-exp", value: "12/2025" },
+      code: { selector: "#p10b-cvv", value: "123" },
+    },
+    skipTests: [
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Expiry split into separate month and year <select> elements with cc-exp-month / cc-exp-year autocomplete.
+    url: `${testSiteHost}/forms/payment/cc-expiry-variants/cc-expiry-split-selects`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      cardholderName: { selector: "#p10c-name", value: "John Smith" },
+      number: { selector: "#p10c-num", value: "4111111111111111" },
+      expMonth: { selector: "#p10c-month", value: "12" },
+      expYear: { selector: "#p10c-year", value: "2025" },
+      code: { selector: "#p10c-cvv", value: "123" },
+    },
+    skipTests: [
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Expiry split into month/year text inputs with no autocomplete — autofill must infer
+    // intent from field name (exp-month / exp-year). Year field maxLength=2 → 2-digit year.
+    url: `${testSiteHost}/forms/payment/cc-expiry-variants/cc-expiry-placeholder-00`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      cardholderName: { selector: "#p10d-name", value: "John Smith" },
+      number: { selector: "#p10d-pan", value: "4111111111111111" },
+      expMonth: { selector: "#p10d-month", value: "12" },
+      expYear: { selector: "#p10d-year", value: "25" },
+      code: { selector: "#p10d-cvv", value: "123" },
+    },
+    skipTests: [
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Combined expiry field with a data-mask="## / ##" attribute. The mask is decorative
+    // (no JS mask library on this test page); autofill writes the standard cc-exp value.
+    url: `${testSiteHost}/forms/payment/cc-expiry-variants/cc-expiry-data-mask`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      cardholderName: { selector: "#p10e-name", value: "John Smith" },
+      number: { selector: "#p10e-num", value: "4111111111111111" },
+      expMonth: { selector: "#p10e-exp", value: "12/25" },
+      code: { selector: "#p10e-cvv", value: "123" },
+    },
+    skipTests: [
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Mixed billing-contact + CC form. Identity fill must populate the top contact
+    // fields; CC fields must not receive identity fill.
+    url: `${testSiteHost}/forms/payment/cc-mixed-contact`,
+    autofillCommand: AutofillCommand.Identity,
+    inputs: {
+      firstName: { selector: "#p9-first", value: "John" },
+      lastName: { selector: "#p9-last", value: "Smith" },
+      email: { selector: "#p9-email", value: "identity@example.com" },
+      // CC fields must not receive identity fill and must not show the identity inline menu
+      cardholderName: {
+        selector: "#p9-cc-name",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "John Smith",
+      },
+      number: {
+        selector: "#p9-number",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "4111111111111111",
+      },
+      expMonth: {
+        selector: "#p9-exp",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "12/25",
+      },
+      code: {
+        selector: "#p9-cvv",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "123",
+      },
+    },
+    skipTests: [
+      // Both identity and card ciphers match this URL. The card cipher causes an inline
+      // menu button to appear on the CC fields, creating false positives for the
+      // shouldNotHaveInlineMenu assertions. InlineMenuAutofill is skipped until a
+      // mechanism exists to assert cipher-type-specific inline menu presence.
+      TestNames.InlineMenuAutofill,
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not identities
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
+    // Mixed billing-contact + CC form. Card fill must populate the CC fields including
+    // cardholder name. The billing contact name fields (autocomplete given-name/family-name)
+    // must not receive card fill and must not show the card inline menu.
+    url: `${testSiteHost}/forms/payment/cc-mixed-contact`,
+    autofillCommand: AutofillCommand.Card,
+    inputs: {
+      // Billing contact fields — given-name/family-name autocomplete — must not fill or show card inline menu
+      firstName: {
+        selector: "#p9-first",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "John",
+      },
+      lastName: {
+        selector: "#p9-last",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "Smith",
+      },
+      email: {
+        selector: "#p9-email",
+        shouldNotAutofill: true,
+        shouldNotHaveInlineMenu: true,
+        value: "identity@example.com",
+      },
+      cardholderName: { selector: "#p9-cc-name", value: "John Smith" },
+      number: { selector: "#p9-number", value: "4111111111111111" },
+      expMonth: { selector: "#p9-exp", value: "12/25" },
+      code: { selector: "#p9-cvv", value: "123" },
+    },
+    skipTests: [
+      // Both identity and card ciphers match this URL. The identity cipher causes an
+      // inline menu button to appear on the name fields (#p9-first, #p9-last), creating
+      // false positives for the shouldNotHaveInlineMenu assertions on those fields.
+      // To verify card-inline-menu-must-not-appear on name fields in isolation,
+      // a card-only test page (no identity cipher for the same URL) would be required.
+      TestNames.InlineMenuAutofill,
+      TestNames.PageLoadAutofill, // Page-load autofill fills login ciphers only, not cards
+      TestNames.NewCredentialsNotification, // No new cipher notification available for this type of cipher (PM-8699)
+      TestNames.PasswordUpdateNotification, // No update notification available for this type of cipher (PM-8699)
+    ],
+  },
+  {
     url: `${testSiteHost}/forms/search/simple-search`,
     inputs: {
       username: {
