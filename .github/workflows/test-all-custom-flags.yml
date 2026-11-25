@@ -182,12 +182,21 @@ jobs:
       - name: Wait for admin DB migrations to complete
         run: |
           echo "Waiting for admin DB migrations..."
-          timeout 120 sh -c '
-            until docker compose exec -T bitwarden sh -c "grep -q \"Migration successful\" /etc/bitwarden/logs/admin-*.log 2>/dev/null"; do
-              sleep 2
-            done
-          '
-          echo "Migrations complete."
+          deadline=$((SECONDS + 120))
+          previous_migration_count=""
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            current_migration_count=$(docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE" -N -e "SELECT COUNT(*) FROM __EFMigrationsHistory"' 2>/dev/null || true)
+            # Migrations are considered complete once the history table is
+            # populated and its row count is unchanged between two polls.
+            if [ -n "$current_migration_count" ] && [ "$current_migration_count" -gt 0 ] && [ "$current_migration_count" = "$previous_migration_count" ]; then
+              echo "Migrations complete ($current_migration_count applied)."
+              exit 0
+            fi
+            previous_migration_count="$current_migration_count"
+            sleep 3
+          done
+          echo "Timed out waiting for admin DB migrations."
+          exit 1
 
       - name: Generate crypto values
         run: npm run setup:crypto
